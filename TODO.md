@@ -15,27 +15,25 @@
 
 ## Phase 5: 外部サービス統合・API接続 (残り実装)
 
-### 5.1 YouTube 統合 (MVP クリティカル) 🔴
+### 5.1 YouTube 統合 ✅ 完了
 
 #### 5.1.1 YouTube Data API 設定
-- [ ] `.env` に `YOUTUBE_API_KEY` 追加
-- [ ] `internal/config/config.go` で API キー読み込み
+- [x] `.env` に `YOUTUBE_API_KEY` 追加（既存）
+- [x] `internal/config/config.go` で API キー読み込み（既存）
 
 #### 5.1.2 動画検索 API 実装
-- [ ] `internal/adapter/youtube_handler.go` の `SearchVideos` 実装
-  - 現在: TODO コメントのみ (line 35)
-- [ ] YouTube Data API v3 呼び出し
-- [ ] `web/src/components/player/VideoSearch.tsx` のモックデータ削除
+- [x] `internal/service/youtube_service.go` 作成
+- [x] YouTube Data API v3 呼び出し実装
+- [x] ページネーション対応
 
 #### 5.1.3 動画メタデータ取得 API 実装
-- [ ] `internal/adapter/youtube_handler.go` の `GetVideoDetails` 実装
-  - 現在: TODO コメントのみ (line 62)
+- [x] `GetVideo` メソッド実装
+- [x] 動画時間取得対応
 
 #### 5.1.4 YouTube IFrame Player 統合
-- [ ] `web/src/components/player/YouTubePlayer.tsx` に IFrame API 読み込み
-  - 現在: プレースホルダーのみ
-- [ ] `useVideoSync.ts` との接続
-- [ ] `RoomPage.tsx` でプレイヤー表示（サムネイル→実プレイヤー）
+- [x] `RoomPage.tsx` で `useVideoSync` フック使用
+- [x] YouTube IFrame API 読み込み
+- [x] `PlayerControls` とプレイヤー接続
 
 ### 5.2 チャット・リアクション接続 🔴
 
