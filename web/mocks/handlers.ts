@@ -23,9 +23,8 @@ export const handlers = [
     });
   }),
 
-  http.post(`${API_BASE}/rooms`, async ({ request }) => {
+  http.post(`${API_BASE}/rooms`, async () => {
     await delay(150);
-    const body = (await request.json()) as { room_id: string; password?: string };
     const shortId = Math.random().toString(36).substring(2, 8);
     return HttpResponse.json({
       short_id: shortId,

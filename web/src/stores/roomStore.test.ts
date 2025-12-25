@@ -19,7 +19,15 @@ describe('roomStore', () => {
   });
 
   it('should set room', () => {
-    const room = { id: 'room-1', name: 'Test Room', hasPassword: false };
+    const room = {
+      roomId: 'room-1',
+      name: 'Test Room',
+      creatorId: 'user-1',
+      creatorName: 'Creator',
+      hasPassword: false,
+      memberCount: 1,
+      maxMembers: 10,
+    };
     useRoomStore.getState().setRoom(room);
     expect(useRoomStore.getState().room).toEqual(room);
   });
@@ -62,6 +70,7 @@ describe('roomStore', () => {
         id: `msg-${i}`,
         senderId: 'user-1',
         senderName: 'Test',
+        senderIconUrl: '',
         text: `Message ${i}`,
         timestamp: Date.now(),
       });
@@ -85,10 +94,9 @@ describe('roomStore', () => {
   it('should add and remove reactions', () => {
     const reaction = {
       id: 'reaction-1',
-      userId: 'user-1',
+      senderId: 'user-1',
       emoji: '👍',
-      x: 50,
-      y: 50,
+      timestamp: Date.now(),
     };
 
     useRoomStore.getState().addReaction(reaction);
@@ -99,7 +107,15 @@ describe('roomStore', () => {
   });
 
   it('should reset to initial state', () => {
-    useRoomStore.getState().setRoom({ id: '1', name: 'Test', hasPassword: false });
+    useRoomStore.getState().setRoom({
+      roomId: '1',
+      name: 'Test',
+      creatorId: 'user-1',
+      creatorName: 'Creator',
+      hasPassword: false,
+      memberCount: 1,
+      maxMembers: 10,
+    });
     useRoomStore.getState().setIsConnected(true);
     useRoomStore.getState().setIsCreator(true);
 

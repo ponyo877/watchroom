@@ -6,7 +6,7 @@ interface ReportDialogProps {
   open: boolean;
   onClose: () => void;
   message: ChatMessageItem | null;
-  roomId: string;
+  roomId?: string;
   onSubmit: (reason: string) => Promise<boolean>;
 }
 
@@ -22,7 +22,6 @@ export default function ReportDialog({
   open,
   onClose,
   message,
-  roomId,
   onSubmit,
 }: ReportDialogProps) {
   const [selectedReason, setSelectedReason] = useState<string>('');

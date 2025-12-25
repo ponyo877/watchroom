@@ -1,6 +1,7 @@
 import {
   SkyWayContext,
   SkyWayRoom,
+  SkyWayStreamFactory,
   P2PRoom,
   LocalP2PRoomMember,
   LocalDataStream,
@@ -39,8 +40,8 @@ export async function joinRoom(
 }
 
 export async function createDataStream(): Promise<LocalDataStream> {
-  const dataStream = await SkyWayContext.prototype.createDataStream?.();
-  return dataStream!;
+  const dataStream = await SkyWayStreamFactory.createDataStream();
+  return dataStream;
 }
 
 export function parseRoomMetadata(metadata: string | undefined): RoomMetadata | null {

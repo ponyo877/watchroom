@@ -58,7 +58,7 @@ export default function RoomPage() {
   const [playHistory, setPlayHistory] = useState<any[]>([]);
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
-  const [duration, setDuration] = useState(0);
+  const [duration, _setDuration] = useState(0);
 
   // Check if room requires password
   useEffect(() => {

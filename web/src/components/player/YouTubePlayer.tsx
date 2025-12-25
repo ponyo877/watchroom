@@ -9,8 +9,8 @@ interface YouTubePlayerProps {
 
 export default function YouTubePlayer({
   videoId,
-  onReady,
-  onStateChange,
+  onReady: _onReady,
+  onStateChange: _onStateChange,
   className,
 }: YouTubePlayerProps) {
   const containerRef = useRef<HTMLDivElement>(null);

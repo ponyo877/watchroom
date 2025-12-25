@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   SkyWayContext,
+  SkyWayStreamFactory,
   P2PRoom,
   LocalP2PRoomMember,
   LocalDataStream,
@@ -116,11 +117,9 @@ export function useSkyWay({ roomName, token, onMessage }: UseSkyWayOptions) {
       memberRef.current = member;
 
       // Create and publish data stream
-      const dataStream = await SkyWayContext.prototype.createDataStream?.();
-      if (dataStream) {
-        dataStreamRef.current = dataStream;
-        await member.publish(dataStream);
-      }
+      const dataStream = await SkyWayStreamFactory.createDataStream();
+      dataStreamRef.current = dataStream;
+      await member.publish(dataStream);
 
       // Subscribe to existing members' data streams
       for (const pub of room.publications) {
@@ -128,7 +127,7 @@ export function useSkyWay({ roomName, token, onMessage }: UseSkyWayOptions) {
       }
 
       // Listen for new publications
-      room.onPublicationCreated.add(async (e) => {
+      room.onStreamPublished.add(async (e) => {
         await subscribeToMember(e.publication);
       });
 

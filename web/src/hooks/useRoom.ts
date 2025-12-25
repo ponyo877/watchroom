@@ -5,7 +5,7 @@ import { useUserStore } from '@/stores/userStore';
 import { useSkyWay } from './useSkyWay';
 import { useChat } from './useChat';
 import { useReaction } from './useReaction';
-import type { DataStreamMessage, SyncMessage, ChatMessage, ReactionMessage } from '@/types/message';
+import type { DataStreamMessage, SyncMessage } from '@/types/message';
 
 interface UseRoomOptions {
   roomId: string;

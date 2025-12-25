@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { Settings, X, Users, Crown, Lock, UserCheck, UserX } from 'lucide-react';
 import type { MemberMetadata } from '@/types/skyway';
 

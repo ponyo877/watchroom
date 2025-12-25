@@ -121,7 +121,7 @@ export default function ShareButton({ roomId, shortId, roomName }: ShareButtonPr
                 <span className="text-sm">LINEでシェア</span>
               </button>
 
-              {navigator.share && (
+              {'share' in navigator && (
                 <button
                   onClick={() => handleShare()}
                   className="w-full flex items-center gap-3 px-4 py-2 bg-muted rounded-md hover:bg-accent"
