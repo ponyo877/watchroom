@@ -1,0 +1,85 @@
+import { useState } from 'react';
+import { Smile, X } from 'lucide-react';
+
+interface ReactionPickerProps {
+  onSelectReaction: (emoji: string) => void;
+}
+
+const EMOJI_CATEGORIES = {
+  'よく使う': ['👍', '❤️', '😂', '😮', '😢', '😡', '👏', '🎉'],
+  '顔': ['😀', '😊', '🥰', '😎', '🤔', '😴', '🤯', '🥳'],
+  'ジェスチャー': ['👋', '✌️', '🤞', '🙏', '💪', '🙌', '👀', '💯'],
+  'シンボル': ['❤️', '💔', '⭐', '🔥', '💡', '✅', '❌', '⚡'],
+};
+
+export default function ReactionPicker({ onSelectReaction }: ReactionPickerProps) {
+  const [isOpen, setIsOpen] = useState(false);
+  const [activeCategory, setActiveCategory] = useState<string>('よく使う');
+
+  const handleSelect = (emoji: string) => {
+    onSelectReaction(emoji);
+    setIsOpen(false);
+  };
+
+  return (
+    <div className="relative">
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className="p-2 hover:bg-accent rounded-md"
+        aria-label="リアクションを追加"
+      >
+        <Smile className="h-5 w-5 text-muted-foreground" />
+      </button>
+
+      {isOpen && (
+        <>
+          <div
+            className="fixed inset-0 z-40"
+            onClick={() => setIsOpen(false)}
+          />
+          <div className="absolute bottom-full left-0 mb-2 w-72 bg-card border border-border rounded-lg shadow-lg z-50">
+            <div className="flex items-center justify-between p-2 border-b border-border">
+              <span className="text-sm font-medium">リアクション</span>
+              <button
+                onClick={() => setIsOpen(false)}
+                className="p-1 hover:bg-accent rounded-md"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+
+            <div className="flex border-b border-border overflow-x-auto">
+              {Object.keys(EMOJI_CATEGORIES).map((category) => (
+                <button
+                  key={category}
+                  onClick={() => setActiveCategory(category)}
+                  className={`px-3 py-2 text-xs whitespace-nowrap ${
+                    activeCategory === category
+                      ? 'border-b-2 border-primary text-primary'
+                      : 'text-muted-foreground hover:text-foreground'
+                  }`}
+                >
+                  {category}
+                </button>
+              ))}
+            </div>
+
+            <div className="p-2 grid grid-cols-8 gap-1">
+              {EMOJI_CATEGORIES[activeCategory as keyof typeof EMOJI_CATEGORIES].map(
+                (emoji) => (
+                  <button
+                    key={emoji}
+                    onClick={() => handleSelect(emoji)}
+                    className="p-2 text-xl hover:bg-accent rounded-md transition-colors"
+                  >
+                    {emoji}
+                  </button>
+                )
+              )}
+            </div>
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
