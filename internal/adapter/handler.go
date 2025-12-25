@@ -11,14 +11,15 @@ import (
 )
 
 type Handler struct {
-	cfg          *config.Config
-	db           *sql.DB
-	authUsecase  *usecase.AuthUsecase
-	roomUsecase  *usecase.RoomUsecase
-	roomRepo     *repository.RoomRepository
-	shortURLRepo *repository.ShortURLRepository
-	reportRepo   *repository.ReportRepository
-	banRepo      *repository.BanRepository
+	cfg            *config.Config
+	db             *sql.DB
+	authUsecase    *usecase.AuthUsecase
+	roomUsecase    *usecase.RoomUsecase
+	roomRepo       *repository.RoomRepository
+	shortURLRepo   *repository.ShortURLRepository
+	reportRepo     *repository.ReportRepository
+	banRepo        *repository.BanRepository
+	youtubeService *service.YouTubeService
 }
 
 func NewHandler(cfg *config.Config, db *sql.DB) *Handler {
@@ -28,18 +29,20 @@ func NewHandler(cfg *config.Config, db *sql.DB) *Handler {
 	banRepo := repository.NewBanRepository(db)
 
 	skyWayService := service.NewSkyWayService(cfg.SkyWay.AppID, cfg.SkyWay.SecretKey)
+	youtubeService, _ := service.NewYouTubeService(cfg.YouTube.APIKey)
 	authUsecase := usecase.NewAuthUsecase(skyWayService)
 	roomUsecase := usecase.NewRoomUsecase(roomRepo, shortURLRepo)
 
 	return &Handler{
-		cfg:          cfg,
-		db:           db,
-		authUsecase:  authUsecase,
-		roomUsecase:  roomUsecase,
-		roomRepo:     roomRepo,
-		shortURLRepo: shortURLRepo,
-		reportRepo:   reportRepo,
-		banRepo:      banRepo,
+		cfg:            cfg,
+		db:             db,
+		authUsecase:    authUsecase,
+		roomUsecase:    roomUsecase,
+		roomRepo:       roomRepo,
+		shortURLRepo:   shortURLRepo,
+		reportRepo:     reportRepo,
+		banRepo:        banRepo,
+		youtubeService: youtubeService,
 	}
 }
 

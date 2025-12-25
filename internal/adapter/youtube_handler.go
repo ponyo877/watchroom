@@ -3,6 +3,7 @@ package adapter
 import (
 	"encoding/json"
 	"net/http"
+	"strconv"
 )
 
 type YouTubeVideo struct {
@@ -32,21 +33,37 @@ func (h *Handler) HandleYouTubeSearch(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// TODO: Implement YouTube Data API call
-	// For now, return mock data
+	maxResults := int64(10)
+	if maxStr := r.URL.Query().Get("max_results"); maxStr != "" {
+		if n, err := strconv.ParseInt(maxStr, 10, 64); err == nil && n > 0 && n <= 50 {
+			maxResults = n
+		}
+	}
+
+	pageToken := r.URL.Query().Get("page_token")
+
+	result, err := h.youtubeService.Search(r.Context(), query, maxResults, pageToken)
+	if err != nil {
+		http.Error(w, "Failed to search videos: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	items := make([]YouTubeVideo, 0, len(result.Items))
+	for _, v := range result.Items {
+		items = append(items, YouTubeVideo{
+			VideoID:      v.VideoID,
+			Title:        v.Title,
+			Description:  v.Description,
+			Thumbnail:    v.Thumbnail,
+			ChannelTitle: v.ChannelTitle,
+			PublishedAt:  v.PublishedAt,
+			Duration:     v.Duration,
+		})
+	}
+
 	resp := YouTubeSearchResponse{
-		Items: []YouTubeVideo{
-			{
-				VideoID:      "dQw4w9WgXcQ",
-				Title:        "Rick Astley - Never Gonna Give You Up",
-				Description:  "The official music video",
-				Thumbnail:    "https://i.ytimg.com/vi/dQw4w9WgXcQ/mqdefault.jpg",
-				ChannelTitle: "Rick Astley",
-				PublishedAt:  "2009-10-25T00:00:00Z",
-				Duration:     "PT3M33S",
-			},
-		},
-		NextPageToken: "",
+		Items:         items,
+		NextPageToken: result.NextPageToken,
 	}
 
 	w.Header().Set("Content-Type", "application/json")
@@ -59,17 +76,22 @@ func (h *Handler) HandleGetVideo(w http.ResponseWriter, r *http.Request, videoID
 		return
 	}
 
-	// TODO: Implement YouTube Data API call
-	video := YouTubeVideo{
-		VideoID:      videoID,
-		Title:        "Video Title",
-		Description:  "Video Description",
-		Thumbnail:    "https://i.ytimg.com/vi/" + videoID + "/mqdefault.jpg",
-		ChannelTitle: "Channel",
-		PublishedAt:  "2024-01-01T00:00:00Z",
-		Duration:     "PT5M00S",
+	video, err := h.youtubeService.GetVideo(r.Context(), videoID)
+	if err != nil {
+		http.Error(w, "Failed to get video: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	resp := YouTubeVideo{
+		VideoID:      video.VideoID,
+		Title:        video.Title,
+		Description:  video.Description,
+		Thumbnail:    video.Thumbnail,
+		ChannelTitle: video.ChannelTitle,
+		PublishedAt:  video.PublishedAt,
+		Duration:     video.Duration,
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(video)
+	json.NewEncoder(w).Encode(resp)
 }

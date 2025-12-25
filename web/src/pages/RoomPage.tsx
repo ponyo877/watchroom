@@ -1,5 +1,5 @@
 import { useParams, useNavigate } from 'react-router-dom';
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import {
   Settings,
   Users,
@@ -12,6 +12,7 @@ import { useRoomStore } from '@/stores/roomStore';
 import { useUserStore } from '@/stores/userStore';
 import { useShortUrl } from '@/hooks/useShortUrl';
 import { useModeration } from '@/hooks/useModeration';
+import { useVideoSync } from '@/hooks/useVideoSync';
 import ChatPanel from '@/components/chat/ChatPanel';
 import ReactionPicker from '@/components/chat/ReactionPicker';
 import ReactionOverlay from '@/components/player/ReactionOverlay';
@@ -26,6 +27,7 @@ import ShareButton from '@/components/room/ShareButton';
 import BottomSheet from '@/components/common/BottomSheet';
 import Loading from '@/components/common/Loading';
 import type { YouTubeVideo } from '@/types/youtube';
+import type { SyncMessage } from '@/types/message';
 
 export default function RoomPage() {
   const { roomId, shortId } = useParams();
@@ -56,9 +58,46 @@ export default function RoomPage() {
   const [allowedUserIds, setAllowedUserIds] = useState<string[]>([]);
   const [hasPassword, setHasPassword] = useState(false);
   const [playHistory, setPlayHistory] = useState<any[]>([]);
-  const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
-  const [duration, _setDuration] = useState(0);
+  const [duration, setDuration] = useState(0);
+
+  // Player element ID
+  const playerElementId = useRef(`youtube-player-${Date.now()}`);
+
+  // Video sync hook
+  const handleSendSync = useCallback((_message: SyncMessage) => {
+    // TODO: Send via SkyWay when connected
+    console.log('Sync message:', _message);
+  }, []);
+
+  const {
+    player,
+    isReady: isPlayerReady,
+    play,
+    pause,
+    seek,
+    setPlaybackRate,
+  } = useVideoSync({
+    elementId: playerElementId.current,
+    onSendSync: handleSendSync,
+  });
+
+  // Update current time from player
+  useEffect(() => {
+    if (!player || !isPlayerReady) return;
+
+    const interval = setInterval(() => {
+      const time = player.getCurrentTime();
+      const dur = player.getDuration();
+      setCurrentTime(time);
+      if (dur > 0) setDuration(dur);
+    }, 500);
+
+    return () => clearInterval(interval);
+  }, [player, isPlayerReady]);
+
+  // Derive isPlaying from playback state
+  const isPlaying = roomStore.playbackState.isPlaying;
 
   // Check if room requires password
   useEffect(() => {
@@ -292,24 +331,15 @@ export default function RoomPage() {
 
           {/* Video player */}
           <div className="flex-1 relative bg-black">
-            {roomStore.currentVideo ? (
-              <div className="w-full h-full flex items-center justify-center">
-                <img
-                  src={roomStore.currentVideo.thumbnail}
-                  alt={roomStore.currentVideo.title}
-                  className="max-w-full max-h-full object-contain"
-                />
-                <div className="absolute inset-0 flex items-center justify-center bg-black/50">
-                  <p className="text-white text-center px-4">
-                    {roomStore.currentVideo.title}
-                    <br />
-                    <span className="text-sm text-white/70">
-                      (YouTube Player placeholder)
-                    </span>
-                  </p>
-                </div>
-              </div>
-            ) : (
+            {/* YouTube Player Container */}
+            <div
+              id={playerElementId.current}
+              className="w-full h-full"
+              style={{ display: roomStore.currentVideo ? 'block' : 'none' }}
+            />
+
+            {/* No video selected message */}
+            {!roomStore.currentVideo && (
               <div className="w-full h-full flex items-center justify-center">
                 <div className="text-center px-4">
                   <p className="text-white/50 mb-4">動画が選択されていません</p>
@@ -335,12 +365,22 @@ export default function RoomPage() {
               duration={duration}
               playbackRate={roomStore.playbackState.playbackRate}
               hasControlPermission={roomStore.hasControlPermission}
-              onPlay={() => setIsPlaying(true)}
-              onPause={() => setIsPlaying(false)}
-              onSeek={(time) => setCurrentTime(time)}
-              onPlaybackRateChange={(rate) =>
-                roomStore.setPlaybackState({ playbackRate: rate })
-              }
+              onPlay={() => {
+                play();
+                roomStore.setPlaybackState({ isPlaying: true });
+              }}
+              onPause={() => {
+                pause();
+                roomStore.setPlaybackState({ isPlaying: false });
+              }}
+              onSeek={(time) => {
+                seek(time);
+                setCurrentTime(time);
+              }}
+              onPlaybackRateChange={(rate) => {
+                setPlaybackRate(rate);
+                roomStore.setPlaybackState({ playbackRate: rate });
+              }}
             />
           </div>
 
