@@ -1,0 +1,3 @@
+-- WatchRoom Seed Data
+-- This file is intentionally left empty for now.
+-- Add seed data here as needed during development.

@@ -1,0 +1,11 @@
+version: "2"
+sql:
+  - engine: "mysql"
+    queries: "queries/"
+    schema: "init/schema.sql"
+    gen:
+      go:
+        package: "generated_sql"
+        out: "generated_sql"
+        emit_json_tags: true
+        emit_db_tags: true

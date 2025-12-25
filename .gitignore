@@ -1,0 +1,64 @@
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Go
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+vendor/
+tmp/
+
+# Generated code
+cmd/api-server/openapi/
+db/generated_sql/
+typespec/tsp-output/
+web/src/generated-client/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Node
+node_modules/
+web/node_modules/
+typespec/node_modules/
+
+# Build
+dist/
+build/
+web/dist/
+
+# Logs
+*.log
+logs/
+
+# Debug
+debug/
+*.prof
+
+# Test
+coverage/
+*.cover
+*.coverage
+
+# Docker
+docker-compose.override.yml
+
+# MSW
+web/public/mockServiceWorker.js
+
+# pnpm
+.pnpm-store/
