@@ -135,11 +135,31 @@ tasks:
     cmds:
       - pnpm test
 
-  # Build
+  # Build & Production
   build:
     desc: 本番用ビルド
     cmds:
       - docker compose -f docker-compose.prod.yml build
+
+  prod:up:
+    desc: 本番環境を起動
+    cmds:
+      - docker compose -f docker-compose.prod.yml up -d
+
+  prod:down:
+    desc: 本番環境を停止
+    cmds:
+      - docker compose -f docker-compose.prod.yml down
+
+  prod:logs:
+    desc: 本番環境のログを表示
+    cmds:
+      - docker compose -f docker-compose.prod.yml logs -f --tail=100
+
+  prod:restart:
+    desc: 本番環境を再起動
+    cmds:
+      - docker compose -f docker-compose.prod.yml restart
 
   # Utilities
   clean:
