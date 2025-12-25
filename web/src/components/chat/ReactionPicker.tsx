@@ -3,6 +3,7 @@ import { Smile, X } from 'lucide-react';
 
 interface ReactionPickerProps {
   onSelectReaction: (emoji: string) => void;
+  compact?: boolean;
 }
 
 const EMOJI_CATEGORIES = {
@@ -12,7 +13,10 @@ const EMOJI_CATEGORIES = {
   'シンボル': ['❤️', '💔', '⭐', '🔥', '💡', '✅', '❌', '⚡'],
 };
 
-export default function ReactionPicker({ onSelectReaction }: ReactionPickerProps) {
+export default function ReactionPicker({
+  onSelectReaction,
+  compact = false,
+}: ReactionPickerProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [activeCategory, setActiveCategory] = useState<string>('よく使う');
 
@@ -25,10 +29,11 @@ export default function ReactionPicker({ onSelectReaction }: ReactionPickerProps
     <div className="relative">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="p-2 hover:bg-accent rounded-md"
+        className={compact ? 'flex flex-col items-center gap-1 p-2' : 'p-2 hover:bg-accent rounded-md'}
         aria-label="リアクションを追加"
       >
         <Smile className="h-5 w-5 text-muted-foreground" />
+        {compact && <span className="text-xs">リアクション</span>}
       </button>
 
       {isOpen && (
@@ -37,7 +42,11 @@ export default function ReactionPicker({ onSelectReaction }: ReactionPickerProps
             className="fixed inset-0 z-40"
             onClick={() => setIsOpen(false)}
           />
-          <div className="absolute bottom-full left-0 mb-2 w-72 bg-card border border-border rounded-lg shadow-lg z-50">
+          <div
+            className={`absolute ${
+              compact ? 'bottom-full right-0' : 'bottom-full left-0'
+            } mb-2 w-72 bg-card border border-border rounded-lg shadow-lg z-50`}
+          >
             <div className="flex items-center justify-between p-2 border-b border-border">
               <span className="text-sm font-medium">リアクション</span>
               <button

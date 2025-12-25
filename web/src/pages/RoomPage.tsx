@@ -6,10 +6,12 @@ import {
   History,
   LogOut,
   Search,
+  MessageCircle,
 } from 'lucide-react';
 import { useRoomStore } from '@/stores/roomStore';
 import { useUserStore } from '@/stores/userStore';
 import { useShortUrl } from '@/hooks/useShortUrl';
+import { useModeration } from '@/hooks/useModeration';
 import ChatPanel from '@/components/chat/ChatPanel';
 import ReactionPicker from '@/components/chat/ReactionPicker';
 import ReactionOverlay from '@/components/player/ReactionOverlay';
@@ -21,6 +23,7 @@ import RoomSettings from '@/components/room/RoomSettings';
 import PasswordDialog from '@/components/room/PasswordDialog';
 import PasswordSettingsDialog from '@/components/room/PasswordSettingsDialog';
 import ShareButton from '@/components/room/ShareButton';
+import BottomSheet from '@/components/common/BottomSheet';
 import Loading from '@/components/common/Loading';
 import type { YouTubeVideo } from '@/types/youtube';
 
@@ -45,6 +48,8 @@ export default function RoomPage() {
   const [showVideoSearch, setShowVideoSearch] = useState(false);
   const [showPlayHistory, setShowPlayHistory] = useState(false);
   const [isPasswordVerified, setIsPasswordVerified] = useState(false);
+  const [showMobileChat, setShowMobileChat] = useState(false);
+  const [showMobileMembers, setShowMobileMembers] = useState(false);
 
   // Mock states (will be replaced with actual hooks)
   const [permissionMode, setPermissionMode] = useState<'creator' | 'specific' | 'all'>('creator');
@@ -162,6 +167,30 @@ export default function RoomPage() {
     navigate('/');
   }, [roomStore, navigate]);
 
+  const { kickUser, banUser } = useModeration({
+    roomId: actualRoomId || '',
+    onKickSuccess: (userId) => {
+      roomStore.removeMember(userId);
+    },
+    onBanSuccess: (userId) => {
+      roomStore.removeMember(userId);
+    },
+  });
+
+  const handleKickUser = useCallback(
+    (userId: string) => {
+      kickUser(userId);
+    },
+    [kickUser]
+  );
+
+  const handleBanUser = useCallback(
+    (userId: string, reason: string) => {
+      banUser(userId, reason);
+    },
+    [banUser]
+  );
+
   // Loading state
   if (isResolvingShortUrl) {
     return (
@@ -207,21 +236,21 @@ export default function RoomPage() {
         {/* Main content */}
         <main className="flex-1 flex flex-col">
           {/* Header */}
-          <header className="h-14 border-b border-border bg-card flex items-center justify-between px-4">
-            <div className="flex items-center gap-4">
+          <header className="h-14 border-b border-border bg-card flex items-center justify-between px-2 md:px-4">
+            <div className="flex items-center gap-2 md:gap-4 min-w-0">
               <button
                 onClick={handleLeaveRoom}
-                className="p-2 hover:bg-accent rounded-md"
+                className="p-2 hover:bg-accent rounded-md flex-shrink-0"
                 title="部屋を出る"
               >
                 <LogOut className="h-5 w-5" />
               </button>
-              <h1 className="font-semibold truncate">
+              <h1 className="font-semibold truncate text-sm md:text-base">
                 {roomStore.room?.name || `Room: ${actualRoomId?.slice(0, 8)}...`}
               </h1>
             </div>
 
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1 md:gap-2">
               <button
                 onClick={() => setShowVideoSearch(true)}
                 className="p-2 hover:bg-accent rounded-md"
@@ -231,14 +260,14 @@ export default function RoomPage() {
               </button>
               <button
                 onClick={() => setShowPlayHistory(true)}
-                className="p-2 hover:bg-accent rounded-md"
+                className="p-2 hover:bg-accent rounded-md hidden md:flex"
                 title="再生履歴"
               >
                 <History className="h-5 w-5" />
               </button>
               <button
                 onClick={() => setShowMemberList(!showMemberList)}
-                className="p-2 hover:bg-accent rounded-md"
+                className="p-2 hover:bg-accent rounded-md hidden md:flex"
                 title="メンバー"
               >
                 <Users className="h-5 w-5" />
@@ -250,11 +279,13 @@ export default function RoomPage() {
               >
                 <Settings className="h-5 w-5" />
               </button>
-              <ShareButton
-                roomId={actualRoomId || ''}
-                shortId={shortId}
-                roomName={roomStore.room?.name || 'WatchRoom'}
-              />
+              <div className="hidden md:block">
+                <ShareButton
+                  roomId={actualRoomId || ''}
+                  shortId={shortId}
+                  roomName={roomStore.room?.name || 'WatchRoom'}
+                />
+              </div>
             </div>
           </header>
 
@@ -268,7 +299,7 @@ export default function RoomPage() {
                   className="max-w-full max-h-full object-contain"
                 />
                 <div className="absolute inset-0 flex items-center justify-center bg-black/50">
-                  <p className="text-white text-center">
+                  <p className="text-white text-center px-4">
                     {roomStore.currentVideo.title}
                     <br />
                     <span className="text-sm text-white/70">
@@ -279,7 +310,7 @@ export default function RoomPage() {
               </div>
             ) : (
               <div className="w-full h-full flex items-center justify-center">
-                <div className="text-center">
+                <div className="text-center px-4">
                   <p className="text-white/50 mb-4">動画が選択されていません</p>
                   <button
                     onClick={() => setShowVideoSearch(true)}
@@ -311,17 +342,55 @@ export default function RoomPage() {
               }
             />
           </div>
+
+          {/* Mobile bottom navigation */}
+          <div className="h-14 border-t border-border bg-card flex items-center justify-around md:hidden">
+            <button
+              onClick={() => setShowMobileChat(true)}
+              className="flex flex-col items-center gap-1 p-2"
+            >
+              <MessageCircle className="h-5 w-5" />
+              <span className="text-xs">チャット</span>
+            </button>
+            <button
+              onClick={() => setShowMobileMembers(true)}
+              className="flex flex-col items-center gap-1 p-2"
+            >
+              <Users className="h-5 w-5" />
+              <span className="text-xs">メンバー</span>
+            </button>
+            <button
+              onClick={() => setShowPlayHistory(true)}
+              className="flex flex-col items-center gap-1 p-2"
+            >
+              <History className="h-5 w-5" />
+              <span className="text-xs">履歴</span>
+            </button>
+            <ReactionPicker onSelectReaction={handleSendReaction} compact />
+          </div>
         </main>
 
-        {/* Sidebar */}
-        <aside className="w-80 border-l border-border bg-card flex flex-col">
+        {/* Desktop Sidebar */}
+        <aside className="hidden md:flex w-80 border-l border-border bg-card flex-col">
           {showMemberList ? (
-            <MemberList members={roomStore.members} currentUserId={userId} />
+            <MemberList
+              members={roomStore.members}
+              currentUserId={userId}
+              isCreator={roomStore.isCreator}
+              onKick={handleKickUser}
+              onBan={handleBanUser}
+              onGrantPermission={(id) => setAllowedUserIds((prev) => [...prev, id])}
+              onRevokePermission={(id) =>
+                setAllowedUserIds((prev) => prev.filter((i) => i !== id))
+              }
+              allowedUserIds={allowedUserIds}
+            />
           ) : (
             <>
               <ChatPanel
                 messages={roomStore.chatMessages}
                 onSendMessage={handleSendChatMessage}
+                roomId={actualRoomId || ''}
               />
               <div className="p-2 border-t border-border flex items-center gap-2">
                 <ReactionPicker onSelectReaction={handleSendReaction} />
@@ -330,6 +399,41 @@ export default function RoomPage() {
           )}
         </aside>
       </div>
+
+      {/* Mobile Chat Bottom Sheet */}
+      <BottomSheet
+        open={showMobileChat}
+        onClose={() => setShowMobileChat(false)}
+        title="チャット"
+      >
+        <div className="h-[60vh]">
+          <ChatPanel
+            messages={roomStore.chatMessages}
+            onSendMessage={handleSendChatMessage}
+            roomId={actualRoomId || ''}
+          />
+        </div>
+      </BottomSheet>
+
+      {/* Mobile Members Bottom Sheet */}
+      <BottomSheet
+        open={showMobileMembers}
+        onClose={() => setShowMobileMembers(false)}
+        title="メンバー"
+      >
+        <MemberList
+          members={roomStore.members}
+          currentUserId={userId}
+          isCreator={roomStore.isCreator}
+          onKick={handleKickUser}
+          onBan={handleBanUser}
+          onGrantPermission={(id) => setAllowedUserIds((prev) => [...prev, id])}
+          onRevokePermission={(id) =>
+            setAllowedUserIds((prev) => prev.filter((i) => i !== id))
+          }
+          allowedUserIds={allowedUserIds}
+        />
+      </BottomSheet>
 
       {/* Modals */}
       <RoomSettings

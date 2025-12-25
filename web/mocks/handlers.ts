@@ -92,6 +92,18 @@ export const handlers = [
     });
   }),
 
+  // Image upload
+  http.post(`${API_BASE}/uploads/presign`, async ({ request }) => {
+    await delay(100);
+    const body = (await request.json()) as { filename: string; content_type: string };
+    const key = `uploads/${Date.now()}-${body.filename}`;
+    return HttpResponse.json({
+      upload_url: `https://example-bucket.s3.amazonaws.com/${key}?presigned=true`,
+      key,
+      public_url: `https://cdn.example.com/${key}`,
+    });
+  }),
+
   // Bans
   http.get(`${API_BASE}/bans/check/:userId`, async () => {
     await delay(100);
@@ -100,18 +112,145 @@ export const handlers = [
     });
   }),
 
+  // Kick user from room
+  http.post(`${API_BASE}/rooms/:roomId/kick`, async () => {
+    await delay(100);
+    return HttpResponse.json({ success: true });
+  }),
+
+  // Ban user from room
+  http.post(`${API_BASE}/rooms/:roomId/ban`, async () => {
+    await delay(100);
+    return HttpResponse.json({ success: true });
+  }),
+
+  // Password management
+  http.put(`${API_BASE}/rooms/:roomId/password`, async ({ request }) => {
+    await delay(150);
+    const body = (await request.json()) as { old_password?: string; new_password: string };
+    if (body.new_password) {
+      return HttpResponse.json({ success: true });
+    }
+    return HttpResponse.json({ success: false }, { status: 400 });
+  }),
+
+  http.delete(`${API_BASE}/rooms/:roomId/password`, async ({ request }) => {
+    await delay(150);
+    const body = (await request.json()) as { password: string };
+    if (body.password === 'test123') {
+      return HttpResponse.json({ success: true });
+    }
+    return HttpResponse.json({ success: false }, { status: 400 });
+  }),
+
   // Admin (Basic Auth required)
-  http.get(`${API_BASE}/admin/reports`, async () => {
+  http.get(`${API_BASE}/admin/reports`, async ({ request }) => {
     await delay(200);
+    const secret = request.headers.get('X-Admin-Secret');
+    if (!secret || secret !== 'admin-secret') {
+      return HttpResponse.json({ message: 'Unauthorized' }, { status: 401 });
+    }
     return HttpResponse.json({
-      reports: [],
+      reports: [
+        {
+          id: '1',
+          roomId: 'room-123',
+          reporterId: 'user-1',
+          reporterName: 'User1',
+          targetId: 'user-2',
+          targetName: 'BadUser',
+          messageText: '不適切なメッセージ内容',
+          reason: 'harassment: 嫌がらせ行為',
+          status: 'pending',
+          createdAt: new Date(Date.now() - 3600000).toISOString(),
+        },
+        {
+          id: '2',
+          roomId: 'room-456',
+          reporterId: 'user-3',
+          reporterName: 'User3',
+          targetId: 'user-4',
+          targetName: 'SpamUser',
+          messageText: 'スパムメッセージ',
+          reason: 'spam',
+          status: 'reviewed',
+          createdAt: new Date(Date.now() - 86400000).toISOString(),
+        },
+      ],
     });
   }),
 
-  http.get(`${API_BASE}/admin/bans`, async () => {
-    await delay(200);
+  http.patch(`${API_BASE}/admin/reports/:reportId`, async ({ request, params }) => {
+    await delay(150);
+    const secret = request.headers.get('X-Admin-Secret');
+    if (!secret || secret !== 'admin-secret') {
+      return HttpResponse.json({ message: 'Unauthorized' }, { status: 401 });
+    }
+    const body = (await request.json()) as { status: string };
     return HttpResponse.json({
-      bans: [],
+      id: params.reportId,
+      status: body.status,
     });
+  }),
+
+  http.get(`${API_BASE}/admin/bans`, async ({ request }) => {
+    await delay(200);
+    const secret = request.headers.get('X-Admin-Secret');
+    if (!secret || secret !== 'admin-secret') {
+      return HttpResponse.json({ message: 'Unauthorized' }, { status: 401 });
+    }
+    return HttpResponse.json({
+      bans: [
+        {
+          id: 'ban-1',
+          userId: 'user-bad-1',
+          userName: 'BannedUser1',
+          reason: '繰り返しのスパム行為',
+          bannedBy: 'admin',
+          bannedAt: new Date(Date.now() - 86400000 * 7).toISOString(),
+          expiresAt: null,
+          isGlobal: true,
+        },
+        {
+          id: 'ban-2',
+          userId: 'user-bad-2',
+          userName: 'TempBannedUser',
+          reason: '不適切な言動',
+          bannedBy: 'admin',
+          bannedAt: new Date(Date.now() - 86400000).toISOString(),
+          expiresAt: new Date(Date.now() + 86400000 * 6).toISOString(),
+          isGlobal: false,
+          roomId: 'room-123',
+        },
+      ],
+    });
+  }),
+
+  http.post(`${API_BASE}/admin/bans`, async ({ request }) => {
+    await delay(150);
+    const secret = request.headers.get('X-Admin-Secret');
+    if (!secret || secret !== 'admin-secret') {
+      return HttpResponse.json({ message: 'Unauthorized' }, { status: 401 });
+    }
+    const body = (await request.json()) as {
+      user_id: string;
+      reason: string;
+      is_global: boolean;
+      room_id?: string;
+      expires_at?: string;
+    };
+    return HttpResponse.json({
+      id: `ban-${Date.now()}`,
+      ...body,
+    });
+  }),
+
+  http.delete(`${API_BASE}/admin/bans/:banId`, async ({ request }) => {
+    await delay(150);
+    const secret = request.headers.get('X-Admin-Secret');
+    if (!secret || secret !== 'admin-secret') {
+      return HttpResponse.json({ message: 'Unauthorized' }, { status: 401 });
+    }
+    return HttpResponse.json({ success: true });
   }),
 ];

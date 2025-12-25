@@ -1,16 +1,21 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { Send } from 'lucide-react';
 import ChatMessage from './ChatMessage';
+import ReportDialog from './ReportDialog';
+import { useReport } from '@/hooks/useReport';
 import type { ChatMessageItem } from '@/types/room';
 
 interface ChatPanelProps {
   messages: ChatMessageItem[];
   onSendMessage: (text: string) => void;
+  roomId: string;
 }
 
-export default function ChatPanel({ messages, onSendMessage }: ChatPanelProps) {
+export default function ChatPanel({ messages, onSendMessage, roomId }: ChatPanelProps) {
   const [input, setInput] = useState('');
+  const [reportTarget, setReportTarget] = useState<ChatMessageItem | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const { submitReport } = useReport({ roomId });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -19,6 +24,18 @@ export default function ChatPanel({ messages, onSendMessage }: ChatPanelProps) {
       setInput('');
     }
   };
+
+  const handleReport = useCallback((message: ChatMessageItem) => {
+    setReportTarget(message);
+  }, []);
+
+  const handleSubmitReport = useCallback(
+    async (reason: string): Promise<boolean> => {
+      if (!reportTarget) return false;
+      return submitReport(reportTarget, reason);
+    },
+    [reportTarget, submitReport]
+  );
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -37,7 +54,11 @@ export default function ChatPanel({ messages, onSendMessage }: ChatPanelProps) {
           </p>
         ) : (
           messages.map((message) => (
-            <ChatMessage key={message.id} message={message} />
+            <ChatMessage
+              key={message.id}
+              message={message}
+              onReport={handleReport}
+            />
           ))
         )}
         <div ref={messagesEndRef} />
@@ -61,6 +82,14 @@ export default function ChatPanel({ messages, onSendMessage }: ChatPanelProps) {
           </button>
         </div>
       </form>
+
+      <ReportDialog
+        open={!!reportTarget}
+        onClose={() => setReportTarget(null)}
+        message={reportTarget}
+        roomId={roomId}
+        onSubmit={handleSubmitReport}
+      />
     </div>
   );
 }
