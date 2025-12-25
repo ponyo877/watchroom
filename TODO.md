@@ -1,361 +1,226 @@
 # WatchRoom 実装TODO
 
-## Phase 0: プロジェクト初期化
+## 進捗サマリー
 
-### 0.1 基盤ファイル作成
-- [ ] `go.mod` - Goモジュール初期化
-- [ ] `go.sum` - 依存関係ロック
-- [ ] `.env.example` - 環境変数テンプレート
-- [ ] `.gitignore` - Git除外設定
-
-### 0.2 Taskfile設定
-- [ ] `Taskfile.yml` - タスクランナー定義
-
-### 0.3 Docker環境
-- [ ] `docker-compose.yml` - ローカル開発環境
-- [ ] `docker/local/api-server.local.Dockerfile` - API開発用
-- [ ] `docker/local/web.local.Dockerfile` - Web開発用
-- [ ] `cmd/api-server/air.toml` - ホットリロード設定
+| Phase | 状態 | 説明 |
+|-------|------|------|
+| Phase 0 | ✅ 完了 | プロジェクト初期化 |
+| Phase 1 | ✅ 完了 | MVP基盤 |
+| Phase 2 | ✅ 完了 | コア機能 |
+| Phase 3 | ✅ 完了 | 管理・品質向上 |
+| Phase 4 | ✅ 完了 | MSW・テスト・本番環境 |
+| Phase 5 | 🚧 進行中 | 外部サービス統合・API接続 |
 
 ---
 
-## Phase 1: MVP（最小限の動作）
+## Phase 5: 外部サービス統合・API接続 (残り実装)
 
-### 1.1 コード生成パイプライン
+### 5.1 YouTube 統合 (MVP クリティカル) 🔴
 
-#### TypeSpec
-- [ ] `typespec/package.json` - TypeSpec依存関係
-- [ ] `typespec/tspconfig.yaml` - TypeSpec設定
-- [ ] `typespec/main.tsp` - API仕様定義 (Auth, Rooms, YouTube)
+#### 5.1.1 YouTube Data API 設定
+- [ ] `.env` に `YOUTUBE_API_KEY` 追加
+- [ ] `internal/config/config.go` で API キー読み込み
 
-#### sqlc
-- [ ] `db/sqlc.yml` - sqlc設定
-- [ ] `db/init/schema.sql` - DBスキーマ定義
-- [ ] `db/init/seed.sql` - 初期データ（空ファイル）
-- [ ] `db/queries/query.sql` - SQLクエリ定義
-- [ ] `task sqlc` 実行確認
+#### 5.1.2 動画検索 API 実装
+- [ ] `internal/adapter/youtube_handler.go` の `SearchVideos` 実装
+  - 現在: TODO コメントのみ (line 35)
+- [ ] YouTube Data API v3 呼び出し
+- [ ] `web/src/components/player/VideoSearch.tsx` のモックデータ削除
 
-#### ogen
-- [ ] `cmd/api-server/main.go` - go:generate ディレクティブ追加
-- [ ] `task ogen` 実行確認
+#### 5.1.3 動画メタデータ取得 API 実装
+- [ ] `internal/adapter/youtube_handler.go` の `GetVideoDetails` 実装
+  - 現在: TODO コメントのみ (line 62)
 
-#### orval
-- [ ] `web/package.json` - フロントエンド依存関係
-- [ ] `web/orval.config.ts` - orval設定
-- [ ] `task openapi-client` 実行確認
+#### 5.1.4 YouTube IFrame Player 統合
+- [ ] `web/src/components/player/YouTubePlayer.tsx` に IFrame API 読み込み
+  - 現在: プレースホルダーのみ
+- [ ] `useVideoSync.ts` との接続
+- [ ] `RoomPage.tsx` でプレイヤー表示（サムネイル→実プレイヤー）
 
-### 1.2 バックエンド基盤
+### 5.2 チャット・リアクション接続 🔴
 
-#### 設定・ミドルウェア
-- [ ] `internal/config/config.go` - 環境変数読み込み
-- [ ] `internal/middleware/cors.go` - CORS設定
-- [ ] `internal/middleware/logging.go` - リクエストログ
+#### 5.2.1 RoomPage で useRoom フック活用
+- [ ] `RoomPage.tsx` で `useRoom` から `sendChatMessage`, `sendReaction` を取得
+- [ ] `handleSendChatMessage` 実装（現在: console.log のみ line 157）
+- [ ] `handleSendReaction` 実装（現在: console.log のみ line 162）
 
-#### SkyWay Token生成
-- [ ] `internal/service/skyway_service.go` - JWT Token生成
-- [ ] `internal/adapter/auth_handler.go` - POST /api/auth/token
+#### 5.2.2 SkyWay 接続の統合
+- [ ] `RoomPage` で `useSkyWay` を `useRoom` 経由で使用
+- [ ] メッセージ送受信の動作確認
 
-#### 部屋管理（Phase 1では最小限）
-- [ ] `internal/model/room.go` - RoomPassword モデル
-- [ ] `internal/repository/room_repository.go` - パスワードDB操作
-- [ ] `internal/usecase/room_usecase.go` - 部屋作成ロジック
-- [ ] `internal/adapter/room_handler.go` - POST /api/rooms, GET /api/rooms
+### 5.3 ルーム管理 API 接続 🟠
 
-#### 短縮URL
-- [ ] `internal/model/shorturl.go` - ShortURL モデル
-- [ ] `internal/repository/shorturl_repository.go` - 短縮URL DB操作
-- [ ] GET /api/r/{short_id} 実装
+#### 5.3.1 ルーム作成 API 呼び出し
+- [ ] `CreateRoomDialog.tsx` で `POST /api/rooms` 呼び出し
+  - 現在: TODO コメントのみ (line 26)
+- [ ] 作成後のルーム ID でナビゲート
 
-#### YouTube検索Proxy
-- [ ] `internal/service/youtube_service.go` - YouTube Data API連携
-- [ ] `internal/usecase/youtube_usecase.go` - 検索ロジック
-- [ ] `internal/adapter/youtube_handler.go` - GET /api/youtube/search
+#### 5.3.2 ルーム一覧 API 呼び出し
+- [ ] `RoomList.tsx` で `GET /api/rooms` 呼び出し
+  - 現在: ハードコードされたモックデータ (line 5)
+- [ ] モックデータを削除
 
-#### サーバー起動
-- [ ] `cmd/api-server/main.go` - HTTPサーバー起動処理
-- [ ] DB接続処理
-- [ ] ハンドラー登録
+#### 5.3.3 パスワード検証 API 接続
+- [ ] バックエンドでパスワードハッシュ検証実装
+  - 現在: MSW で "test123" 固定
 
-### 1.3 フロントエンド基盤
+### 5.4 データベース接続確認 🟠
 
-#### プロジェクト初期化
-- [ ] `web/vite.config.ts` - Vite設定
-- [ ] `web/tsconfig.json` - TypeScript設定
-- [ ] `web/index.html` - HTMLテンプレート
-- [ ] `web/tailwind.config.js` - Tailwind CSS v4設定
-- [ ] `web/components.json` - shadcn/ui設定
-- [ ] `web/src/styles/globals.css` - グローバルスタイル
+#### 5.4.1 Docker Compose で MySQL 起動確認
+- [ ] `docker compose up mysql`
+- [ ] スキーマ適用確認 (`db/init/schema.sql`)
 
-#### 共通ライブラリ
-- [ ] `web/src/lib/api.ts` - Axios設定（orval mutator）
-- [ ] `web/src/lib/storage.ts` - localStorage操作
-- [ ] `web/src/lib/utils.ts` - 汎用ユーティリティ
+#### 5.4.2 Go バックエンドの DB 接続
+- [ ] `internal/repository` の実装確認
+- [ ] CRUD 操作テスト
 
-#### 型定義
-- [ ] `web/src/types/skyway.ts` - SkyWay関連型
-- [ ] `web/src/types/message.ts` - DataStreamメッセージ型
-- [ ] `web/src/types/room.ts` - 部屋関連型
+#### 5.4.3 API エンドポイントの動作確認
+- [ ] MSW を無効にして実 API テスト
+- [ ] フロントエンド → バックエンド → DB の疎通確認
 
-#### 状態管理
-- [ ] `web/src/stores/userStore.ts` - ユーザー状態 (zustand)
-- [ ] `web/src/stores/roomStore.ts` - 部屋状態
-- [ ] `web/src/stores/uiStore.ts` - UI状態
+### 5.5 画像アップロード 🟡
 
-#### SkyWay接続
-- [ ] `web/src/lib/skyway.ts` - SkyWay初期化ヘルパー
-- [ ] `web/src/hooks/useSkyWay.ts` - SkyWay接続管理フック
-- [ ] `web/src/hooks/useRoom.ts` - 部屋状態管理フック
+#### 5.5.1 Cloudflare R2 設定
+- [ ] `.env` に R2 認証情報追加
+  - `R2_ACCOUNT_ID`
+  - `R2_ACCESS_KEY_ID`
+  - `R2_SECRET_ACCESS_KEY`
+  - `R2_BUCKET_NAME`
+- [ ] バケット作成
 
-#### YouTube再生
-- [ ] `web/src/lib/youtube.ts` - YouTube IFrame Player API
-- [ ] `web/src/hooks/useVideoSync.ts` - 動画同期ロジック
-- [ ] `web/src/components/player/YouTubePlayer.tsx` - プレイヤーコンポーネント
-- [ ] `web/src/components/player/PlayerControls.tsx` - コントロールUI
+#### 5.5.2 Presigned URL 生成 API
+- [ ] `internal/adapter/upload_handler.go` 実装
+- [ ] S3 互換 SDK で署名付き URL 生成
+  - 現在: MSW でフェイク URL 返却
 
-#### 部屋一覧ページ
-- [ ] `web/src/pages/HomePage.tsx` - 部屋一覧ページ
-- [ ] `web/src/components/room/RoomList.tsx` - 部屋一覧
-- [ ] `web/src/components/room/RoomCard.tsx` - 部屋カード
-- [ ] `web/src/components/room/CreateRoomDialog.tsx` - 部屋作成ダイアログ
+### 5.6 管理者機能完成 🟢
 
-#### 部屋ページ
-- [ ] `web/src/pages/RoomPage.tsx` - 部屋画面
-- [ ] `web/src/components/room/MemberList.tsx` - メンバー一覧
+#### 5.6.1 通報 API 接続
+- [ ] `POST /api/reports` のバックエンド実装
+- [ ] `GET /api/admin/reports` のバックエンド実装
+- [ ] DB への永続化
 
-#### 動画検索
-- [ ] `web/src/components/player/VideoSearch.tsx` - 動画検索UI
-
-#### ルーティング
-- [ ] `web/src/App.tsx` - ルートコンポーネント
-- [ ] `web/src/main.tsx` - エントリーポイント
-
-#### 共通UIコンポーネント (shadcn/ui)
-- [ ] `web/src/components/ui/button.tsx`
-- [ ] `web/src/components/ui/card.tsx`
-- [ ] `web/src/components/ui/dialog.tsx`
-- [ ] `web/src/components/ui/input.tsx`
-- [ ] `web/src/components/common/Header.tsx`
-- [ ] `web/src/components/common/Loading.tsx`
-- [ ] `web/src/components/common/ErrorBoundary.tsx`
-
-### 1.4 基本チャット
-
-#### フロントエンド
-- [ ] `web/src/hooks/useChat.ts` - チャットロジック
-- [ ] `web/src/components/chat/ChatPanel.tsx` - チャットパネル
-- [ ] `web/src/components/chat/ChatMessage.tsx` - メッセージ表示
-- [ ] `web/src/components/chat/ChatInput.tsx` - 入力欄
+#### 5.6.2 BAN 機能実装
+- [ ] `POST /api/admin/bans` のバックエンド実装
+- [ ] BAN チェックミドルウェア
+- [ ] SkyWay ルームからの強制退出
 
 ---
 
-## Phase 2: コア機能完成
+## 未実装機能詳細
 
-### 2.1 パスワード保護機能
+### MSW モックエンドポイント一覧（実装が必要）
 
-#### バックエンド
-- [ ] POST /api/rooms/{room_id}/verify-password 実装
-- [ ] PUT /api/rooms/{room_id}/password 実装
-- [ ] DELETE /api/rooms/{room_id}/password 実装
-- [ ] bcryptハッシュ化処理
+| エンドポイント | メソッド | バックエンド実装 | 備考 |
+|---------------|---------|-----------------|------|
+| `/api/auth/token` | POST | ✅ 実装済み | SkyWay トークン生成 |
+| `/api/rooms` | GET | ❌ 未実装 | ルーム一覧取得 |
+| `/api/rooms` | POST | ❌ 未実装 | ルーム作成 |
+| `/api/rooms/:roomId` | GET | ❌ 未実装 | ルーム詳細取得 |
+| `/api/rooms/:roomId/verify-password` | POST | ❌ 未実装 | パスワード検証 |
+| `/api/rooms/:roomId/password` | PUT | ❌ 未実装 | パスワード設定 |
+| `/api/rooms/:roomId/password` | DELETE | ❌ 未実装 | パスワード削除 |
+| `/api/youtube/search` | GET | ❌ 未実装 | 動画検索 |
+| `/api/youtube/videos/:videoId` | GET | ❌ 未実装 | 動画詳細 |
+| `/api/reports` | POST | ❌ 未実装 | 通報送信 |
+| `/api/uploads/presign` | POST | ❌ 未実装 | 署名付きURL |
+| `/api/bans/check/:userId` | GET | ❌ 未実装 | BAN確認 |
+| `/api/admin/reports` | GET | ❌ 未実装 | 通報一覧 |
+| `/api/admin/reports/:reportId` | PATCH | ❌ 未実装 | 通報処理 |
+| `/api/admin/bans` | GET | ❌ 未実装 | BAN一覧 |
+| `/api/admin/bans` | POST | ❌ 未実装 | BAN追加 |
+| `/api/admin/bans/:banId` | DELETE | ❌ 未実装 | BAN解除 |
+| `/api/short-urls` | POST | ❌ 未実装 | 短縮URL作成 |
+| `/api/short-urls/:shortId` | GET | ❌ 未実装 | 短縮URL解決 |
 
-#### フロントエンド
-- [ ] `web/src/components/room/PasswordDialog.tsx` - パスワード入力ダイアログ
-- [ ] パスワード付き部屋の入室フロー
+### フロントエンドの TODO コメント箇所
 
-### 2.2 権限管理機能
+| ファイル | 行 | 内容 |
+|----------|-----|------|
+| `web/src/pages/RoomPage.tsx` | 157 | `// TODO: Implement with SkyWay` (チャット) |
+| `web/src/pages/RoomPage.tsx` | 162 | `// TODO: Implement with SkyWay` (リアクション) |
+| `web/src/components/player/VideoSearch.tsx` | 42 | `// TODO: Replace with actual API call` |
+| `web/src/components/room/RoomList.tsx` | 5 | `// TODO: Replace with actual API call` |
+| `web/src/components/room/CreateRoomDialog.tsx` | 26 | `// TODO: Call API to create room` |
 
-#### フロントエンド
-- [ ] `web/src/hooks/usePermission.ts` - 権限管理フック
-- [ ] `web/src/components/room/RoomSettings.tsx` - 部屋設定パネル
-- [ ] 権限モード切り替えUI (creator/specific/all)
-- [ ] 個別ユーザーへの権限付与UI
-- [ ] PermissionMessage 送受信処理
+### バックエンドの TODO コメント箇所
 
-### 2.3 リアクション機能
-
-#### フロントエンド
-- [ ] `web/src/hooks/useReaction.ts` - リアクションロジック
-- [ ] `web/src/components/chat/ReactionPicker.tsx` - 絵文字選択
-- [ ] `web/src/components/player/ReactionOverlay.tsx` - 画面オーバーレイ
-- [ ] ReactionMessage 送受信処理
-- [ ] アニメーション実装（上から下に流れる）
-
-### 2.4 再生履歴機能
-
-#### フロントエンド
-- [ ] `web/src/components/player/PlayHistory.tsx` - 再生履歴パネル
-- [ ] Room Metadata への履歴保存
-- [ ] 履歴からの動画選択再生
-
-### 2.5 シェアURL機能
-
-#### フロントエンド
-- [ ] `web/src/components/room/ShareButton.tsx` - シェアボタン
-- [ ] クリップボードコピー機能
-- [ ] `/r/{shortId}` ルーティング対応
+| ファイル | 行 | 内容 |
+|----------|-----|------|
+| `internal/adapter/youtube_handler.go` | 35 | `// TODO: Implement YouTube Data API call` |
+| `internal/adapter/youtube_handler.go` | 62 | `// TODO: Implement YouTube Data API call` |
 
 ---
 
-## Phase 3: 管理・品質向上
+## 実装優先度マトリクス
 
-### 3.1 通報機能
-
-#### バックエンド
-- [ ] `internal/model/report.go` - Report モデル
-- [ ] `internal/repository/report_repository.go` - 通報DB操作
-- [ ] `internal/usecase/report_usecase.go` - 通報処理
-- [ ] `internal/adapter/report_handler.go` - POST /api/reports
-
-#### フロントエンド
-- [ ] `web/src/components/chat/ReportDialog.tsx` - 通報ダイアログ
-- [ ] チャットメッセージからの通報UI
-
-### 3.2 管理者ダッシュボード
-
-#### バックエンド
-- [ ] `internal/middleware/auth.go` - Basic認証ミドルウェア
-- [ ] `internal/adapter/admin_handler.go` - 管理者API
-- [ ] GET /api/admin/reports 実装
-- [ ] PUT /api/admin/reports/{id} 実装
-- [ ] GET /api/admin/bans 実装
-- [ ] POST /api/admin/bans 実装
-- [ ] DELETE /api/admin/bans/{user_id} 実装
-
-#### フロントエンド
-- [ ] `web/src/pages/AdminPage.tsx` - 管理者ダッシュボード
-- [ ] `web/src/components/admin/AdminDashboard.tsx` - ダッシュボード
-- [ ] `web/src/components/admin/ReportList.tsx` - 通報一覧
-- [ ] `web/src/components/admin/BanList.tsx` - BAN一覧
-- [ ] `web/src/components/admin/RoomManagement.tsx` - 部屋管理
-
-### 3.3 キック/BAN機能
-
-#### バックエンド
-- [ ] `internal/model/ban.go` - GlobalBan モデル
-- [ ] `internal/repository/ban_repository.go` - BAN DB操作
-- [ ] `internal/usecase/ban_usecase.go` - BAN管理
-- [ ] GET /api/bans/check/{user_id} 実装
-
-#### フロントエンド
-- [ ] ModerationMessage 送受信処理
-- [ ] キック通知表示
-- [ ] BAN確認処理（入室時）
-
-### 3.4 ダークモード対応
-
-#### フロントエンド
-- [ ] `web/src/hooks/useTheme.ts` - テーマ管理
-- [ ] `web/src/components/common/ThemeToggle.tsx` - 切り替えボタン
-- [ ] Tailwind CSS ダークモード設定
-- [ ] システム設定追従
-
-### 3.5 レスポンシブ対応
-
-#### フロントエンド
-- [ ] PC レイアウト（動画左 + チャット右）
-- [ ] モバイル レイアウト（動画上 + チャット下）
-- [ ] ブレークポイント設定
-
-### 3.6 画像アップロード
-
-#### バックエンド
-- [ ] `internal/service/r2_service.go` - Cloudflare R2連携
-- [ ] `internal/repository/r2_repository.go` - R2操作
-- [ ] `internal/usecase/upload_usecase.go` - アップロード処理
-- [ ] `internal/adapter/upload_handler.go` - POST /api/upload/icon
-- [ ] MIMEタイプ検証
-- [ ] サイズ制限 (1MB)
-
-#### フロントエンド
-- [ ] `web/src/components/user/UserProfile.tsx` - プロフィール設定
-- [ ] `web/src/components/user/UserAvatar.tsx` - アバター表示
-- [ ] `web/src/components/user/IconUploader.tsx` - アイコンアップロード
+| 優先度 | 機能 | 理由 | 工数目安 |
+|--------|------|------|---------|
+| 🔴 Critical | YouTube Player 統合 | MVP の核心機能 | 1日 |
+| 🔴 Critical | チャット接続 | 同時視聴体験に必須 | 0.5日 |
+| 🟠 High | ルーム作成 API | ユーザーがルームを作れない | 0.5日 |
+| 🟠 High | DB 接続確認 | 永続化に必須 | 0.5日 |
+| 🟡 Medium | 画像アップロード | UX 向上 | 1日 |
+| 🟢 Low | 管理者機能完成 | 運用フェーズで必要 | 1日 |
 
 ---
 
-## Phase 4: MSW・テスト・本番環境
+## 完了済み Phase (参考)
 
-### 4.1 MSW (Mock Service Worker)
+<details>
+<summary>Phase 0-4 (クリックで展開)</summary>
 
-- [ ] `web/mocks/browser.ts` - ブラウザ用セットアップ
-- [ ] `web/mocks/handlers.ts` - APIハンドラー定義
-- [ ] `web/mocks/fixtures/rooms.ts` - 部屋モックデータ
-- [ ] `web/mocks/fixtures/users.ts` - ユーザーモックデータ
-- [ ] `web/mocks/fixtures/videos.ts` - 動画モックデータ
-- [ ] `web/public/mockServiceWorker.js` - Service Worker
-- [ ] `web/src/main.tsx` - MSW初期化処理
+### Phase 0: プロジェクト初期化 ✅
 
-### 4.2 テスト
+- [x] `go.mod` - Goモジュール初期化
+- [x] `.env.example` - 環境変数テンプレート
+- [x] `.gitignore` - Git除外設定
+- [x] `Taskfile.yml` - タスクランナー定義
+- [x] `docker-compose.yml` - ローカル開発環境
+- [x] Docker設定ファイル
 
-#### バックエンド
-- [ ] ユニットテスト (usecase層)
-- [ ] 統合テスト (repository層)
-- [ ] APIテスト (handler層)
+### Phase 1: MVP基盤 ✅
 
-#### フロントエンド
-- [ ] Vitest設定
-- [ ] コンポーネントテスト (React Testing Library)
-- [ ] E2Eテスト (Playwright) - オプション
+- [x] TypeSpec API定義
+- [x] sqlc設定・スキーマ
+- [x] ogen設定
+- [x] orval設定
+- [x] バックエンド基盤 (config, middleware, handlers)
+- [x] SkyWay Token生成
+- [x] フロントエンド基盤 (Vite, TypeScript, Tailwind)
+- [x] 状態管理 (Zustand stores)
+- [x] SkyWay接続フック
+- [x] チャット基盤
 
-### 4.3 本番環境
+### Phase 2: コア機能 ✅
 
-- [ ] `docker-compose.prod.yml` - 本番環境
-- [ ] `docker/production/api-server.Dockerfile` - API本番用
-- [ ] `docker/production/web.Dockerfile` - Web本番用 (Nginx)
-- [ ] `docker/production/nginx.conf` - Nginx設定
-- [ ] CI/CD設定（GitHub Actions）
+- [x] パスワード保護UI
+- [x] 権限管理UI
+- [x] リアクション機能
+- [x] 再生履歴機能
+- [x] シェアURL機能
 
----
+### Phase 3: 管理・品質向上 ✅
 
-## 依存関係
+- [x] 通報ダイアログ
+- [x] 管理者ダッシュボードUI
+- [x] キック/BAN UI
+- [x] ダークモード
+- [x] レスポンシブ対応
+- [x] 画像アップロードUI
 
-### Go 依存パッケージ
-```
-github.com/ogen-go/ogen
-github.com/golang-jwt/jwt/v5
-github.com/google/uuid
-github.com/go-sql-driver/mysql
-golang.org/x/crypto/bcrypt
-github.com/aws/aws-sdk-go-v2 (R2用)
-google.golang.org/api/youtube/v3
-```
+### Phase 4: MSW・テスト・本番環境 ✅
 
-### npm 依存パッケージ
-```
-react, react-dom
-@tanstack/react-query
-axios
-zustand
-react-router-dom
-@skyway-sdk/room
-@skyway-sdk/token
-tailwindcss
-@radix-ui/react-* (shadcn/ui)
-msw
-vitest, @testing-library/react
-orval
-```
+- [x] MSW設定
+- [x] Vitest設定・テスト
+- [x] 本番用Docker設定
+- [x] GitHub Actions CI/CD
 
-### TypeSpec 依存パッケージ
-```
-@typespec/compiler
-@typespec/http
-@typespec/rest
-@typespec/openapi
-@typespec/openapi3
-```
+</details>
 
 ---
 
-## 実装順序ガイド
+## 更新履歴
 
-1. **Phase 0** → プロジェクト基盤
-2. **Phase 1.1** → コード生成パイプライン（ここで全体の型が決まる）
-3. **Phase 1.2** → バックエンドAPI
-4. **Phase 1.3** → フロントエンド基盤
-5. **Phase 1.4** → チャット（これでMVP完成）
-6. **Phase 2** → コア機能（優先度順に実装）
-7. **Phase 3** → 管理・品質（優先度順に実装）
-8. **Phase 4** → テスト・本番
-
-各Phaseは独立してデプロイ可能な単位になっています。
+- 2025-12-26: Phase 5 追加、完了済み Phase をまとめ
+- 2025-12-25: Phase 0-4 実装完了
