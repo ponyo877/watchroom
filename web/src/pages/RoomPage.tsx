@@ -73,7 +73,8 @@ export default function RoomPage() {
     return () => {
       roomStore.reset();
     };
-  }, [roomStore]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleVerifyPassword = async (password: string): Promise<boolean> => {
     if (!actualRoomId) return false;

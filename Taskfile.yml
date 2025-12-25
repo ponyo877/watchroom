@@ -135,6 +135,12 @@ tasks:
     cmds:
       - pnpm test
 
+  web:build:
+    desc: フロントエンドをビルド
+    dir: "{{.WEB_DIR}}"
+    cmds:
+      - pnpm build
+
   # Build & Production
   build:
     desc: 本番用ビルド
