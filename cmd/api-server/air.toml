@@ -1,17 +1,17 @@
-root = "../.."
+root = "."
 tmp_dir = "tmp"
 
 [build]
   bin = "./tmp/api-server"
   cmd = "go build -o ./tmp/api-server ./cmd/api-server"
   delay = 1000
-  exclude_dir = ["tmp", "vendor", "web", "node_modules", "typespec", "docker"]
+  exclude_dir = ["tmp", "vendor", "web", "node_modules", "typespec", "docker", ".git"]
   exclude_file = []
   exclude_regex = ["_test\\.go$", "_gen\\.go$"]
   exclude_unchanged = true
   follow_symlink = false
   full_bin = ""
-  include_dir = []
+  include_dir = ["cmd", "internal", "db"]
   include_ext = ["go", "tpl", "tmpl", "html"]
   include_file = []
   kill_delay = "0s"

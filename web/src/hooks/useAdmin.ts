@@ -26,14 +26,17 @@ export interface BannedUser {
 }
 
 interface UseAdminOptions {
-  adminSecret: string;
+  username: string;
+  password: string;
 }
 
-export function useAdmin({ adminSecret }: UseAdminOptions) {
+export function useAdmin({ username, password }: UseAdminOptions) {
   const [reports, setReports] = useState<Report[]>([]);
   const [bans, setBans] = useState<BannedUser[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const authHeader = `Basic ${btoa(`${username}:${password}`)}`;
 
   const fetchReports = useCallback(async () => {
     setIsLoading(true);
@@ -42,7 +45,7 @@ export function useAdmin({ adminSecret }: UseAdminOptions) {
     try {
       const response = await fetch('/api/admin/reports', {
         headers: {
-          'X-Admin-Secret': adminSecret,
+          Authorization: authHeader,
         },
       });
 
@@ -61,7 +64,7 @@ export function useAdmin({ adminSecret }: UseAdminOptions) {
     } finally {
       setIsLoading(false);
     }
-  }, [adminSecret]);
+  }, [authHeader]);
 
   const fetchBans = useCallback(async () => {
     setIsLoading(true);
@@ -70,7 +73,7 @@ export function useAdmin({ adminSecret }: UseAdminOptions) {
     try {
       const response = await fetch('/api/admin/bans', {
         headers: {
-          'X-Admin-Secret': adminSecret,
+          Authorization: authHeader,
         },
       });
 
@@ -89,16 +92,16 @@ export function useAdmin({ adminSecret }: UseAdminOptions) {
     } finally {
       setIsLoading(false);
     }
-  }, [adminSecret]);
+  }, [authHeader]);
 
   const updateReportStatus = useCallback(
     async (reportId: string, status: Report['status']): Promise<boolean> => {
       try {
         const response = await fetch(`/api/admin/reports/${reportId}`, {
-          method: 'PATCH',
+          method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
-            'X-Admin-Secret': adminSecret,
+            Authorization: authHeader,
           },
           body: JSON.stringify({ status }),
         });
@@ -113,7 +116,7 @@ export function useAdmin({ adminSecret }: UseAdminOptions) {
         return false;
       }
     },
-    [adminSecret]
+    [authHeader]
   );
 
   const banUser = useCallback(
@@ -127,7 +130,7 @@ export function useAdmin({ adminSecret }: UseAdminOptions) {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'X-Admin-Secret': adminSecret,
+            Authorization: authHeader,
           },
           body: JSON.stringify({
             user_id: userId,
@@ -146,36 +149,36 @@ export function useAdmin({ adminSecret }: UseAdminOptions) {
         return false;
       }
     },
-    [adminSecret, fetchBans]
+    [authHeader, fetchBans]
   );
 
   const unbanUser = useCallback(
-    async (banId: string): Promise<boolean> => {
+    async (userId: string): Promise<boolean> => {
       try {
-        const response = await fetch(`/api/admin/bans/${banId}`, {
+        const response = await fetch(`/api/admin/bans/${userId}`, {
           method: 'DELETE',
           headers: {
-            'X-Admin-Secret': adminSecret,
+            Authorization: authHeader,
           },
         });
 
         if (!response.ok) return false;
 
-        setBans((prev) => prev.filter((b) => b.id !== banId));
+        setBans((prev) => prev.filter((b) => b.userId !== userId));
         return true;
       } catch {
         return false;
       }
     },
-    [adminSecret]
+    [authHeader]
   );
 
   useEffect(() => {
-    if (adminSecret) {
+    if (username && password) {
       fetchReports();
       fetchBans();
     }
-  }, [adminSecret, fetchReports, fetchBans]);
+  }, [username, password, fetchReports, fetchBans]);
 
   return {
     reports,

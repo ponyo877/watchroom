@@ -1,11 +1,11 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useRoomStore } from '@/stores/roomStore';
 import { useUserStore } from '@/stores/userStore';
 import { useSkyWay } from './useSkyWay';
 import { useChat } from './useChat';
 import { useReaction } from './useReaction';
-import type { DataStreamMessage, SyncMessage } from '@/types/message';
+import type { DataStreamMessage, SyncMessage, ChatMessage, ReactionMessage } from '@/types/message';
 
 interface UseRoomOptions {
   roomId: string;
@@ -18,18 +18,25 @@ export function useRoom({ roomId }: UseRoomOptions) {
   const [error, setError] = useState<string | null>(null);
 
   const userId = useUserStore((state) => state.id);
-  const roomStore = useRoomStore();
+  // Get store actions without subscribing to state changes
+  const roomStoreActions = useRef(useRoomStore.getState()).current;
 
+  // Message handler refs to avoid stale closures
+  const handleSyncMessageRef = useRef<(message: SyncMessage) => void>(() => {});
+  const handleChatMessageRef = useRef<(message: ChatMessage) => void>(() => {});
+  const handleReactionMessageRef = useRef<(message: ReactionMessage) => void>(() => {});
+
+  // Main message handler that uses refs
   const handleMessage = useCallback((message: DataStreamMessage) => {
     switch (message.type) {
       case 'sync':
-        handleSyncMessage(message);
+        handleSyncMessageRef.current(message as SyncMessage);
         break;
       case 'chat':
-        handleChatMessage(message);
+        handleChatMessageRef.current(message as ChatMessage);
         break;
       case 'reaction':
-        handleReactionMessage(message);
+        handleReactionMessageRef.current(message as ReactionMessage);
         break;
     }
   }, []);
@@ -53,6 +60,17 @@ export function useRoom({ roomId }: UseRoomOptions) {
     onSendReaction: (msg) => sendMessage(msg),
   });
 
+  // Update chat message handler ref
+  useEffect(() => {
+    handleChatMessageRef.current = handleChatMessage;
+  }, [handleChatMessage]);
+
+  // Update reaction message handler ref
+  useEffect(() => {
+    handleReactionMessageRef.current = handleReactionMessage;
+  }, [handleReactionMessage]);
+
+  // Sync message handler
   const handleSyncMessage = useCallback(
     (message: SyncMessage) => {
       if (message.senderId === userId) return;
@@ -61,34 +79,34 @@ export function useRoom({ roomId }: UseRoomOptions) {
 
       switch (action) {
         case 'play':
-          roomStore.setPlaybackState({
+          roomStoreActions.setPlaybackState({
             isPlaying: true,
             currentTime: payload.currentTime ?? 0,
             lastUpdated: message.timestamp,
           });
           break;
         case 'pause':
-          roomStore.setPlaybackState({
+          roomStoreActions.setPlaybackState({
             isPlaying: false,
             currentTime: payload.currentTime ?? 0,
             lastUpdated: message.timestamp,
           });
           break;
         case 'seek':
-          roomStore.setPlaybackState({
+          roomStoreActions.setPlaybackState({
             currentTime: payload.currentTime ?? 0,
             lastUpdated: message.timestamp,
           });
           break;
         case 'rate':
-          roomStore.setPlaybackState({
+          roomStoreActions.setPlaybackState({
             playbackRate: payload.playbackRate ?? 1,
             lastUpdated: message.timestamp,
           });
           break;
         case 'video':
           if (payload.videoId) {
-            roomStore.setCurrentVideo({
+            roomStoreActions.setCurrentVideo({
               videoId: payload.videoId,
               title: payload.title ?? '',
               thumbnail: payload.thumbnail ?? '',
@@ -97,8 +115,13 @@ export function useRoom({ roomId }: UseRoomOptions) {
           break;
       }
     },
-    [userId, roomStore]
+    [userId, roomStoreActions]
   );
+
+  // Update sync message handler ref
+  useEffect(() => {
+    handleSyncMessageRef.current = handleSyncMessage;
+  }, [handleSyncMessage]);
 
   const fetchToken = useCallback(async () => {
     try {
@@ -131,9 +154,9 @@ export function useRoom({ roomId }: UseRoomOptions) {
   }, [userId, roomId]);
 
   const leaveRoom = useCallback(() => {
-    roomStore.reset();
+    roomStoreActions.reset();
     navigate('/');
-  }, [roomStore, navigate]);
+  }, [roomStoreActions, navigate]);
 
   useEffect(() => {
     if (userId) {

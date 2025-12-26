@@ -20,6 +20,7 @@ type Handler struct {
 	reportRepo     *repository.ReportRepository
 	banRepo        *repository.BanRepository
 	youtubeService *service.YouTubeService
+	uploadService  *service.UploadService
 }
 
 func NewHandler(cfg *config.Config, db *sql.DB) *Handler {
@@ -30,6 +31,13 @@ func NewHandler(cfg *config.Config, db *sql.DB) *Handler {
 
 	skyWayService := service.NewSkyWayService(cfg.SkyWay.AppID, cfg.SkyWay.SecretKey)
 	youtubeService, _ := service.NewYouTubeService(cfg.YouTube.APIKey)
+	uploadService, _ := service.NewUploadService(
+		cfg.R2.AccountID,
+		cfg.R2.AccessKeyID,
+		cfg.R2.SecretAccessKey,
+		cfg.R2.BucketName,
+		cfg.R2.PublicURL,
+	)
 	authUsecase := usecase.NewAuthUsecase(skyWayService)
 	roomUsecase := usecase.NewRoomUsecase(roomRepo, shortURLRepo)
 
@@ -43,6 +51,7 @@ func NewHandler(cfg *config.Config, db *sql.DB) *Handler {
 		reportRepo:     reportRepo,
 		banRepo:        banRepo,
 		youtubeService: youtubeService,
+		uploadService:  uploadService,
 	}
 }
 

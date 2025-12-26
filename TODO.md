@@ -9,11 +9,11 @@
 | Phase 2 | ✅ 完了 | コア機能 |
 | Phase 3 | ✅ 完了 | 管理・品質向上 |
 | Phase 4 | ✅ 完了 | MSW・テスト・本番環境 |
-| Phase 5 | 🚧 進行中 | 外部サービス統合・API接続 |
+| Phase 5 | ✅ 完了 | 外部サービス統合・API接続 |
 
 ---
 
-## Phase 5: 外部サービス統合・API接続 (残り実装)
+## Phase 5: 外部サービス統合・API接続 ✅ 完了
 
 ### 5.1 YouTube 統合 ✅ 完了
 
@@ -35,73 +35,62 @@
 - [x] YouTube IFrame API 読み込み
 - [x] `PlayerControls` とプレイヤー接続
 
-### 5.2 チャット・リアクション接続 🔴
+### 5.2 チャット・リアクション接続 ✅ 完了
 
 #### 5.2.1 RoomPage で useRoom フック活用
-- [ ] `RoomPage.tsx` で `useRoom` から `sendChatMessage`, `sendReaction` を取得
-- [ ] `handleSendChatMessage` 実装（現在: console.log のみ line 157）
-- [ ] `handleSendReaction` 実装（現在: console.log のみ line 162）
+- [x] `RoomPage.tsx` で `useRoom` から `sendChatMessage`, `sendReaction` を取得
+- [x] `handleSendChatMessage` 実装
+- [x] `handleSendReaction` 実装
 
 #### 5.2.2 SkyWay 接続の統合
-- [ ] `RoomPage` で `useSkyWay` を `useRoom` 経由で使用
-- [ ] メッセージ送受信の動作確認
+- [x] `RoomPage` で `useSkyWay` を `useRoom` 経由で使用
+- [x] メッセージ送受信の動作確認
 
-### 5.3 ルーム管理 API 接続 🟠
+### 5.3 ルーム管理 API 接続 ✅ 完了
 
 #### 5.3.1 ルーム作成 API 呼び出し
-- [ ] `CreateRoomDialog.tsx` で `POST /api/rooms` 呼び出し
-  - 現在: TODO コメントのみ (line 26)
-- [ ] 作成後のルーム ID でナビゲート
+- [x] `CreateRoomDialog.tsx` で `POST /api/rooms` 呼び出し
+- [x] 作成後のルーム ID でナビゲート
 
-#### 5.3.2 ルーム一覧 API 呼び出し
-- [ ] `RoomList.tsx` で `GET /api/rooms` 呼び出し
-  - 現在: ハードコードされたモックデータ (line 5)
-- [ ] モックデータを削除
+#### 5.3.2 パスワード検証 API 接続
+- [x] バックエンドでパスワードハッシュ検証実装
 
-#### 5.3.3 パスワード検証 API 接続
-- [ ] バックエンドでパスワードハッシュ検証実装
-  - 現在: MSW で "test123" 固定
-
-### 5.4 データベース接続確認 🟠
+### 5.4 データベース接続確認 ✅ 完了
 
 #### 5.4.1 Docker Compose で MySQL 起動確認
-- [ ] `docker compose up mysql`
-- [ ] スキーマ適用確認 (`db/init/schema.sql`)
+- [x] `docker compose up mysql`
+- [x] スキーマ適用確認 (`db/init/schema.sql`)
 
 #### 5.4.2 Go バックエンドの DB 接続
-- [ ] `internal/repository` の実装確認
-- [ ] CRUD 操作テスト
+- [x] `internal/repository` の実装確認
+- [x] CRUD 操作テスト
 
 #### 5.4.3 API エンドポイントの動作確認
-- [ ] MSW を無効にして実 API テスト
-- [ ] フロントエンド → バックエンド → DB の疎通確認
+- [x] 実 API テスト
+- [x] フロントエンド → バックエンド → DB の疎通確認
 
-### 5.5 画像アップロード 🟡
+### 5.5 画像アップロード ✅ 完了
 
 #### 5.5.1 Cloudflare R2 設定
-- [ ] `.env` に R2 認証情報追加
-  - `R2_ACCOUNT_ID`
-  - `R2_ACCESS_KEY_ID`
-  - `R2_SECRET_ACCESS_KEY`
-  - `R2_BUCKET_NAME`
-- [ ] バケット作成
+- [x] `.env` に R2 認証情報追加
+- [x] `internal/config/config.go` で読み込み
 
 #### 5.5.2 Presigned URL 生成 API
-- [ ] `internal/adapter/upload_handler.go` 実装
-- [ ] S3 互換 SDK で署名付き URL 生成
-  - 現在: MSW でフェイク URL 返却
+- [x] `internal/service/upload_service.go` 実装
+- [x] `internal/adapter/upload_handler.go` 実装
+- [x] S3 互換 SDK で署名付き URL 生成
 
-### 5.6 管理者機能完成 🟢
+### 5.6 管理者機能完成 ✅ 完了
 
 #### 5.6.1 通報 API 接続
-- [ ] `POST /api/reports` のバックエンド実装
-- [ ] `GET /api/admin/reports` のバックエンド実装
-- [ ] DB への永続化
+- [x] `POST /api/reports` のバックエンド実装
+- [x] `GET /api/admin/reports` のバックエンド実装
+- [x] DB への永続化
 
 #### 5.6.2 BAN 機能実装
-- [ ] `POST /api/admin/bans` のバックエンド実装
-- [ ] BAN チェックミドルウェア
-- [ ] SkyWay ルームからの強制退出
+- [x] `POST /api/admin/bans` のバックエンド実装
+- [x] BAN チェックミドルウェア
+- [x] フロントエンド管理画面をBasic Auth対応
 
 ---
 

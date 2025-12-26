@@ -2,10 +2,15 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { X } from 'lucide-react';
 import { generateId } from '@/lib/utils';
+import axiosInstance from '@/lib/api';
 
 interface CreateRoomDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+}
+
+interface CreateRoomResponse {
+  short_id: string;
 }
 
 export default function CreateRoomDialog({
@@ -16,19 +21,27 @@ export default function CreateRoomDialog({
   const [roomName, setRoomName] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
+    setError(null);
 
     try {
       const roomId = generateId();
-      // TODO: Call API to create room
-      console.log('Creating room:', { roomId, roomName, password });
-      navigate(`/room/${roomId}`);
+
+      const response = await axiosInstance.post<CreateRoomResponse>('/api/rooms', {
+        room_id: roomId,
+        password: password || undefined,
+      });
+
+      // Navigate to the room using the short ID
+      navigate(`/r/${response.data.short_id}`);
       onOpenChange(false);
-    } catch (error) {
-      console.error('Failed to create room:', error);
+    } catch (err) {
+      console.error('Failed to create room:', err);
+      setError('部屋の作成に失敗しました');
     } finally {
       setIsLoading(false);
     }
@@ -90,6 +103,10 @@ export default function CreateRoomDialog({
               パスワードを設定すると、入室時に必要になります
             </p>
           </div>
+
+          {error && (
+            <p className="text-sm text-destructive">{error}</p>
+          )}
 
           <div className="flex gap-3 pt-2">
             <button

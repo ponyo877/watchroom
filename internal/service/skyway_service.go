@@ -47,10 +47,9 @@ func (s *SkyWayService) GenerateToken(userID string, roomName *string) (string, 
 	}
 
 	claims := jwt.MapClaims{
-		"jti":     uuid.New().String(),
-		"iat":     now.Unix(),
-		"exp":     expiresAt.Unix(),
-		"version": 3,
+		"jti": uuid.New().String(),
+		"iat": now.Unix(),
+		"exp": expiresAt.Unix(),
 		"scope": map[string]interface{}{
 			"app": map[string]interface{}{
 				"id":       s.appID,

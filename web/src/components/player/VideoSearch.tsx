@@ -1,5 +1,7 @@
 import { useState } from 'react';
 import { Search, X } from 'lucide-react';
+import axiosInstance from '@/lib/api';
+import { formatDuration } from '@/lib/youtube';
 import type { YouTubeVideo } from '@/types/youtube';
 
 interface VideoSearchProps {
@@ -7,42 +9,56 @@ interface VideoSearchProps {
   onClose: () => void;
 }
 
-// Mock search results for now
-const mockResults: YouTubeVideo[] = [
-  {
-    videoId: 'dQw4w9WgXcQ',
-    title: 'Rick Astley - Never Gonna Give You Up',
-    description: 'The official music video',
-    thumbnail: 'https://i.ytimg.com/vi/dQw4w9WgXcQ/mqdefault.jpg',
-    channelTitle: 'Rick Astley',
-    publishedAt: '2009-10-25',
-    duration: 'PT3M33S',
-  },
-  {
-    videoId: 'jNQXAC9IVRw',
-    title: 'Me at the zoo',
-    description: 'The first video on YouTube',
-    thumbnail: 'https://i.ytimg.com/vi/jNQXAC9IVRw/mqdefault.jpg',
-    channelTitle: 'jawed',
-    publishedAt: '2005-04-23',
-    duration: 'PT0M18S',
-  },
-];
+interface APIVideoResponse {
+  video_id: string;
+  title: string;
+  description: string;
+  thumbnail: string;
+  channel_title: string;
+  published_at: string;
+  duration: string;
+}
+
+interface APISearchResponse {
+  items: APIVideoResponse[];
+  next_page_token?: string;
+}
 
 export default function VideoSearch({ onSelectVideo, onClose }: VideoSearchProps) {
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<YouTubeVideo[]>([]);
   const [isSearching, setIsSearching] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!query.trim()) return;
 
     setIsSearching(true);
-    // TODO: Replace with actual API call
-    await new Promise((resolve) => setTimeout(resolve, 500));
-    setResults(mockResults);
-    setIsSearching(false);
+    setError(null);
+
+    try {
+      const response = await axiosInstance.get<APISearchResponse>('/api/youtube/search', {
+        params: { q: query, max_results: 10 },
+      });
+
+      const videos: YouTubeVideo[] = response.data.items.map((item) => ({
+        videoId: item.video_id,
+        title: item.title,
+        description: item.description,
+        thumbnail: item.thumbnail,
+        channelTitle: item.channel_title,
+        publishedAt: item.published_at,
+        duration: item.duration,
+      }));
+
+      setResults(videos);
+    } catch (err) {
+      console.error('Failed to search videos:', err);
+      setError('動画の検索に失敗しました');
+    } finally {
+      setIsSearching(false);
+    }
   };
 
   return (
@@ -76,9 +92,11 @@ export default function VideoSearch({ onSelectVideo, onClose }: VideoSearchProps
         </form>
 
         <div className="flex-1 overflow-y-auto p-4">
-          {results.length === 0 ? (
+          {error ? (
+            <p className="text-center text-destructive">{error}</p>
+          ) : results.length === 0 ? (
             <p className="text-center text-muted-foreground">
-              検索結果がありません
+              検索キーワードを入力してください
             </p>
           ) : (
             <div className="space-y-3">
@@ -99,7 +117,7 @@ export default function VideoSearch({ onSelectVideo, onClose }: VideoSearchProps
                       {video.channelTitle}
                     </p>
                     <p className="text-xs text-muted-foreground">
-                      {video.duration}
+                      {video.duration ? formatDuration(video.duration) : ''}
                     </p>
                   </div>
                 </button>

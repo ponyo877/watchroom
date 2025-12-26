@@ -53,12 +53,12 @@ export function useVideoSync({ elementId, onSendSync }: UseVideoSyncOptions) {
     [hasControlPermission, sendSyncMessage]
   );
 
-  const initializePlayer = useCallback(async () => {
+  const initializePlayer = useCallback(async (videoId: string) => {
     try {
       const ytPlayer = await createPlayer(elementId, {
         height: '100%',
         width: '100%',
-        videoId: currentVideo?.videoId,
+        videoId,
         playerVars: {
           autoplay: 0,
           controls: 1,
@@ -78,7 +78,7 @@ export function useVideoSync({ elementId, onSendSync }: UseVideoSyncOptions) {
     } catch (e) {
       console.error('Failed to initialize player:', e);
     }
-  }, [elementId, currentVideo?.videoId, handleStateChange]);
+  }, [elementId, handleStateChange]);
 
   const syncToState = useCallback(
     (state: typeof playbackState) => {
@@ -147,20 +147,34 @@ export function useVideoSync({ elementId, onSendSync }: UseVideoSyncOptions) {
 
   const loadVideo = useCallback(
     (videoId: string, title?: string, thumbnail?: string) => {
-      if (!player || !hasControlPermission) return;
+      if (!player || !isReady || !hasControlPermission) return;
       player.loadVideoById(videoId);
       sendSyncMessage('video', { videoId, title, thumbnail });
     },
-    [player, hasControlPermission, sendSyncMessage]
+    [player, isReady, hasControlPermission, sendSyncMessage]
   );
 
-  // Initialize player
+  // Initialize or update player when video changes
   useEffect(() => {
-    initializePlayer();
+    const videoId = currentVideo?.videoId;
+    if (!videoId) return;
+
+    if (player && isReady) {
+      // Player exists and is ready, load the new video
+      player.loadVideoById(videoId);
+    } else if (!player) {
+      // No player yet, initialize it
+      initializePlayer(videoId);
+    }
+    // If player exists but not ready, wait for onReady callback
+  }, [currentVideo?.videoId, player, isReady, initializePlayer]);
+
+  // Cleanup on unmount
+  useEffect(() => {
     return () => {
       player?.destroy();
     };
-  }, [initializePlayer, player]);
+  }, [player]);
 
   // Sync to remote state
   useEffect(() => {
@@ -168,13 +182,6 @@ export function useVideoSync({ elementId, onSendSync }: UseVideoSyncOptions) {
       syncToState(playbackState);
     }
   }, [playbackState, syncToState]);
-
-  // Load video when it changes
-  useEffect(() => {
-    if (player && currentVideo?.videoId) {
-      player.loadVideoById(currentVideo.videoId);
-    }
-  }, [player, currentVideo?.videoId]);
 
   return {
     player,

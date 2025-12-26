@@ -13,6 +13,7 @@ import { useUserStore } from '@/stores/userStore';
 import { useShortUrl } from '@/hooks/useShortUrl';
 import { useModeration } from '@/hooks/useModeration';
 import { useVideoSync } from '@/hooks/useVideoSync';
+import { useRoom } from '@/hooks/useRoom';
 import ChatPanel from '@/components/chat/ChatPanel';
 import ReactionPicker from '@/components/chat/ReactionPicker';
 import ReactionOverlay from '@/components/player/ReactionOverlay';
@@ -64,11 +65,24 @@ export default function RoomPage() {
   // Player element ID
   const playerElementId = useRef(`youtube-player-${Date.now()}`);
 
+  // SkyWay room connection
+  const {
+    isConnected,
+    isLoading: isRoomLoading,
+    error: roomError,
+    sendChatMessage: skySendChat,
+    sendReaction: skySendReaction,
+    sendMessage: skySendMessage,
+  } = useRoom({
+    roomId: actualRoomId || '',
+  });
+
   // Video sync hook
-  const handleSendSync = useCallback((_message: SyncMessage) => {
-    // TODO: Send via SkyWay when connected
-    console.log('Sync message:', _message);
-  }, []);
+  const handleSendSync = useCallback((message: SyncMessage) => {
+    if (isConnected) {
+      skySendMessage(message);
+    }
+  }, [isConnected, skySendMessage]);
 
   const {
     player,
@@ -106,6 +120,15 @@ export default function RoomPage() {
       setHasPassword(true);
     }
   }, [roomInfo, isPasswordVerified]);
+
+  // Set control permission when not connected (for testing without SkyWay)
+  useEffect(() => {
+    if (!isConnected) {
+      roomStore.setHasControlPermission(true);
+      roomStore.setIsCreator(true);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isConnected]);
 
   // Cleanup on unmount
   useEffect(() => {
@@ -184,23 +207,42 @@ export default function RoomPage() {
   };
 
   const handleSelectVideo = useCallback((video: YouTubeVideo) => {
+    // Update local store
     roomStore.setCurrentVideo({
       videoId: video.videoId,
       title: video.title,
       thumbnail: video.thumbnail,
     });
+
+    // Send sync message to other users
+    if (isConnected && roomStore.hasControlPermission) {
+      const syncMessage: SyncMessage = {
+        type: 'sync',
+        action: 'video',
+        payload: {
+          videoId: video.videoId,
+          title: video.title,
+          thumbnail: video.thumbnail,
+        },
+        senderId: userId,
+        timestamp: Date.now(),
+      };
+      skySendMessage(syncMessage);
+    }
+
     setShowVideoSearch(false);
-  }, [roomStore]);
+  }, [roomStore, isConnected, userId, skySendMessage]);
 
   const handleSendChatMessage = useCallback((text: string) => {
-    // TODO: Implement with SkyWay
-    console.log('Send chat message:', text);
-  }, []);
+    if (isConnected) {
+      skySendChat(text);
+    }
+  }, [isConnected, skySendChat]);
 
   const handleSendReaction = useCallback((emoji: string) => {
-    // TODO: Implement with SkyWay
-    console.log('Send reaction:', emoji);
-  }, []);
+    // useReaction hook handles adding to local state
+    skySendReaction(emoji);
+  }, [skySendReaction]);
 
   const handleLeaveRoom = useCallback(() => {
     roomStore.reset();
@@ -232,20 +274,20 @@ export default function RoomPage() {
   );
 
   // Loading state
-  if (isResolvingShortUrl) {
+  if (isResolvingShortUrl || isRoomLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
-        <Loading size="lg" text="部屋を読み込み中..." />
+        <Loading size="lg" text={isResolvingShortUrl ? "部屋を読み込み中..." : "接続中..."} />
       </div>
     );
   }
 
   // Error state
-  if (shortUrlError) {
+  if (shortUrlError || roomError) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
-          <p className="text-xl text-foreground mb-4">{shortUrlError}</p>
+          <p className="text-xl text-foreground mb-4">{shortUrlError || roomError}</p>
           <button
             onClick={() => navigate('/')}
             className="px-4 py-2 bg-primary text-primary-foreground rounded-md"
@@ -276,7 +318,7 @@ export default function RoomPage() {
         {/* Main content */}
         <main className="flex-1 flex flex-col">
           {/* Header */}
-          <header className="h-14 border-b border-border bg-card flex items-center justify-between px-2 md:px-4">
+          <header className="h-14 border-b border-border bg-card flex items-center justify-between px-2 md:px-4 relative z-10">
             <div className="flex items-center gap-2 md:gap-4 min-w-0">
               <button
                 onClick={handleLeaveRoom}
@@ -330,7 +372,7 @@ export default function RoomPage() {
           </header>
 
           {/* Video player */}
-          <div className="flex-1 relative bg-black">
+          <div className="flex-1 relative bg-black overflow-hidden">
             {/* YouTube Player Container */}
             <div
               id={playerElementId.current}
@@ -358,7 +400,7 @@ export default function RoomPage() {
           </div>
 
           {/* Player controls */}
-          <div className="h-16 border-t border-border bg-card">
+          <div className="h-16 border-t border-border bg-card relative z-10">
             <PlayerControls
               isPlaying={isPlaying}
               currentTime={currentTime}
@@ -385,7 +427,7 @@ export default function RoomPage() {
           </div>
 
           {/* Mobile bottom navigation */}
-          <div className="h-14 border-t border-border bg-card flex items-center justify-around md:hidden">
+          <div className="h-14 border-t border-border bg-card flex items-center justify-around md:hidden relative z-10">
             <button
               onClick={() => setShowMobileChat(true)}
               className="flex flex-col items-center gap-1 p-2"

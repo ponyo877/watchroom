@@ -1,7 +1,9 @@
 FROM golang:1.23-alpine
 
-RUN apk add --no-cache git gcc musl-dev
-RUN go install github.com/air-verse/air@latest
+# Use http for apk to avoid Docker Desktop SSL issues in local development
+RUN sed -i 's/https/http/' /etc/apk/repositories && \
+    apk add --no-cache git gcc musl-dev
+RUN go install github.com/air-verse/air@v1.61.7
 
 WORKDIR /app
 

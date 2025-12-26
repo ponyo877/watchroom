@@ -61,7 +61,7 @@ services:
     ports:
       - "5173:5173"
     environment:
-      VITE_API_BASE_URL: http://localhost:8080
+      VITE_API_BASE_URL: http://api-server:8080
       VITE_ENABLE_MSW: ${VITE_ENABLE_MSW:-false}
     volumes:
       - ./web:/app

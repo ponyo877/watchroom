@@ -93,6 +93,9 @@ func main() {
 		handler.HandleGetVideo(w, r, videoID)
 	})
 
+	// Upload routes
+	mux.HandleFunc("/api/uploads/presign", handler.HandlePresignUpload)
+
 	// Report routes
 	mux.HandleFunc("/api/reports", handler.HandleCreateReport)
 

@@ -1,7 +1,7 @@
 import axios, { AxiosRequestConfig, AxiosResponse } from 'axios';
 
 export const axiosInstance = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080',
+  baseURL: '', // Use relative URLs to go through Vite proxy
   timeout: 10000,
   headers: {
     'Content-Type': 'application/json',

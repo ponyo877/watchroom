@@ -33,9 +33,12 @@ export function useSkyWay({ roomName, token, onMessage }: UseSkyWayOptions) {
   const roomRef = useRef<P2PRoom | null>(null);
   const memberRef = useRef<LocalP2PRoomMember | null>(null);
   const dataStreamRef = useRef<LocalDataStream | null>(null);
+  const isConnectingRef = useRef(false);
+  const subscribedPublicationsRef = useRef<Set<string>>(new Set());
 
   const user = useUserStore();
-  const roomStore = useRoomStore();
+  // Get store actions without subscribing to state changes
+  const roomStoreActions = useRef(useRoomStore.getState()).current;
 
   const sendMessage = useCallback((message: DataStreamMessage) => {
     if (dataStreamRef.current) {
@@ -79,22 +82,40 @@ export function useSkyWay({ roomName, token, onMessage }: UseSkyWayOptions) {
 
   const subscribeToMember = useCallback(
     async (publication: RoomPublication) => {
+      // Skip non-data streams
       if (publication.contentType !== 'data') return;
+      // Skip own publications
+      if (publication.publisher.id === memberRef.current?.id) return;
+      // Skip already subscribed publications
+      if (subscribedPublicationsRef.current.has(publication.id)) return;
 
-      const subscription = await memberRef.current?.subscribe(publication.id);
-      if (!subscription) return;
+      try {
+        subscribedPublicationsRef.current.add(publication.id);
+        const subscription = await memberRef.current?.subscribe(publication.id);
+        if (!subscription) return;
 
-      const stream = subscription.stream as RemoteDataStream;
-      stream.onData.add((data) => {
-        if (typeof data === 'string') {
-          handleDataStreamMessage(data);
-        }
-      });
+        const stream = subscription.stream as RemoteDataStream;
+        stream.onData.add((data) => {
+          if (typeof data === 'string') {
+            handleDataStreamMessage(data);
+          }
+        });
+      } catch (e) {
+        console.warn('Failed to subscribe to publication:', e);
+        // Remove from set if subscription failed
+        subscribedPublicationsRef.current.delete(publication.id);
+      }
     },
     [handleDataStreamMessage]
   );
 
   const connect = useCallback(async () => {
+    // Prevent multiple simultaneous connection attempts
+    if (isConnectingRef.current || contextRef.current) {
+      return;
+    }
+    isConnectingRef.current = true;
+
     try {
       setError(null);
 
@@ -104,11 +125,14 @@ export function useSkyWay({ roomName, token, onMessage }: UseSkyWayOptions) {
       const room = await findOrCreateRoom(context, roomName);
       roomRef.current = room;
 
+      // Check if creator BEFORE joining (members array doesn't include us yet)
+      const isCreator = room.members.length === 0;
+
       const memberMetadata: MemberMetadata = {
         id: user.id,
         name: user.name,
         iconUrl: user.iconUrl,
-        isCreator: room.members.length === 0,
+        isCreator,
       };
 
       const member = await room.join({
@@ -135,20 +159,20 @@ export function useSkyWay({ roomName, token, onMessage }: UseSkyWayOptions) {
       room.onMemberJoined.add((e) => {
         const metadata = parseMemberMetadata(e.member.metadata);
         if (metadata) {
-          roomStore.addMember(metadata);
+          roomStoreActions.addMember(metadata);
         }
       });
 
       room.onMemberLeft.add((e) => {
-        roomStore.removeMember(e.member.id);
+        roomStoreActions.removeMember(e.member.id);
       });
 
       // Listen for metadata changes
       room.onMetadataUpdated.add(() => {
         const metadata = parseRoomMetadata(room.metadata);
         if (metadata) {
-          roomStore.setCurrentVideo(metadata.currentVideo);
-          roomStore.setPlaybackState(metadata.playbackState);
+          roomStoreActions.setCurrentVideo(metadata.currentVideo);
+          roomStoreActions.setPlaybackState(metadata.playbackState);
         }
       });
 
@@ -156,20 +180,24 @@ export function useSkyWay({ roomName, token, onMessage }: UseSkyWayOptions) {
       const members = room.members
         .map((m) => parseMemberMetadata(m.metadata))
         .filter((m): m is MemberMetadata => m !== null);
-      roomStore.setMembers(members);
+      roomStoreActions.setMembers(members);
 
       // Set creator status
-      roomStore.setIsCreator(memberMetadata.isCreator);
-      roomStore.setHasControlPermission(memberMetadata.isCreator);
+      roomStoreActions.setIsCreator(isCreator);
+      // For now, give all users control permission for video sync to work
+      // TODO: Implement proper permission system based on room settings
+      roomStoreActions.setHasControlPermission(true);
 
       setIsConnected(true);
-      roomStore.setIsConnected(true);
+      roomStoreActions.setIsConnected(true);
     } catch (e) {
       const error = e instanceof Error ? e : new Error('Failed to connect');
       setError(error);
       console.error('SkyWay connection error:', e);
+    } finally {
+      isConnectingRef.current = false;
     }
-  }, [token, roomName, user, roomStore, subscribeToMember]);
+  }, [token, roomName, user.id, user.name, user.iconUrl, subscribeToMember, roomStoreActions]);
 
   const disconnect = useCallback(async () => {
     try {
@@ -186,10 +214,12 @@ export function useSkyWay({ roomName, token, onMessage }: UseSkyWayOptions) {
       roomRef.current = null;
       memberRef.current = null;
       dataStreamRef.current = null;
+      isConnectingRef.current = false;
+      subscribedPublicationsRef.current.clear();
       setIsConnected(false);
-      roomStore.setIsConnected(false);
+      roomStoreActions.setIsConnected(false);
     }
-  }, [roomStore]);
+  }, [roomStoreActions]);
 
   useEffect(() => {
     if (token && roomName) {

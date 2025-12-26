@@ -7,7 +7,8 @@ import BanList from '@/components/admin/BanList';
 
 export default function AdminPage() {
   const navigate = useNavigate();
-  const [adminSecret, setAdminSecret] = useState('');
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [activeTab, setActiveTab] = useState<'reports' | 'bans'>('reports');
 
@@ -21,18 +22,22 @@ export default function AdminPage() {
     updateReportStatus,
     banUser,
     unbanUser,
-  } = useAdmin({ adminSecret: isAuthenticated ? adminSecret : '' });
+  } = useAdmin({
+    username: isAuthenticated ? username : '',
+    password: isAuthenticated ? password : '',
+  });
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
-    if (adminSecret.trim()) {
+    if (username.trim() && password.trim()) {
       setIsAuthenticated(true);
     }
   };
 
   const handleLogout = () => {
     setIsAuthenticated(false);
-    setAdminSecret('');
+    setUsername('');
+    setPassword('');
   };
 
   const handleRefresh = useCallback(() => {
@@ -58,7 +63,7 @@ export default function AdminPage() {
             <div>
               <h1 className="text-xl font-bold">管理者ログイン</h1>
               <p className="text-sm text-muted-foreground">
-                管理者シークレットを入力してください
+                管理者の認証情報を入力してください
               </p>
             </div>
           </div>
@@ -66,21 +71,33 @@ export default function AdminPage() {
           <form onSubmit={handleLogin} className="space-y-4">
             <div>
               <label className="block text-sm font-medium mb-1">
-                管理者シークレット
+                ユーザー名
+              </label>
+              <input
+                type="text"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                placeholder="ユーザー名を入力"
+                className="w-full px-3 py-2 border border-input rounded-md bg-background"
+                autoFocus
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1">
+                パスワード
               </label>
               <input
                 type="password"
-                value={adminSecret}
-                onChange={(e) => setAdminSecret(e.target.value)}
-                placeholder="シークレットを入力"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="パスワードを入力"
                 className="w-full px-3 py-2 border border-input rounded-md bg-background"
-                autoFocus
               />
             </div>
 
             <button
               type="submit"
-              disabled={!adminSecret.trim()}
+              disabled={!username.trim() || !password.trim()}
               className="w-full px-4 py-2 bg-primary text-primary-foreground rounded-md hover:opacity-90 disabled:opacity-50"
             >
               ログイン
