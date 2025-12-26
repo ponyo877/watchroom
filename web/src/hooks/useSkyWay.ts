@@ -195,7 +195,19 @@ export function useSkyWay({ roomName, token, onMessage }: UseSkyWayOptions) {
           roomStoreActions.setCurrentVideo(initialRoomMetadata.currentVideo);
         }
         if (initialRoomMetadata.playbackState) {
-          roomStoreActions.setPlaybackState(initialRoomMetadata.playbackState);
+          const savedState = initialRoomMetadata.playbackState;
+          // Calculate actual current time based on elapsed time since last update
+          let adjustedCurrentTime = savedState.currentTime;
+          if (savedState.isPlaying && savedState.lastUpdated > 0) {
+            const elapsedSeconds = (Date.now() - savedState.lastUpdated) / 1000;
+            adjustedCurrentTime = savedState.currentTime + elapsedSeconds * savedState.playbackRate;
+          }
+          roomStoreActions.setPlaybackState({
+            ...savedState,
+            currentTime: adjustedCurrentTime,
+            // Set a new lastUpdated to trigger sync in useVideoSync
+            lastUpdated: Date.now(),
+          });
         }
       }
 

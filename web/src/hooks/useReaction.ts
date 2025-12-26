@@ -1,4 +1,4 @@
-import { useCallback, useEffect } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import { useRoomStore } from '@/stores/roomStore';
 import { useUserStore } from '@/stores/userStore';
 import type { ReactionMessage } from '@/types/message';
@@ -14,6 +14,10 @@ interface UseReactionOptions {
 export function useReaction({ onSendReaction }: UseReactionOptions) {
   const userId = useUserStore((state) => state.id);
   const { reactions, addReaction, removeReaction } = useRoomStore();
+
+  // Use ref to avoid interval reset on every reaction change
+  const reactionsRef = useRef(reactions);
+  reactionsRef.current = reactions;
 
   const sendReaction = useCallback(
     (emoji: string) => {
@@ -64,17 +68,17 @@ export function useReaction({ onSendReaction }: UseReactionOptions) {
     [userId, addReaction, removeReaction]
   );
 
-  // Cleanup old reactions
+  // Cleanup old reactions (use ref to avoid interval reset on every change)
   useEffect(() => {
     const interval = setInterval(() => {
       const now = Date.now();
-      reactions
+      reactionsRef.current
         .filter((r) => now - r.timestamp > REACTION_DURATION)
         .forEach((r) => removeReaction(r.id));
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [reactions, removeReaction]);
+  }, [removeReaction]);
 
   return {
     reactions,

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { ReactionItem } from '@/types/room';
 
 interface ReactionOverlayProps {
@@ -12,20 +12,28 @@ interface FloatingReaction extends ReactionItem {
 
 export default function ReactionOverlay({ reactions }: ReactionOverlayProps) {
   const [floatingReactions, setFloatingReactions] = useState<FloatingReaction[]>([]);
+  // Track seen reaction IDs to avoid adding duplicates (prevents infinite loop)
+  const seenReactionIdsRef = useRef<Set<string>>(new Set());
 
   useEffect(() => {
-    const newReactions = reactions
-      .filter((r) => !floatingReactions.some((fr) => fr.id === r.id))
-      .map((r) => ({
-        ...r,
-        x: Math.random() * 80 + 10, // 10-90% from left
-        y: 0, // Start from top
-      }));
+    const newReactions = reactions.filter(
+      (r) => !seenReactionIdsRef.current.has(r.id)
+    );
 
     if (newReactions.length > 0) {
-      setFloatingReactions((prev) => [...prev, ...newReactions]);
+      // Mark as seen before adding to state
+      newReactions.forEach((r) => seenReactionIdsRef.current.add(r.id));
+
+      setFloatingReactions((prev) => [
+        ...prev,
+        ...newReactions.map((r) => ({
+          ...r,
+          x: Math.random() * 80 + 10, // 10-90% from left
+          y: 0, // Start from top
+        })),
+      ]);
     }
-  }, [reactions, floatingReactions]);
+  }, [reactions]);
 
   // Remove reactions after animation
   useEffect(() => {

@@ -45,7 +45,6 @@ export default function RoomPage() {
 
   // UI state
   const [showSettings, setShowSettings] = useState(false);
-  const [showPasswordDialog, setShowPasswordDialog] = useState(false);
   const [showPasswordSettings, setShowPasswordSettings] = useState(false);
   const [showMemberList, setShowMemberList] = useState(false);
   const [showVideoSearch, setShowVideoSearch] = useState(false);
@@ -54,10 +53,14 @@ export default function RoomPage() {
   const [showMobileChat, setShowMobileChat] = useState(false);
   const [showMobileMembers, setShowMobileMembers] = useState(false);
 
+  // Derive password dialog visibility during rendering (not via Effect)
+  const showPasswordDialog = roomInfo?.hasPassword === true && !isPasswordVerified;
+
   // Mock states (will be replaced with actual hooks)
   const [permissionMode, setPermissionMode] = useState<'creator' | 'specific' | 'all'>('creator');
   const [allowedUserIds, setAllowedUserIds] = useState<string[]>([]);
-  const [hasPassword, setHasPassword] = useState(false);
+  // Local password state for optimistic updates after password changes
+  const [localHasPassword, setLocalHasPassword] = useState<boolean | null>(null);
   const [playHistory, setPlayHistory] = useState<any[]>([]);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
@@ -114,17 +117,20 @@ export default function RoomPage() {
   // Derive isPlaying from playback state
   const isPlaying = roomStore.playbackState.isPlaying;
 
-  // Check if room requires password
-  useEffect(() => {
-    if (roomInfo?.hasPassword && !isPasswordVerified) {
-      setShowPasswordDialog(true);
-      setHasPassword(true);
-    }
-  }, [roomInfo, isPasswordVerified]);
+  // Derive hasPassword: use local state if modified, otherwise from roomInfo
+  const hasPassword = localHasPassword ?? roomInfo?.hasPassword ?? false;
 
-  // Set control permission when not connected (for testing without SkyWay)
+  // Track if connection was ever established (to avoid resetting permissions on disconnect)
+  const wasConnectedRef = useRef(false);
+  if (isConnected) {
+    wasConnectedRef.current = true;
+  }
+
+  // Set control permission for local testing when SkyWay is not connected
+  // Note: When connected, useSkyWay.ts sets the correct permissions
   useEffect(() => {
-    if (!isConnected) {
+    // Only set fallback permissions if never connected (testing mode)
+    if (!isConnected && !wasConnectedRef.current) {
       roomStore.setHasControlPermission(true);
       roomStore.setIsCreator(true);
     }
@@ -152,7 +158,8 @@ export default function RoomPage() {
 
       if (data.valid) {
         setIsPasswordVerified(true);
-        setShowPasswordDialog(false);
+        // showPasswordDialog is derived: roomInfo?.hasPassword && !isPasswordVerified
+        // So it automatically becomes false when isPasswordVerified is true
         return true;
       }
       return false;
@@ -178,7 +185,7 @@ export default function RoomPage() {
       });
       const data = await response.json();
       if (data.success) {
-        setHasPassword(true);
+        setLocalHasPassword(true);
         return true;
       }
       return false;
@@ -198,7 +205,7 @@ export default function RoomPage() {
       });
       const data = await response.json();
       if (data.success) {
-        setHasPassword(false);
+        setLocalHasPassword(false);
         return true;
       }
       return false;

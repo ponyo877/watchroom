@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useRoomStore } from '@/stores/roomStore';
 import { useUserStore } from '@/stores/userStore';
 import type { PermissionMessage } from '@/types/message';
@@ -21,25 +21,25 @@ export function usePermission({ onSendPermission }: UsePermissionOptions) {
   const [permissionMode, setPermissionMode] = useState<PermissionMode>('creator');
   const [allowedUserIds, setAllowedUserIds] = useState<string[]>([]);
 
-  // Update permission based on mode changes
-  useEffect(() => {
-    if (isCreator) {
-      setHasControlPermission(true);
-      return;
-    }
-
+  // Compute permission during render (not in Effect)
+  const computedPermission = useMemo(() => {
+    if (isCreator) return true;
     switch (permissionMode) {
       case 'creator':
-        setHasControlPermission(false);
-        break;
+        return false;
       case 'specific':
-        setHasControlPermission(allowedUserIds.includes(userId));
-        break;
+        return allowedUserIds.includes(userId);
       case 'all':
-        setHasControlPermission(true);
-        break;
+        return true;
+      default:
+        return false;
     }
-  }, [permissionMode, allowedUserIds, userId, isCreator, setHasControlPermission]);
+  }, [permissionMode, isCreator, allowedUserIds, userId]);
+
+  // Sync computed value to store (external system sync)
+  useEffect(() => {
+    setHasControlPermission(computedPermission);
+  }, [computedPermission, setHasControlPermission]);
 
   const changePermissionMode = useCallback(
     (mode: PermissionMode) => {

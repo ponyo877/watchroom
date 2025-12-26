@@ -15,7 +15,7 @@ export function useRoom({ roomId }: UseRoomOptions) {
   const navigate = useNavigate();
   const [token, setToken] = useState<string>('');
   const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [tokenError, setTokenError] = useState<string | null>(null);
 
   const userId = useUserStore((state) => state.id);
   // Get store actions without subscribing to state changes
@@ -126,7 +126,7 @@ export function useRoom({ roomId }: UseRoomOptions) {
   const fetchToken = useCallback(async () => {
     try {
       setIsLoading(true);
-      setError(null);
+      setTokenError(null);
 
       const response = await fetch('/api/auth/token', {
         method: 'POST',
@@ -147,7 +147,7 @@ export function useRoom({ roomId }: UseRoomOptions) {
       setToken(data.token);
     } catch (e) {
       const errorMessage = e instanceof Error ? e.message : 'Unknown error';
-      setError(errorMessage);
+      setTokenError(errorMessage);
     } finally {
       setIsLoading(false);
     }
@@ -164,11 +164,8 @@ export function useRoom({ roomId }: UseRoomOptions) {
     }
   }, [userId, fetchToken]);
 
-  useEffect(() => {
-    if (skyWayError) {
-      setError(skyWayError.message);
-    }
-  }, [skyWayError]);
+  // Derive combined error during rendering (not via Effect)
+  const error = tokenError ?? skyWayError?.message ?? null;
 
   return {
     isLoading,

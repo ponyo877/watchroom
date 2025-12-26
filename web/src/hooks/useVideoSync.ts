@@ -17,6 +17,7 @@ export function useVideoSync({ elementId, onSendSync }: UseVideoSyncOptions) {
   const [isReady, setIsReady] = useState(false);
   const lastSyncRef = useRef<number>(0);
   const isSyncingRef = useRef(false);
+  const hasInitialSyncRef = useRef(false);
 
   const userId = useUserStore((state) => state.id);
   const { currentVideo, playbackState, hasControlPermission } = useRoomStore();
@@ -39,7 +40,8 @@ export function useVideoSync({ elementId, onSendSync }: UseVideoSyncOptions) {
 
   const handleStateChange = useCallback(
     (event: YouTubePlayerEvent) => {
-      if (isSyncingRef.current || !hasControlPermission) return;
+      // Don't send sync messages until initial sync is complete (prevents late joiners from resetting position)
+      if (!hasInitialSyncRef.current || isSyncingRef.current || !hasControlPermission) return;
 
       const state = event.data;
       const player = event.target;
@@ -162,6 +164,7 @@ export function useVideoSync({ elementId, onSendSync }: UseVideoSyncOptions) {
     if (player && isReady) {
       // Player exists and is ready, load the new video
       player.loadVideoById(videoId);
+      // Note: Don't reset hasInitialSyncRef here to avoid race condition
     } else if (!player) {
       // No player yet, initialize it
       initializePlayer(videoId);
@@ -176,9 +179,33 @@ export function useVideoSync({ elementId, onSendSync }: UseVideoSyncOptions) {
     };
   }, [player]);
 
-  // Sync to remote state
+  // Initial sync when player becomes ready (for late joiners)
   useEffect(() => {
-    if (playbackState.lastUpdated > lastSyncRef.current) {
+    if (isReady && player && !hasInitialSyncRef.current) {
+      if (playbackState.lastUpdated > 0) {
+        // Late joiner: sync to existing state
+        hasInitialSyncRef.current = true;
+        // Wait for video to finish loading before syncing
+        const waitForVideoReady = () => {
+          const playerState = player.getPlayerState();
+          // UNSTARTED(-1) or BUFFERING(3) means still loading
+          if (playerState === -1 || playerState === 3) {
+            setTimeout(waitForVideoReady, 100);
+          } else {
+            syncToState(playbackState);
+          }
+        };
+        setTimeout(waitForVideoReady, 100);
+      } else {
+        // First user (creator): no state to sync, allow sending sync messages immediately
+        hasInitialSyncRef.current = true;
+      }
+    }
+  }, [isReady, player, playbackState, syncToState]);
+
+  // Sync to remote state changes
+  useEffect(() => {
+    if (hasInitialSyncRef.current && playbackState.lastUpdated > lastSyncRef.current) {
       syncToState(playbackState);
     }
   }, [playbackState, syncToState]);
