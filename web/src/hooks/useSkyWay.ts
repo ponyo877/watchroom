@@ -188,6 +188,17 @@ export function useSkyWay({ roomName, token, onMessage }: UseSkyWayOptions) {
       // TODO: Implement proper permission system based on room settings
       roomStoreActions.setHasControlPermission(true);
 
+      // Read initial room metadata for late joiners
+      const initialRoomMetadata = parseRoomMetadata(room.metadata);
+      if (initialRoomMetadata) {
+        if (initialRoomMetadata.currentVideo) {
+          roomStoreActions.setCurrentVideo(initialRoomMetadata.currentVideo);
+        }
+        if (initialRoomMetadata.playbackState) {
+          roomStoreActions.setPlaybackState(initialRoomMetadata.playbackState);
+        }
+      }
+
       setIsConnected(true);
       roomStoreActions.setIsConnected(true);
     } catch (e) {

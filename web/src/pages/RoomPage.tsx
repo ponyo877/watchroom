@@ -73,6 +73,7 @@ export default function RoomPage() {
     sendChatMessage: skySendChat,
     sendReaction: skySendReaction,
     sendMessage: skySendMessage,
+    updateRoomMetadata,
   } = useRoom({
     roomId: actualRoomId || '',
   });
@@ -207,12 +208,14 @@ export default function RoomPage() {
   };
 
   const handleSelectVideo = useCallback((video: YouTubeVideo) => {
-    // Update local store
-    roomStore.setCurrentVideo({
+    const videoInfo = {
       videoId: video.videoId,
       title: video.title,
       thumbnail: video.thumbnail,
-    });
+    };
+
+    // Update local store
+    roomStore.setCurrentVideo(videoInfo);
 
     // Send sync message to other users
     if (isConnected && roomStore.hasControlPermission) {
@@ -228,10 +231,13 @@ export default function RoomPage() {
         timestamp: Date.now(),
       };
       skySendMessage(syncMessage);
+
+      // Update room metadata for late joiners
+      updateRoomMetadata({ currentVideo: videoInfo });
     }
 
     setShowVideoSearch(false);
-  }, [roomStore, isConnected, userId, skySendMessage]);
+  }, [roomStore, isConnected, userId, skySendMessage, updateRoomMetadata]);
 
   const handleSendChatMessage = useCallback((text: string) => {
     if (isConnected) {
@@ -409,19 +415,36 @@ export default function RoomPage() {
               hasControlPermission={roomStore.hasControlPermission}
               onPlay={() => {
                 play();
-                roomStore.setPlaybackState({ isPlaying: true });
+                const newState = { isPlaying: true, currentTime, lastUpdated: Date.now() };
+                roomStore.setPlaybackState(newState);
+                if (isConnected) {
+                  updateRoomMetadata({ playbackState: { ...roomStore.playbackState, ...newState } });
+                }
               }}
               onPause={() => {
                 pause();
-                roomStore.setPlaybackState({ isPlaying: false });
+                const newState = { isPlaying: false, currentTime, lastUpdated: Date.now() };
+                roomStore.setPlaybackState(newState);
+                if (isConnected) {
+                  updateRoomMetadata({ playbackState: { ...roomStore.playbackState, ...newState } });
+                }
               }}
               onSeek={(time) => {
                 seek(time);
                 setCurrentTime(time);
+                const newState = { currentTime: time, lastUpdated: Date.now() };
+                roomStore.setPlaybackState(newState);
+                if (isConnected) {
+                  updateRoomMetadata({ playbackState: { ...roomStore.playbackState, ...newState } });
+                }
               }}
               onPlaybackRateChange={(rate) => {
                 setPlaybackRate(rate);
-                roomStore.setPlaybackState({ playbackRate: rate });
+                const newState = { playbackRate: rate, lastUpdated: Date.now() };
+                roomStore.setPlaybackState(newState);
+                if (isConnected) {
+                  updateRoomMetadata({ playbackState: { ...roomStore.playbackState, ...newState } });
+                }
               }}
             />
           </div>
