@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import type { Room, ChatMessageItem, ReactionItem } from '@/types/room';
-import type { MemberMetadata, VideoInfo, PlaybackState } from '@/types/skyway';
+import type { MemberMetadata, VideoInfo, PlaybackState, VideoHistoryItem } from '@/types/skyway';
 
 interface RoomState {
   room: Room | null;
@@ -14,6 +14,7 @@ interface RoomState {
   hasControlPermission: boolean;
   permissionMode: 'creator' | 'specific' | 'all';
   allowedUserIds: string[];
+  playHistory: VideoHistoryItem[];
 
   setRoom: (room: Room | null) => void;
   setMembers: (members: MemberMetadata[]) => void;
@@ -31,6 +32,10 @@ interface RoomState {
   setAllowedUserIds: (ids: string[]) => void;
   addAllowedUserId: (id: string) => void;
   removeAllowedUserId: (id: string) => void;
+  setPlayHistory: (history: VideoHistoryItem[]) => void;
+  addToPlayHistory: (video: VideoHistoryItem) => void;
+  removeFromPlayHistory: (videoId: string) => void;
+  clearPlayHistory: () => void;
   reset: () => void;
 }
 
@@ -53,6 +58,7 @@ export const useRoomStore = create<RoomState>((set) => ({
   hasControlPermission: false,
   permissionMode: 'creator',
   allowedUserIds: [],
+  playHistory: [],
 
   setRoom: (room) => set({ room }),
   setMembers: (members) => set({ members }),
@@ -95,6 +101,20 @@ export const useRoomStore = create<RoomState>((set) => ({
     set((state) => ({
       allowedUserIds: state.allowedUserIds.filter((i) => i !== id),
     })),
+  setPlayHistory: (history) => set({ playHistory: history }),
+  addToPlayHistory: (video) =>
+    set((state) => ({
+      // Remove duplicate if exists, then add to front, limit to 50 items
+      playHistory: [
+        video,
+        ...state.playHistory.filter((v) => v.videoId !== video.videoId),
+      ].slice(0, 50),
+    })),
+  removeFromPlayHistory: (videoId) =>
+    set((state) => ({
+      playHistory: state.playHistory.filter((v) => v.videoId !== videoId),
+    })),
+  clearPlayHistory: () => set({ playHistory: [] }),
   reset: () =>
     set({
       room: null,
@@ -108,5 +128,6 @@ export const useRoomStore = create<RoomState>((set) => ({
       hasControlPermission: false,
       permissionMode: 'creator',
       allowedUserIds: [],
+      playHistory: [],
     }),
 }));

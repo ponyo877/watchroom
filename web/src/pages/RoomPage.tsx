@@ -59,9 +59,10 @@ export default function RoomPage() {
   // Permission states from room store (synced via SkyWay metadata)
   const permissionMode = roomStore.permissionMode;
   const allowedUserIds = roomStore.allowedUserIds;
+  // Play history from room store (synced via SkyWay metadata)
+  const playHistory = roomStore.playHistory;
   // Local password state for optimistic updates after password changes
   const [localHasPassword, setLocalHasPassword] = useState<boolean | null>(null);
-  const [playHistory, setPlayHistory] = useState<any[]>([]);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [volume, setVolume] = useState(100);
@@ -223,6 +224,13 @@ export default function RoomPage() {
       thumbnail: video.thumbnail,
     };
 
+    // Add to play history
+    const historyItem = {
+      ...videoInfo,
+      playedAt: Date.now(),
+    };
+    roomStore.addToPlayHistory(historyItem);
+
     // Update local store
     roomStore.setCurrentVideo(videoInfo);
 
@@ -241,12 +249,16 @@ export default function RoomPage() {
       };
       skySendMessage(syncMessage);
 
-      // Update room metadata for late joiners
-      updateRoomMetadata({ currentVideo: videoInfo });
+      // Update room metadata for late joiners (including play history)
+      const newPlayHistory = [
+        historyItem,
+        ...playHistory.filter((v) => v.videoId !== video.videoId),
+      ].slice(0, 50);
+      updateRoomMetadata({ currentVideo: videoInfo, playHistory: newPlayHistory });
     }
 
     setShowVideoSearch(false);
-  }, [roomStore, isConnected, userId, skySendMessage, updateRoomMetadata]);
+  }, [roomStore, isConnected, userId, skySendMessage, updateRoomMetadata, playHistory]);
 
   const handleSendChatMessage = useCallback((text: string) => {
     if (isConnected) {
@@ -648,12 +660,24 @@ export default function RoomPage() {
         history={playHistory}
         onSelectVideo={(video) => {
           roomStore.setCurrentVideo(video);
+          if (isConnected && roomStore.hasControlPermission) {
+            updateRoomMetadata({ currentVideo: video });
+          }
           setShowPlayHistory(false);
         }}
-        onRemoveVideo={(videoId) =>
-          setPlayHistory((prev) => prev.filter((v) => v.videoId !== videoId))
-        }
-        onClearHistory={() => setPlayHistory([])}
+        onRemoveVideo={(videoId) => {
+          roomStore.removeFromPlayHistory(videoId);
+          if (isConnected && roomStore.hasControlPermission) {
+            const newPlayHistory = playHistory.filter((v) => v.videoId !== videoId);
+            updateRoomMetadata({ playHistory: newPlayHistory });
+          }
+        }}
+        onClearHistory={() => {
+          roomStore.clearPlayHistory();
+          if (isConnected && roomStore.hasControlPermission) {
+            updateRoomMetadata({ playHistory: [] });
+          }
+        }}
         hasControlPermission={roomStore.hasControlPermission}
       />
     </div>

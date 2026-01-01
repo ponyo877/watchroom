@@ -207,6 +207,10 @@ export function useSkyWay({ roomName, token, onMessage }: UseSkyWayOptions) {
           if (metadata.allowedUserIds) {
             roomStoreActions.setAllowedUserIds(metadata.allowedUserIds);
           }
+          // Sync play history to store
+          if (metadata.playHistory) {
+            roomStoreActions.setPlayHistory(metadata.playHistory);
+          }
           // Update permission when room settings change
           roomStoreActions.setHasControlPermission(calculatePermission(metadata));
         }
@@ -242,6 +246,10 @@ export function useSkyWay({ roomName, token, onMessage }: UseSkyWayOptions) {
         }
         if (initialRoomMetadata.allowedUserIds) {
           roomStoreActions.setAllowedUserIds(initialRoomMetadata.allowedUserIds);
+        }
+        // Sync initial play history
+        if (initialRoomMetadata.playHistory) {
+          roomStoreActions.setPlayHistory(initialRoomMetadata.playHistory);
         }
       }
 
