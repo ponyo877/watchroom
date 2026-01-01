@@ -18,13 +18,20 @@ type CreateRoomResponse struct {
 	ShortID string `json:"short_id"`
 }
 
+type VideoInfoResponse struct {
+	VideoID   string `json:"video_id"`
+	Title     string `json:"title"`
+	Thumbnail string `json:"thumbnail"`
+}
+
 type RoomItem struct {
-	RoomID      string `json:"room_id"`
-	Name        string `json:"name"`
-	CreatorID   string `json:"creator_id"`
-	CreatorName string `json:"creator_name"`
-	HasPassword bool   `json:"has_password"`
-	ShortID     string `json:"short_id"`
+	RoomID       string             `json:"room_id"`
+	Name         string             `json:"name"`
+	CreatorID    string             `json:"creator_id"`
+	CreatorName  string             `json:"creator_name"`
+	HasPassword  bool               `json:"has_password"`
+	ShortID      string             `json:"short_id"`
+	CurrentVideo *VideoInfoResponse `json:"current_video,omitempty"`
 }
 
 type RoomListResponse struct {
@@ -62,14 +69,22 @@ func (h *Handler) HandleListRooms(w http.ResponseWriter, r *http.Request) {
 
 	items := make([]RoomItem, 0, len(rooms))
 	for _, room := range rooms {
-		items = append(items, RoomItem{
+		item := RoomItem{
 			RoomID:      room.RoomID,
 			Name:        room.Name,
 			CreatorID:   room.CreatorID,
 			CreatorName: room.CreatorName,
 			HasPassword: room.HasPassword,
 			ShortID:     room.ShortID,
-		})
+		}
+		if room.CurrentVideo != nil {
+			item.CurrentVideo = &VideoInfoResponse{
+				VideoID:   room.CurrentVideo.VideoID,
+				Title:     room.CurrentVideo.Title,
+				Thumbnail: room.CurrentVideo.Thumbnail,
+			}
+		}
+		items = append(items, item)
 	}
 
 	w.Header().Set("Content-Type", "application/json")
@@ -207,6 +222,34 @@ func (h *Handler) HandleResolveShortURL(w http.ResponseWriter, r *http.Request, 
 		"room_id":      shortURL.RoomID,
 		"has_password": hasPassword,
 	})
+}
+
+type UpdateCurrentVideoRequest struct {
+	VideoID   string `json:"video_id"`
+	Title     string `json:"title"`
+	Thumbnail string `json:"thumbnail"`
+}
+
+func (h *Handler) HandleUpdateCurrentVideo(w http.ResponseWriter, r *http.Request, roomID string) {
+	if r.Method != http.MethodPut {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	var req UpdateCurrentVideoRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		return
+	}
+
+	err := h.roomUsecase.UpdateCurrentVideo(r.Context(), roomID, req.VideoID, req.Title, req.Thumbnail)
+	if err != nil {
+		http.Error(w, "Failed to update current video", http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(SuccessResponse{Success: true})
 }
 
 // Ogen interface implementations

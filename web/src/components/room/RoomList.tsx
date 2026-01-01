@@ -4,6 +4,12 @@ import Loading from '@/components/common/Loading';
 import axiosInstance from '@/lib/api';
 import type { Room } from '@/types/room';
 
+interface APIVideoInfo {
+  video_id: string;
+  title: string;
+  thumbnail: string;
+}
+
 interface APIRoomItem {
   room_id: string;
   name: string;
@@ -11,6 +17,7 @@ interface APIRoomItem {
   creator_name: string;
   has_password: boolean;
   short_id: string;
+  current_video?: APIVideoInfo;
 }
 
 interface APIRoomListResponse {
@@ -36,6 +43,13 @@ export default function RoomList() {
           shortId: r.short_id,
           memberCount: 0,
           maxMembers: 10,
+          currentVideo: r.current_video
+            ? {
+                videoId: r.current_video.video_id,
+                title: r.current_video.title,
+                thumbnail: r.current_video.thumbnail,
+              }
+            : undefined,
         }));
         setRooms(mappedRooms);
       } catch (err) {

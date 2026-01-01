@@ -73,6 +73,8 @@ func main() {
 				} else if r.Method == http.MethodDelete {
 					handler.HandleDeletePassword(w, r, roomID)
 				}
+			case "current-video":
+				handler.HandleUpdateCurrentVideo(w, r, roomID)
 			default:
 				http.Error(w, "Not found", http.StatusNotFound)
 			}

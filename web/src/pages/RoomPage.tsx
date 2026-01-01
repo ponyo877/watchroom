@@ -14,6 +14,7 @@ import { useShortUrl } from '@/hooks/useShortUrl';
 import { useModeration } from '@/hooks/useModeration';
 import { useVideoSync } from '@/hooks/useVideoSync';
 import { useRoom } from '@/hooks/useRoom';
+import axiosInstance from '@/lib/api';
 import ChatPanel from '@/components/chat/ChatPanel';
 import ReactionPicker from '@/components/chat/ReactionPicker';
 import ReactionOverlay from '@/components/player/ReactionOverlay';
@@ -255,10 +256,21 @@ export default function RoomPage() {
         ...playHistory.filter((v) => v.videoId !== video.videoId),
       ].slice(0, 50);
       updateRoomMetadata({ currentVideo: videoInfo, playHistory: newPlayHistory });
+
+      // Update current video in database for room list display
+      if (actualRoomId) {
+        axiosInstance.put(`/api/rooms/${actualRoomId}/current-video`, {
+          video_id: video.videoId,
+          title: video.title,
+          thumbnail: video.thumbnail,
+        }).catch((err) => {
+          console.error('Failed to update current video in DB:', err);
+        });
+      }
     }
 
     setShowVideoSearch(false);
-  }, [roomStore, isConnected, userId, skySendMessage, updateRoomMetadata, playHistory]);
+  }, [roomStore, isConnected, userId, skySendMessage, updateRoomMetadata, playHistory, actualRoomId]);
 
   const handleSendChatMessage = useCallback((text: string) => {
     if (isConnected) {

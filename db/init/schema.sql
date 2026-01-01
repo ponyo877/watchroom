@@ -2,14 +2,17 @@
 
 -- 部屋管理
 CREATE TABLE IF NOT EXISTS rooms (
-    id            INT PRIMARY KEY AUTO_INCREMENT,
-    room_id       VARCHAR(255) NOT NULL UNIQUE COMMENT 'SkyWay Room ID',
-    name          VARCHAR(255) NOT NULL COMMENT '部屋名',
-    creator_id    VARCHAR(255) NOT NULL COMMENT '作成者のユーザーID',
-    creator_name  VARCHAR(255) NOT NULL COMMENT '作成者名',
-    is_active     BOOLEAN DEFAULT TRUE COMMENT 'アクティブかどうか',
-    created_at    TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at    TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    id                      INT PRIMARY KEY AUTO_INCREMENT,
+    room_id                 VARCHAR(255) NOT NULL UNIQUE COMMENT 'SkyWay Room ID',
+    name                    VARCHAR(255) NOT NULL COMMENT '部屋名',
+    creator_id              VARCHAR(255) NOT NULL COMMENT '作成者のユーザーID',
+    creator_name            VARCHAR(255) NOT NULL COMMENT '作成者名',
+    is_active               BOOLEAN DEFAULT TRUE COMMENT 'アクティブかどうか',
+    current_video_id        VARCHAR(255) NULL COMMENT '現在再生中の動画ID',
+    current_video_title     VARCHAR(500) NULL COMMENT '現在再生中の動画タイトル',
+    current_video_thumbnail VARCHAR(500) NULL COMMENT '現在再生中の動画サムネイル',
+    created_at              TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at              TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     INDEX idx_room_id (room_id),
     INDEX idx_is_active (is_active),
     INDEX idx_created_at (created_at)

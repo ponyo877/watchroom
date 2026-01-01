@@ -3,14 +3,17 @@ package model
 import "time"
 
 type Room struct {
-	ID          int
-	RoomID      string
-	Name        string
-	CreatorID   string
-	CreatorName string
-	IsActive    bool
-	CreatedAt   time.Time
-	UpdatedAt   time.Time
+	ID                    int
+	RoomID                string
+	Name                  string
+	CreatorID             string
+	CreatorName           string
+	IsActive              bool
+	CurrentVideoID        *string
+	CurrentVideoTitle     *string
+	CurrentVideoThumbnail *string
+	CreatedAt             time.Time
+	UpdatedAt             time.Time
 }
 
 type RoomPassword struct {

@@ -10,13 +10,20 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
+type VideoInfo struct {
+	VideoID   string
+	Title     string
+	Thumbnail string
+}
+
 type RoomWithDetails struct {
-	RoomID      string
-	Name        string
-	CreatorID   string
-	CreatorName string
-	HasPassword bool
-	ShortID     string
+	RoomID       string
+	Name         string
+	CreatorID    string
+	CreatorName  string
+	HasPassword  bool
+	ShortID      string
+	CurrentVideo *VideoInfo
 }
 
 type RoomUsecase struct {
@@ -80,16 +87,30 @@ func (u *RoomUsecase) ListRooms(ctx context.Context) ([]*RoomWithDetails, error)
 			shortID = shortURL.ShortID
 		}
 
+		var currentVideo *VideoInfo
+		if room.CurrentVideoID != nil && *room.CurrentVideoID != "" {
+			currentVideo = &VideoInfo{
+				VideoID:   *room.CurrentVideoID,
+				Title:     *room.CurrentVideoTitle,
+				Thumbnail: *room.CurrentVideoThumbnail,
+			}
+		}
+
 		result = append(result, &RoomWithDetails{
-			RoomID:      room.RoomID,
-			Name:        room.Name,
-			CreatorID:   room.CreatorID,
-			CreatorName: room.CreatorName,
-			HasPassword: hasPassword,
-			ShortID:     shortID,
+			RoomID:       room.RoomID,
+			Name:         room.Name,
+			CreatorID:    room.CreatorID,
+			CreatorName:  room.CreatorName,
+			HasPassword:  hasPassword,
+			ShortID:      shortID,
+			CurrentVideo: currentVideo,
 		})
 	}
 	return result, nil
+}
+
+func (u *RoomUsecase) UpdateCurrentVideo(ctx context.Context, roomID, videoID, title, thumbnail string) error {
+	return u.roomRepo.UpdateCurrentVideo(ctx, roomID, videoID, title, thumbnail)
 }
 
 func (u *RoomUsecase) VerifyPassword(ctx context.Context, roomID, password string) (bool, error) {
