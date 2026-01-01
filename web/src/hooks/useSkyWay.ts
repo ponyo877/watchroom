@@ -164,8 +164,52 @@ export function useSkyWay({ roomName, token, onMessage }: UseSkyWayOptions) {
         }
       });
 
-      room.onMemberLeft.add((e) => {
+      room.onMemberLeft.add(async (e) => {
+        const leavingMemberMetadata = parseMemberMetadata(e.member.metadata);
+
+        // 1. Remove member from local store
         roomStoreActions.removeMember(e.member.id);
+
+        // 2. Decrement DB member count (handles both graceful and forced disconnection)
+        try {
+          await axiosInstance.post(`/api/rooms/${roomName}/member-count/decrement`);
+        } catch (err) {
+          console.error('Failed to decrement member count on member left:', err);
+        }
+
+        // 3. Check if leaving member was the creator
+        if (leavingMemberMetadata?.isCreator) {
+          const currentRoomMetadata = parseRoomMetadata(room.metadata);
+          const currentPermissionMode = currentRoomMetadata?.permissionMode || 'creator';
+
+          // If permission mode is 'creator', switch to 'all' so remaining members can control
+          if (currentPermissionMode === 'creator') {
+            // Immediately update local state for responsive UX
+            roomStoreActions.setPermissionMode('all');
+            roomStoreActions.setHasControlPermission(true);
+
+            // Race condition prevention: only the member with smallest ID updates room metadata
+            const remainingMembers = room.members;
+            if (remainingMembers.length > 0 && memberRef.current) {
+              const sortedMembers = [...remainingMembers].sort((a, b) =>
+                a.id.localeCompare(b.id)
+              );
+              const designatedUpdaterId = sortedMembers[0].id;
+
+              if (memberRef.current.id === designatedUpdaterId) {
+                try {
+                  const updatedMetadata = {
+                    ...currentRoomMetadata,
+                    permissionMode: 'all' as const,
+                  };
+                  await room.updateMetadata(JSON.stringify(updatedMetadata));
+                } catch (err) {
+                  console.error('Failed to update room metadata after creator left:', err);
+                }
+              }
+            }
+          }
+        }
       });
 
       // Update initial members
@@ -273,14 +317,8 @@ export function useSkyWay({ roomName, token, onMessage }: UseSkyWayOptions) {
   }, [token, roomName, user.id, user.name, user.iconUrl, subscribeToMember, roomStoreActions]);
 
   const disconnect = useCallback(async () => {
-    // Decrement member count in DB before leaving
-    if (roomRef.current) {
-      try {
-        await axiosInstance.post(`/api/rooms/${roomName}/member-count/decrement`);
-      } catch (e) {
-        console.error('Failed to decrement member count:', e);
-      }
-    }
+    // Note: Member count is decremented via onMemberLeft handler
+    // to handle both graceful leave and forced disconnection
 
     try {
       if (memberRef.current) {
@@ -312,6 +350,22 @@ export function useSkyWay({ roomName, token, onMessage }: UseSkyWayOptions) {
       disconnect();
     };
   }, [token, roomName, connect, disconnect]);
+
+  // Cleanup on tab close / browser close
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      // Use sendBeacon for reliable request delivery even when tab is closing
+      if (roomRef.current) {
+        navigator.sendBeacon(`/api/rooms/${roomName}/member-count/decrement`);
+      }
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+    };
+  }, [roomName]);
 
   return {
     isConnected,
