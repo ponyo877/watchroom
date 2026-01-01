@@ -140,6 +140,15 @@ export function useRoom({ roomId }: UseRoomOptions) {
       });
 
       if (!response.ok) {
+        // Try to parse error response
+        try {
+          const errorData = await response.json();
+          if (errorData.message) {
+            throw new Error(errorData.message);
+          }
+        } catch {
+          // If parsing fails, use generic error
+        }
         throw new Error('Failed to get token');
       }
 

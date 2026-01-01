@@ -3,7 +3,10 @@ package adapter
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"net/http"
+
+	"github.com/ponyo877/youtube-friend-watch/internal/usecase"
 )
 
 type AuthTokenRequest struct {
@@ -14,6 +17,11 @@ type AuthTokenRequest struct {
 type AuthTokenResponse struct {
 	Token     string `json:"token"`
 	ExpiresAt int64  `json:"expires_at"`
+}
+
+type ErrorResponse struct {
+	Error   string `json:"error"`
+	Message string `json:"message"`
 }
 
 func (h *Handler) HandleAuthToken(w http.ResponseWriter, r *http.Request) {
@@ -33,8 +41,17 @@ func (h *Handler) HandleAuthToken(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	token, expiresAt, err := h.authUsecase.CreateToken(req.UserID, req.RoomName)
+	token, expiresAt, err := h.authUsecase.CreateToken(r.Context(), req.UserID, req.RoomName)
 	if err != nil {
+		if errors.Is(err, usecase.ErrRoomFull) {
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusForbidden)
+			json.NewEncoder(w).Encode(ErrorResponse{
+				Error:   "room_full",
+				Message: "ルームが満員です",
+			})
+			return
+		}
 		http.Error(w, "Failed to create token", http.StatusInternalServerError)
 		return
 	}
@@ -50,7 +67,7 @@ func (h *Handler) HandleAuthToken(w http.ResponseWriter, r *http.Request) {
 
 // CreateToken implements the ogen-generated interface
 func (h *Handler) AuthCreateToken(ctx context.Context, req *AuthTokenRequest) (*AuthTokenResponse, error) {
-	token, expiresAt, err := h.authUsecase.CreateToken(req.UserID, req.RoomName)
+	token, expiresAt, err := h.authUsecase.CreateToken(ctx, req.UserID, req.RoomName)
 	if err != nil {
 		return nil, err
 	}

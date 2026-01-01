@@ -38,7 +38,7 @@ func NewHandler(cfg *config.Config, db *sql.DB) *Handler {
 		cfg.R2.BucketName,
 		cfg.R2.PublicURL,
 	)
-	authUsecase := usecase.NewAuthUsecase(skyWayService)
+	authUsecase := usecase.NewAuthUsecase(skyWayService, roomRepo)
 	roomUsecase := usecase.NewRoomUsecase(roomRepo, shortURLRepo)
 
 	return &Handler{
