@@ -96,39 +96,39 @@
 
 ## 未実装機能詳細
 
-### MSW モックエンドポイント一覧（実装が必要）
+### MSW モックエンドポイント一覧
 
 | エンドポイント | メソッド | バックエンド実装 | 備考 |
 |---------------|---------|-----------------|------|
 | `/api/auth/token` | POST | ✅ 実装済み | SkyWay トークン生成 |
-| `/api/rooms` | GET | ❌ 未実装 | ルーム一覧取得 |
-| `/api/rooms` | POST | ❌ 未実装 | ルーム作成 |
+| `/api/rooms` | GET | ✅ 実装済み | ルーム一覧取得 |
+| `/api/rooms` | POST | ✅ 実装済み | ルーム作成 |
 | `/api/rooms/:roomId` | GET | ❌ 未実装 | ルーム詳細取得 |
-| `/api/rooms/:roomId/verify-password` | POST | ❌ 未実装 | パスワード検証 |
-| `/api/rooms/:roomId/password` | PUT | ❌ 未実装 | パスワード設定 |
-| `/api/rooms/:roomId/password` | DELETE | ❌ 未実装 | パスワード削除 |
-| `/api/youtube/search` | GET | ❌ 未実装 | 動画検索 |
-| `/api/youtube/videos/:videoId` | GET | ❌ 未実装 | 動画詳細 |
-| `/api/reports` | POST | ❌ 未実装 | 通報送信 |
-| `/api/uploads/presign` | POST | ❌ 未実装 | 署名付きURL |
-| `/api/bans/check/:userId` | GET | ❌ 未実装 | BAN確認 |
-| `/api/admin/reports` | GET | ❌ 未実装 | 通報一覧 |
-| `/api/admin/reports/:reportId` | PATCH | ❌ 未実装 | 通報処理 |
-| `/api/admin/bans` | GET | ❌ 未実装 | BAN一覧 |
-| `/api/admin/bans` | POST | ❌ 未実装 | BAN追加 |
-| `/api/admin/bans/:banId` | DELETE | ❌ 未実装 | BAN解除 |
-| `/api/short-urls` | POST | ❌ 未実装 | 短縮URL作成 |
-| `/api/short-urls/:shortId` | GET | ❌ 未実装 | 短縮URL解決 |
+| `/api/rooms/:roomId/verify-password` | POST | ✅ 実装済み | パスワード検証 |
+| `/api/rooms/:roomId/password` | PUT | ✅ 実装済み | パスワード設定 |
+| `/api/rooms/:roomId/password` | DELETE | ✅ 実装済み | パスワード削除 |
+| `/api/r/:shortId` | GET | ✅ 実装済み | 短縮URL解決 |
+| `/api/youtube/search` | GET | ✅ 実装済み | 動画検索 |
+| `/api/youtube/videos/:videoId` | GET | ✅ 実装済み | 動画詳細 |
+| `/api/reports` | POST | ✅ 実装済み | 通報送信 |
+| `/api/uploads/presign` | POST | ✅ 実装済み | 署名付きURL |
+| `/api/bans/check/:userId` | GET | ✅ 実装済み | BAN確認 |
+| `/api/admin/reports` | GET | ✅ 実装済み | 通報一覧 |
+| `/api/admin/reports/:reportId` | PATCH | ✅ 実装済み | 通報処理 |
+| `/api/admin/bans` | GET | ✅ 実装済み | BAN一覧 |
+| `/api/admin/bans` | POST | ✅ 実装済み | BAN追加 |
+| `/api/admin/bans/:banId` | DELETE | ✅ 実装済み | BAN解除 |
 
 ### フロントエンドの TODO コメント箇所
 
-| ファイル | 行 | 内容 |
-|----------|-----|------|
-| `web/src/pages/RoomPage.tsx` | 157 | `// TODO: Implement with SkyWay` (チャット) |
-| `web/src/pages/RoomPage.tsx` | 162 | `// TODO: Implement with SkyWay` (リアクション) |
-| `web/src/components/player/VideoSearch.tsx` | 42 | `// TODO: Replace with actual API call` |
-| `web/src/components/room/RoomList.tsx` | 5 | `// TODO: Replace with actual API call` |
-| `web/src/components/room/CreateRoomDialog.tsx` | 26 | `// TODO: Call API to create room` |
+| ファイル | 行 | 内容 | 状態 |
+|----------|-----|------|------|
+| ~~`web/src/pages/RoomPage.tsx`~~ | ~~157~~ | ~~`// TODO: Implement with SkyWay` (チャット)~~ | ✅ 実装済み |
+| ~~`web/src/pages/RoomPage.tsx`~~ | ~~162~~ | ~~`// TODO: Implement with SkyWay` (リアクション)~~ | ✅ 実装済み |
+| ~~`web/src/components/player/VideoSearch.tsx`~~ | ~~42~~ | ~~`// TODO: Replace with actual API call`~~ | ✅ 実装済み |
+| ~~`web/src/components/room/RoomList.tsx`~~ | ~~5~~ | ~~`// TODO: Replace with actual API call`~~ | ✅ 実装済み |
+| ~~`web/src/components/room/CreateRoomDialog.tsx`~~ | ~~26~~ | ~~`// TODO: Call API to create room`~~ | ✅ 実装済み |
+| ~~`web/src/hooks/useSkyWay.ts`~~ | ~~188~~ | ~~`// TODO: Implement proper permission system`~~ | ✅ 実装済み |
 
 ### バックエンドの TODO コメント箇所
 
