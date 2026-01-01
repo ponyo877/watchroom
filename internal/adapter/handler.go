@@ -19,6 +19,7 @@ type Handler struct {
 	shortURLRepo   *repository.ShortURLRepository
 	reportRepo     *repository.ReportRepository
 	banRepo        *repository.BanRepository
+	chatRepo       *repository.ChatRepository
 	youtubeService *service.YouTubeService
 	uploadService  *service.UploadService
 }
@@ -28,6 +29,7 @@ func NewHandler(cfg *config.Config, db *sql.DB) *Handler {
 	shortURLRepo := repository.NewShortURLRepository(db)
 	reportRepo := repository.NewReportRepository(db)
 	banRepo := repository.NewBanRepository(db)
+	chatRepo := repository.NewChatRepository(db)
 
 	skyWayService := service.NewSkyWayService(cfg.SkyWay.AppID, cfg.SkyWay.SecretKey)
 	youtubeService, _ := service.NewYouTubeService(cfg.YouTube.APIKey)
@@ -50,6 +52,7 @@ func NewHandler(cfg *config.Config, db *sql.DB) *Handler {
 		shortURLRepo:   shortURLRepo,
 		reportRepo:     reportRepo,
 		banRepo:        banRepo,
+		chatRepo:       chatRepo,
 		youtubeService: youtubeService,
 		uploadService:  uploadService,
 	}

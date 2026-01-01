@@ -4,12 +4,14 @@ import { useUserStore } from '@/stores/userStore';
 import type { ChatMessage } from '@/types/message';
 import type { ChatMessageItem } from '@/types/room';
 import { generateId } from '@/lib/utils';
+import axiosInstance from '@/lib/api';
 
 interface UseChatOptions {
+  roomId: string;
   onSendMessage: (message: ChatMessage) => void;
 }
 
-export function useChat({ onSendMessage }: UseChatOptions) {
+export function useChat({ roomId, onSendMessage }: UseChatOptions) {
   const user = useUserStore();
   const { chatMessages, addChatMessage } = useRoomStore();
 
@@ -42,8 +44,19 @@ export function useChat({ onSendMessage }: UseChatOptions) {
 
       // Send to other members
       onSendMessage(message);
+
+      // Save to API (fire and forget)
+      axiosInstance.post(`/api/rooms/${roomId}/messages`, {
+        message_id: message.payload.messageId,
+        sender_id: message.senderId,
+        sender_name: message.payload.senderName,
+        sender_icon_url: message.payload.senderIconUrl,
+        text: message.payload.text,
+      }).catch((err) => {
+        console.error('Failed to save message:', err);
+      });
     },
-    [user, addChatMessage, onSendMessage]
+    [user, addChatMessage, onSendMessage, roomId]
   );
 
   const handleIncomingMessage = useCallback(

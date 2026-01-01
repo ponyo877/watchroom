@@ -77,6 +77,14 @@ func main() {
 				handler.HandleUpdateCurrentVideo(w, r, roomID)
 			case "member-info":
 				handler.HandleGetMemberInfo(w, r, roomID)
+			case "messages":
+				if r.Method == http.MethodGet {
+					handler.HandleGetMessages(w, r, roomID)
+				} else if r.Method == http.MethodPost {
+					handler.HandleCreateMessage(w, r, roomID)
+				} else {
+					http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+				}
 			default:
 				http.Error(w, "Not found", http.StatusNotFound)
 			}

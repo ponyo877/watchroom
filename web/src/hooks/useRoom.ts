@@ -53,6 +53,7 @@ export function useRoom({ roomId }: UseRoomOptions) {
   });
 
   const { messages, sendMessage: sendChatMessage, handleIncomingMessage: handleChatMessage } = useChat({
+    roomId,
     onSendMessage: (msg) => sendMessage(msg),
   });
 
@@ -154,13 +155,34 @@ export function useRoom({ roomId }: UseRoomOptions) {
 
       const data = await response.json();
       setToken(data.token);
+
+      // Fetch past messages
+      try {
+        const messagesResponse = await fetch(`/api/rooms/${roomId}/messages?limit=50`);
+        if (messagesResponse.ok) {
+          const messagesData = await messagesResponse.json();
+          const pastMessages = messagesData.messages || [];
+          pastMessages.forEach((msg: { message_id: string; text: string; sender_id: string; sender_name: string; sender_icon_url?: string; timestamp: number }) => {
+            roomStoreActions.addChatMessage({
+              id: msg.message_id,
+              text: msg.text,
+              senderId: msg.sender_id,
+              senderName: msg.sender_name,
+              senderIconUrl: msg.sender_icon_url || '',
+              timestamp: msg.timestamp,
+            });
+          });
+        }
+      } catch (err) {
+        console.error('Failed to fetch past messages:', err);
+      }
     } catch (e) {
       const errorMessage = e instanceof Error ? e.message : 'Unknown error';
       setTokenError(errorMessage);
     } finally {
       setIsLoading(false);
     }
-  }, [userId, roomId]);
+  }, [userId, roomId, roomStoreActions]);
 
   const leaveRoom = useCallback(() => {
     roomStoreActions.reset();

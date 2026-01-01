@@ -66,3 +66,17 @@ CREATE TABLE IF NOT EXISTS global_bans (
     INDEX idx_user_id (user_id),
     INDEX idx_expires_at (expires_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- チャットメッセージ管理
+CREATE TABLE IF NOT EXISTS chat_messages (
+    id              INT PRIMARY KEY AUTO_INCREMENT,
+    message_id      VARCHAR(255) NOT NULL UNIQUE COMMENT 'メッセージID',
+    room_id         VARCHAR(255) NOT NULL COMMENT 'SkyWay Room ID',
+    sender_id       VARCHAR(255) NOT NULL COMMENT '送信者のユーザーID',
+    sender_name     VARCHAR(255) NOT NULL COMMENT '送信者名',
+    sender_icon_url VARCHAR(500) NULL COMMENT '送信者アイコンURL',
+    text            TEXT NOT NULL COMMENT 'メッセージ本文',
+    created_at      TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_room_id (room_id),
+    INDEX idx_created_at (created_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
