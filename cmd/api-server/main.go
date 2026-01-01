@@ -41,7 +41,9 @@ func main() {
 
 	// Room routes
 	mux.HandleFunc("/api/rooms", func(w http.ResponseWriter, r *http.Request) {
-		if r.Method == http.MethodPost {
+		if r.Method == http.MethodGet {
+			handler.HandleListRooms(w, r)
+		} else if r.Method == http.MethodPost {
 			handler.HandleCreateRoom(w, r)
 		} else {
 			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)

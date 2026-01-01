@@ -7,12 +7,28 @@ import (
 )
 
 type CreateRoomRequest struct {
-	RoomID   string  `json:"room_id"`
-	Password *string `json:"password,omitempty"`
+	RoomID      string  `json:"room_id"`
+	Name        string  `json:"name"`
+	CreatorID   string  `json:"creator_id"`
+	CreatorName string  `json:"creator_name"`
+	Password    *string `json:"password,omitempty"`
 }
 
 type CreateRoomResponse struct {
 	ShortID string `json:"short_id"`
+}
+
+type RoomItem struct {
+	RoomID      string `json:"room_id"`
+	Name        string `json:"name"`
+	CreatorID   string `json:"creator_id"`
+	CreatorName string `json:"creator_name"`
+	HasPassword bool   `json:"has_password"`
+	ShortID     string `json:"short_id"`
+}
+
+type RoomListResponse struct {
+	Rooms []RoomItem `json:"rooms"`
 }
 
 type VerifyPasswordRequest struct {
@@ -32,6 +48,34 @@ type SuccessResponse struct {
 	Success bool `json:"success"`
 }
 
+func (h *Handler) HandleListRooms(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	rooms, err := h.roomUsecase.ListRooms(r.Context())
+	if err != nil {
+		http.Error(w, "Failed to list rooms", http.StatusInternalServerError)
+		return
+	}
+
+	items := make([]RoomItem, 0, len(rooms))
+	for _, room := range rooms {
+		items = append(items, RoomItem{
+			RoomID:      room.RoomID,
+			Name:        room.Name,
+			CreatorID:   room.CreatorID,
+			CreatorName: room.CreatorName,
+			HasPassword: room.HasPassword,
+			ShortID:     room.ShortID,
+		})
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(RoomListResponse{Rooms: items})
+}
+
 func (h *Handler) HandleCreateRoom(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
@@ -44,7 +88,7 @@ func (h *Handler) HandleCreateRoom(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	shortID, err := h.roomUsecase.CreateRoom(r.Context(), req.RoomID, req.Password)
+	shortID, err := h.roomUsecase.CreateRoom(r.Context(), req.RoomID, req.Name, req.CreatorID, req.CreatorName, req.Password)
 	if err != nil {
 		http.Error(w, "Failed to create room", http.StatusInternalServerError)
 		return
@@ -167,7 +211,7 @@ func (h *Handler) HandleResolveShortURL(w http.ResponseWriter, r *http.Request, 
 
 // Ogen interface implementations
 func (h *Handler) RoomsCreate(ctx context.Context, req *CreateRoomRequest) (*CreateRoomResponse, error) {
-	shortID, err := h.roomUsecase.CreateRoom(ctx, req.RoomID, req.Password)
+	shortID, err := h.roomUsecase.CreateRoom(ctx, req.RoomID, req.Name, req.CreatorID, req.CreatorName, req.Password)
 	if err != nil {
 		return nil, err
 	}

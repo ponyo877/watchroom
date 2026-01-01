@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { X } from 'lucide-react';
 import { generateId } from '@/lib/utils';
 import axiosInstance from '@/lib/api';
+import { useUserStore } from '@/stores/userStore';
 
 interface CreateRoomDialogProps {
   open: boolean;
@@ -18,6 +19,8 @@ export default function CreateRoomDialog({
   onOpenChange,
 }: CreateRoomDialogProps) {
   const navigate = useNavigate();
+  const userId = useUserStore((state) => state.id);
+  const userName = useUserStore((state) => state.name);
   const [roomName, setRoomName] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -33,6 +36,9 @@ export default function CreateRoomDialog({
 
       const response = await axiosInstance.post<CreateRoomResponse>('/api/rooms', {
         room_id: roomId,
+        name: roomName,
+        creator_id: userId,
+        creator_name: userName,
         password: password || undefined,
       });
 

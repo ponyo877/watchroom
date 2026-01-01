@@ -1,5 +1,20 @@
 -- WatchRoom Database Schema
 
+-- 部屋管理
+CREATE TABLE IF NOT EXISTS rooms (
+    id            INT PRIMARY KEY AUTO_INCREMENT,
+    room_id       VARCHAR(255) NOT NULL UNIQUE COMMENT 'SkyWay Room ID',
+    name          VARCHAR(255) NOT NULL COMMENT '部屋名',
+    creator_id    VARCHAR(255) NOT NULL COMMENT '作成者のユーザーID',
+    creator_name  VARCHAR(255) NOT NULL COMMENT '作成者名',
+    is_active     BOOLEAN DEFAULT TRUE COMMENT 'アクティブかどうか',
+    created_at    TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at    TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    INDEX idx_room_id (room_id),
+    INDEX idx_is_active (is_active),
+    INDEX idx_created_at (created_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 -- 部屋パスワード管理
 CREATE TABLE IF NOT EXISTS room_passwords (
     id            INT PRIMARY KEY AUTO_INCREMENT,

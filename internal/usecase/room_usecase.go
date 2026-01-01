@@ -5,9 +5,19 @@ import (
 	"crypto/rand"
 	"encoding/base64"
 
+	"github.com/ponyo877/youtube-friend-watch/internal/model"
 	"github.com/ponyo877/youtube-friend-watch/internal/repository"
 	"golang.org/x/crypto/bcrypt"
 )
+
+type RoomWithDetails struct {
+	RoomID      string
+	Name        string
+	CreatorID   string
+	CreatorName string
+	HasPassword bool
+	ShortID     string
+}
 
 type RoomUsecase struct {
 	roomRepo     *repository.RoomRepository
@@ -21,7 +31,17 @@ func NewRoomUsecase(roomRepo *repository.RoomRepository, shortURLRepo *repositor
 	}
 }
 
-func (u *RoomUsecase) CreateRoom(ctx context.Context, roomID string, password *string) (string, error) {
+func (u *RoomUsecase) CreateRoom(ctx context.Context, roomID, name, creatorID, creatorName string, password *string) (string, error) {
+	room := &model.Room{
+		RoomID:      roomID,
+		Name:        name,
+		CreatorID:   creatorID,
+		CreatorName: creatorName,
+	}
+	if err := u.roomRepo.Create(ctx, room); err != nil {
+		return "", err
+	}
+
 	if password != nil && *password != "" {
 		hash, err := bcrypt.GenerateFromPassword([]byte(*password), bcrypt.DefaultCost)
 		if err != nil {
@@ -42,6 +62,34 @@ func (u *RoomUsecase) CreateRoom(ctx context.Context, roomID string, password *s
 	}
 
 	return shortID, nil
+}
+
+func (u *RoomUsecase) ListRooms(ctx context.Context) ([]*RoomWithDetails, error) {
+	rooms, err := u.roomRepo.List(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	result := make([]*RoomWithDetails, 0, len(rooms))
+	for _, room := range rooms {
+		hasPassword, _ := u.roomRepo.HasPassword(ctx, room.RoomID)
+
+		shortURL, _ := u.shortURLRepo.GetByRoomID(ctx, room.RoomID)
+		shortID := ""
+		if shortURL != nil {
+			shortID = shortURL.ShortID
+		}
+
+		result = append(result, &RoomWithDetails{
+			RoomID:      room.RoomID,
+			Name:        room.Name,
+			CreatorID:   room.CreatorID,
+			CreatorName: room.CreatorName,
+			HasPassword: hasPassword,
+			ShortID:     shortID,
+		})
+	}
+	return result, nil
 }
 
 func (u *RoomUsecase) VerifyPassword(ctx context.Context, roomID, password string) (bool, error) {

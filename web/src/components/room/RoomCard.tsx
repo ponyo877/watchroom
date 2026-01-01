@@ -9,7 +9,7 @@ interface RoomCardProps {
 export default function RoomCard({ room }: RoomCardProps) {
   return (
     <Link
-      to={`/room/${room.roomId}`}
+      to={`/r/${room.shortId}`}
       className="block p-4 border border-border rounded-lg bg-card hover:bg-accent transition-colors"
     >
       <div className="aspect-video bg-muted rounded-md mb-3 overflow-hidden relative">
