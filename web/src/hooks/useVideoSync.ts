@@ -18,6 +18,7 @@ export function useVideoSync({ elementId, onSendSync }: UseVideoSyncOptions) {
   const lastSyncRef = useRef<number>(0);
   const isSyncingRef = useRef(false);
   const hasInitialSyncRef = useRef(false);
+  const isInitializingRef = useRef(false);
 
   const userId = useUserStore((state) => state.id);
   const { currentVideo, playbackState, hasControlPermission } = useRoomStore();
@@ -56,6 +57,9 @@ export function useVideoSync({ elementId, onSendSync }: UseVideoSyncOptions) {
   );
 
   const initializePlayer = useCallback(async (videoId: string) => {
+    if (isInitializingRef.current) return;
+    isInitializingRef.current = true;
+
     try {
       const ytPlayer = await createPlayer(elementId, {
         height: '100%',
@@ -72,14 +76,16 @@ export function useVideoSync({ elementId, onSendSync }: UseVideoSyncOptions) {
         },
         events: {
           onReady: () => {
+            // Only set player after it's fully ready
+            setPlayer(ytPlayer);
             setIsReady(true);
           },
           onStateChange: handleStateChange,
         },
       });
-      setPlayer(ytPlayer);
     } catch (e) {
       console.error('Failed to initialize player:', e);
+      isInitializingRef.current = false;
     }
   }, [elementId, handleStateChange]);
 
@@ -162,21 +168,22 @@ export function useVideoSync({ elementId, onSendSync }: UseVideoSyncOptions) {
     const videoId = currentVideo?.videoId;
     if (!videoId) return;
 
-    if (player && isReady) {
+    if (player && isReady && typeof player.loadVideoById === 'function') {
       // Player exists and is ready, load the new video
       player.loadVideoById(videoId);
       // Note: Don't reset hasInitialSyncRef here to avoid race condition
-    } else if (!player) {
-      // No player yet, initialize it
+    } else if (!player && !isInitializingRef.current) {
+      // No player yet and not currently initializing, initialize it
       initializePlayer(videoId);
     }
-    // If player exists but not ready, wait for onReady callback
+    // If player exists but not ready, or currently initializing, wait for onReady callback
   }, [currentVideo?.videoId, player, isReady, initializePlayer]);
 
   // Cleanup on unmount
   useEffect(() => {
     return () => {
       player?.destroy();
+      isInitializingRef.current = false;
     };
   }, [player]);
 
