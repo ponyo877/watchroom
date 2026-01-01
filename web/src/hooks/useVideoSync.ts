@@ -63,11 +63,12 @@ export function useVideoSync({ elementId, onSendSync }: UseVideoSyncOptions) {
         videoId,
         playerVars: {
           autoplay: 0,
-          controls: 1,
+          controls: 0, // Disable native controls - use custom PlayerControls instead
           enablejsapi: 1,
           modestbranding: 1,
           playsinline: 1,
           rel: 0,
+          disablekb: 1, // Disable keyboard controls
         },
         events: {
           onReady: () => {

@@ -29,6 +29,11 @@ export interface YouTubePlayer {
   loadVideoById(videoId: string): void;
   cueVideoById(videoId: string): void;
   destroy(): void;
+  setVolume(volume: number): void;
+  getVolume(): number;
+  mute(): void;
+  unMute(): void;
+  isMuted(): boolean;
 }
 
 export interface YouTubePlayerEvent {
