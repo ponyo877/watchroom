@@ -3,21 +3,18 @@ import { defineConfig, devices } from '@playwright/test';
 /**
  * E2E Test Configuration for WatchRoom
  *
- * Prerequisites:
- * - Backend server running (task dev or go run)
- * - Frontend dev server running (pnpm dev)
- * - Environment variables set (.env.test)
+ * Optimized for speed with parallel execution.
  */
 export default defineConfig({
   testDir: './e2e',
-  fullyParallel: false, // P2P tests need sequential execution
+  fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
-  workers: 1, // Single worker for P2P tests
+  workers: process.env.CI ? 2 : 4,
   reporter: 'html',
-  timeout: 60000, // 60 seconds per test for P2P sync
+  timeout: 60000,
   expect: {
-    timeout: 10000, // 10 seconds for assertions
+    timeout: 10000,
   },
   use: {
     baseURL: 'http://localhost:5173',

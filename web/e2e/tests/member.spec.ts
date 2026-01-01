@@ -1,80 +1,79 @@
 import { test, expect } from '../fixtures/test-fixtures';
 import { generateRoomId } from '../helpers/api';
 
+const ROOM_LOAD_TIMEOUT = 8000;
+
 test.describe('Member Management', () => {
-  test('should update member list when user leaves', async ({ browser, request }) => {
-    // Setup: Create a room
+  test.describe.configure({ mode: 'serial' });
+
+  test('should show members, creator badge, and update when user leaves', async ({ browser, request }) => {
+    test.setTimeout(90000);
+
     const roomId = generateRoomId();
     const response = await request.post('http://localhost:8080/api/rooms', {
       data: { room_id: roomId },
     });
     const { short_id: shortId } = await response.json();
 
-    // Create two browser contexts
-    const contextA = await browser.newContext();
-    const contextB = await browser.newContext();
+    const [contextA, contextB] = await Promise.all([
+      browser.newContext(),
+      browser.newContext(),
+    ]);
 
     await contextA.addInitScript(() => {
       localStorage.setItem('user-storage', JSON.stringify({
-        state: {
-          id: 'user-a-leave-' + Date.now(),
-          name: 'Stayer',
-          iconUrl: null,
-        },
+        state: { id: 'user-creator', name: 'RoomCreator', iconUrl: null },
         version: 0,
       }));
     });
 
     await contextB.addInitScript(() => {
       localStorage.setItem('user-storage', JSON.stringify({
-        state: {
-          id: 'user-b-leave-' + Date.now(),
-          name: 'Leaver',
-          iconUrl: null,
-        },
+        state: { id: 'user-member', name: 'RegularMember', iconUrl: null },
         version: 0,
       }));
     });
 
-    const pageA = await contextA.newPage();
-    const pageB = await contextB.newPage();
+    const [pageA, pageB] = await Promise.all([
+      contextA.newPage(),
+      contextB.newPage(),
+    ]);
 
     try {
-      // 1. User A enters the room
+      // User A (Creator) enters first
       await pageA.goto(`/r/${shortId}`);
-      await pageA.waitForTimeout(5000);
+      await pageA.waitForSelector('button[title="メンバー"]', { timeout: ROOM_LOAD_TIMEOUT });
 
-      // 2. User B enters the room
+      // User B enters
       await pageB.goto(`/r/${shortId}`);
-      await pageB.waitForTimeout(5000);
+      await pageB.waitForSelector('button[title="メンバー"]', { timeout: ROOM_LOAD_TIMEOUT });
 
-      // 3. User A opens member list and verifies User B is there
-      const memberButtonA = pageA.locator('button[title="メンバー"]');
-      if (await memberButtonA.isVisible()) {
-        await memberButtonA.click();
-        await pageA.waitForTimeout(1000);
-      }
+      // Open member list on both
+      await pageA.click('button[title="メンバー"]');
+      await pageB.click('button[title="メンバー"]');
+      await pageA.waitForTimeout(1000);
 
-      // Check that Leaver is in the member list
-      await pageA.waitForTimeout(2000);
+      // Verify both users are shown
       let pageContentA = await pageA.content();
-      expect(pageContentA).toContain('Leaver');
+      expect(pageContentA).toContain('RoomCreator');
+      expect(pageContentA).toContain('RegularMember');
 
-      // 4. User B leaves the room
+      // Verify creator is shown on User B's view too
+      const pageContentB = await pageB.content();
+      expect(pageContentB).toContain('RoomCreator');
+
+      // User B leaves
       const leaveButton = pageB.locator('button[title="部屋を出る"]');
-      if (await leaveButton.isVisible()) {
+      if (await leaveButton.isVisible({ timeout: 2000 }).catch(() => false)) {
         await leaveButton.click();
-        await pageB.waitForTimeout(2000);
       } else {
-        // Close the page to simulate leaving
         await pageB.close();
       }
 
-      // 5. User A should see Leaver removed from member list
-      await pageA.waitForTimeout(5000);
+      // Wait for member list update on User A
+      await pageA.waitForTimeout(3000);
       pageContentA = await pageA.content();
-      // After leaving, Leaver should no longer be in the member list
-      // Note: This depends on the UI updating properly
+      // RegularMember should be gone (or at least the count reduced)
     } finally {
       await contextA.close();
       if (!pageB.isClosed()) {
@@ -83,149 +82,51 @@ test.describe('Member Management', () => {
     }
   });
 
-  test('should show creator badge correctly', async ({ browser, request }) => {
-    // Setup: Create a room
+  test('should show correct member count with multiple users', async ({ browser, request }) => {
+    test.setTimeout(90000);
+
     const roomId = generateRoomId();
     const response = await request.post('http://localhost:8080/api/rooms', {
       data: { room_id: roomId },
     });
     const { short_id: shortId } = await response.json();
 
-    const contextA = await browser.newContext();
-    const contextB = await browser.newContext();
+    const contexts = await Promise.all([
+      browser.newContext(),
+      browser.newContext(),
+      browser.newContext(),
+    ]);
 
-    // User A is the creator
-    await contextA.addInitScript(() => {
-      localStorage.setItem('user-storage', JSON.stringify({
-        state: {
-          id: 'user-a-creator-' + Date.now(),
-          name: 'RoomCreator',
-          iconUrl: null,
-        },
-        version: 0,
-      }));
-    });
-
-    await contextB.addInitScript(() => {
-      localStorage.setItem('user-storage', JSON.stringify({
-        state: {
-          id: 'user-b-member-' + Date.now(),
-          name: 'RegularMember',
-          iconUrl: null,
-        },
-        version: 0,
-      }));
-    });
-
-    const pageA = await contextA.newPage();
-    const pageB = await contextB.newPage();
-
-    try {
-      // 1. User A (Creator) enters the room first
-      await pageA.goto(`/r/${shortId}`);
-      await pageA.waitForTimeout(5000);
-
-      // 2. User B enters the room
-      await pageB.goto(`/r/${shortId}`);
-      await pageB.waitForTimeout(5000);
-
-      // 3. Open member list on both pages
-      const memberButtonA = pageA.locator('button[title="メンバー"]');
-      if (await memberButtonA.isVisible()) {
-        await memberButtonA.click();
-        await pageA.waitForTimeout(1000);
-      }
-
-      const memberButtonB = pageB.locator('button[title="メンバー"]');
-      if (await memberButtonB.isVisible()) {
-        await memberButtonB.click();
-        await pageB.waitForTimeout(1000);
-      }
-
-      // 4. Verify creator badge is shown for RoomCreator
-      // Look for creator indicator (crown icon, badge, etc.)
-      await pageA.waitForTimeout(2000);
-      await pageB.waitForTimeout(2000);
-
-      // The creator should have some visual indicator
-      // This depends on the specific UI implementation
-      const pageContentA = await pageA.content();
-      const pageContentB = await pageB.content();
-
-      // Both pages should show RoomCreator
-      expect(pageContentA).toContain('RoomCreator');
-      expect(pageContentB).toContain('RoomCreator');
-    } finally {
-      await contextA.close();
-      await contextB.close();
+    const userNames = ['User1', 'User2', 'User3'];
+    for (let i = 0; i < contexts.length; i++) {
+      await contexts[i].addInitScript((name) => {
+        localStorage.setItem('user-storage', JSON.stringify({
+          state: { id: `user-${name}`, name: name, iconUrl: null },
+          version: 0,
+        }));
+      }, userNames[i]);
     }
-  });
 
-  test('should show correct member count', async ({ browser, request }) => {
-    // Setup
-    const roomId = generateRoomId();
-    const response = await request.post('http://localhost:8080/api/rooms', {
-      data: { room_id: roomId },
-    });
-    const { short_id: shortId } = await response.json();
-
-    const contextA = await browser.newContext();
-    const contextB = await browser.newContext();
-    const contextC = await browser.newContext();
-
-    await contextA.addInitScript(() => {
-      localStorage.setItem('user-storage', JSON.stringify({
-        state: { id: 'user-a-count', name: 'User1', iconUrl: null },
-        version: 0,
-      }));
-    });
-
-    await contextB.addInitScript(() => {
-      localStorage.setItem('user-storage', JSON.stringify({
-        state: { id: 'user-b-count', name: 'User2', iconUrl: null },
-        version: 0,
-      }));
-    });
-
-    await contextC.addInitScript(() => {
-      localStorage.setItem('user-storage', JSON.stringify({
-        state: { id: 'user-c-count', name: 'User3', iconUrl: null },
-        version: 0,
-      }));
-    });
-
-    const pageA = await contextA.newPage();
-    const pageB = await contextB.newPage();
-    const pageC = await contextC.newPage();
+    const pages = await Promise.all(contexts.map(ctx => ctx.newPage()));
 
     try {
-      // User A enters
-      await pageA.goto(`/r/${shortId}`);
-      await pageA.waitForTimeout(5000);
+      // All users enter in parallel
+      await Promise.all(pages.map(p => p.goto(`/r/${shortId}`)));
+      await Promise.all(pages.map(p =>
+        p.waitForSelector('button[title="メンバー"]', { timeout: ROOM_LOAD_TIMEOUT })
+      ));
 
-      // User B enters
-      await pageB.goto(`/r/${shortId}`);
-      await pageB.waitForTimeout(5000);
+      // Open member list on first page
+      await pages[0].click('button[title="メンバー"]');
+      await pages[0].waitForTimeout(1500);
 
-      // User C enters
-      await pageC.goto(`/r/${shortId}`);
-      await pageC.waitForTimeout(5000);
-
-      // All three users should be visible in member list
-      const memberButtonA = pageA.locator('button[title="メンバー"]');
-      if (await memberButtonA.isVisible()) {
-        await memberButtonA.click();
-        await pageA.waitForTimeout(2000);
-      }
-
-      const pageContent = await pageA.content();
+      // Verify all users are shown
+      const pageContent = await pages[0].content();
       expect(pageContent).toContain('User1');
       expect(pageContent).toContain('User2');
       expect(pageContent).toContain('User3');
     } finally {
-      await contextA.close();
-      await contextB.close();
-      await contextC.close();
+      await Promise.all(contexts.map(ctx => ctx.close()));
     }
   });
 });
