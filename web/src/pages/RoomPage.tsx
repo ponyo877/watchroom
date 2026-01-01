@@ -56,9 +56,9 @@ export default function RoomPage() {
   // Derive password dialog visibility during rendering (not via Effect)
   const showPasswordDialog = roomInfo?.hasPassword === true && !isPasswordVerified;
 
-  // Mock states (will be replaced with actual hooks)
-  const [permissionMode, setPermissionMode] = useState<'creator' | 'specific' | 'all'>('creator');
-  const [allowedUserIds, setAllowedUserIds] = useState<string[]>([]);
+  // Permission states from room store (synced via SkyWay metadata)
+  const permissionMode = roomStore.permissionMode;
+  const allowedUserIds = roomStore.allowedUserIds;
   // Local password state for optimistic updates after password changes
   const [localHasPassword, setLocalHasPassword] = useState<boolean | null>(null);
   const [playHistory, setPlayHistory] = useState<any[]>([]);
@@ -515,10 +515,20 @@ export default function RoomPage() {
               isCreator={roomStore.isCreator}
               onKick={handleKickUser}
               onBan={handleBanUser}
-              onGrantPermission={(id) => setAllowedUserIds((prev) => [...prev, id])}
-              onRevokePermission={(id) =>
-                setAllowedUserIds((prev) => prev.filter((i) => i !== id))
-              }
+              onGrantPermission={(id) => {
+                roomStore.addAllowedUserId(id);
+                if (isConnected) {
+                  const newAllowedUserIds = [...allowedUserIds.filter((i) => i !== id), id];
+                  updateRoomMetadata({ allowedUserIds: newAllowedUserIds });
+                }
+              }}
+              onRevokePermission={(id) => {
+                roomStore.removeAllowedUserId(id);
+                if (isConnected) {
+                  const newAllowedUserIds = allowedUserIds.filter((i) => i !== id);
+                  updateRoomMetadata({ allowedUserIds: newAllowedUserIds });
+                }
+              }}
               allowedUserIds={allowedUserIds}
             />
           ) : (
@@ -563,10 +573,20 @@ export default function RoomPage() {
           isCreator={roomStore.isCreator}
           onKick={handleKickUser}
           onBan={handleBanUser}
-          onGrantPermission={(id) => setAllowedUserIds((prev) => [...prev, id])}
-          onRevokePermission={(id) =>
-            setAllowedUserIds((prev) => prev.filter((i) => i !== id))
-          }
+          onGrantPermission={(id) => {
+            roomStore.addAllowedUserId(id);
+            if (isConnected) {
+              const newAllowedUserIds = [...allowedUserIds.filter((i) => i !== id), id];
+              updateRoomMetadata({ allowedUserIds: newAllowedUserIds });
+            }
+          }}
+          onRevokePermission={(id) => {
+            roomStore.removeAllowedUserId(id);
+            if (isConnected) {
+              const newAllowedUserIds = allowedUserIds.filter((i) => i !== id);
+              updateRoomMetadata({ allowedUserIds: newAllowedUserIds });
+            }
+          }}
           allowedUserIds={allowedUserIds}
         />
       </BottomSheet>
@@ -581,11 +601,26 @@ export default function RoomPage() {
         allowedUserIds={allowedUserIds}
         members={roomStore.members}
         currentUserId={userId}
-        onPermissionModeChange={setPermissionMode}
-        onGrantPermission={(id) => setAllowedUserIds((prev) => [...prev, id])}
-        onRevokePermission={(id) =>
-          setAllowedUserIds((prev) => prev.filter((i) => i !== id))
-        }
+        onPermissionModeChange={(mode) => {
+          roomStore.setPermissionMode(mode);
+          if (isConnected) {
+            updateRoomMetadata({ permissionMode: mode });
+          }
+        }}
+        onGrantPermission={(id) => {
+          roomStore.addAllowedUserId(id);
+          if (isConnected) {
+            const newAllowedUserIds = [...allowedUserIds.filter((i) => i !== id), id];
+            updateRoomMetadata({ allowedUserIds: newAllowedUserIds });
+          }
+        }}
+        onRevokePermission={(id) => {
+          roomStore.removeAllowedUserId(id);
+          if (isConnected) {
+            const newAllowedUserIds = allowedUserIds.filter((i) => i !== id);
+            updateRoomMetadata({ allowedUserIds: newAllowedUserIds });
+          }
+        }}
         onOpenPasswordSettings={() => {
           setShowSettings(false);
           setShowPasswordSettings(true);

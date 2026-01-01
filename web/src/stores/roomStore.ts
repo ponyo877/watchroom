@@ -12,6 +12,8 @@ interface RoomState {
   isConnected: boolean;
   isCreator: boolean;
   hasControlPermission: boolean;
+  permissionMode: 'creator' | 'specific' | 'all';
+  allowedUserIds: string[];
 
   setRoom: (room: Room | null) => void;
   setMembers: (members: MemberMetadata[]) => void;
@@ -25,6 +27,10 @@ interface RoomState {
   setIsConnected: (connected: boolean) => void;
   setIsCreator: (isCreator: boolean) => void;
   setHasControlPermission: (hasPermission: boolean) => void;
+  setPermissionMode: (mode: 'creator' | 'specific' | 'all') => void;
+  setAllowedUserIds: (ids: string[]) => void;
+  addAllowedUserId: (id: string) => void;
+  removeAllowedUserId: (id: string) => void;
   reset: () => void;
 }
 
@@ -45,6 +51,8 @@ export const useRoomStore = create<RoomState>((set) => ({
   isConnected: false,
   isCreator: false,
   hasControlPermission: false,
+  permissionMode: 'creator',
+  allowedUserIds: [],
 
   setRoom: (room) => set({ room }),
   setMembers: (members) => set({ members }),
@@ -77,6 +85,16 @@ export const useRoomStore = create<RoomState>((set) => ({
   setIsCreator: (isCreator) => set({ isCreator }),
   setHasControlPermission: (hasPermission) =>
     set({ hasControlPermission: hasPermission }),
+  setPermissionMode: (mode) => set({ permissionMode: mode }),
+  setAllowedUserIds: (ids) => set({ allowedUserIds: ids }),
+  addAllowedUserId: (id) =>
+    set((state) => ({
+      allowedUserIds: [...state.allowedUserIds.filter((i) => i !== id), id],
+    })),
+  removeAllowedUserId: (id) =>
+    set((state) => ({
+      allowedUserIds: state.allowedUserIds.filter((i) => i !== id),
+    })),
   reset: () =>
     set({
       room: null,
@@ -88,5 +106,7 @@ export const useRoomStore = create<RoomState>((set) => ({
       isConnected: false,
       isCreator: false,
       hasControlPermission: false,
+      permissionMode: 'creator',
+      allowedUserIds: [],
     }),
 }));

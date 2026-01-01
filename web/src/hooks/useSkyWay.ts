@@ -200,6 +200,13 @@ export function useSkyWay({ roomName, token, onMessage }: UseSkyWayOptions) {
         if (metadata) {
           roomStoreActions.setCurrentVideo(metadata.currentVideo);
           roomStoreActions.setPlaybackState(metadata.playbackState);
+          // Sync permission settings to store
+          if (metadata.permissionMode) {
+            roomStoreActions.setPermissionMode(metadata.permissionMode);
+          }
+          if (metadata.allowedUserIds) {
+            roomStoreActions.setAllowedUserIds(metadata.allowedUserIds);
+          }
           // Update permission when room settings change
           roomStoreActions.setHasControlPermission(calculatePermission(metadata));
         }
@@ -228,6 +235,13 @@ export function useSkyWay({ roomName, token, onMessage }: UseSkyWayOptions) {
             // Set a new lastUpdated to trigger sync in useVideoSync
             lastUpdated: Date.now(),
           });
+        }
+        // Sync initial permission settings
+        if (initialRoomMetadata.permissionMode) {
+          roomStoreActions.setPermissionMode(initialRoomMetadata.permissionMode);
+        }
+        if (initialRoomMetadata.allowedUserIds) {
+          roomStoreActions.setAllowedUserIds(initialRoomMetadata.allowedUserIds);
         }
       }
 
