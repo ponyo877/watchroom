@@ -11,6 +11,8 @@ CREATE TABLE IF NOT EXISTS rooms (
     current_video_id        VARCHAR(255) NULL COMMENT '現在再生中の動画ID',
     current_video_title     VARCHAR(500) NULL COMMENT '現在再生中の動画タイトル',
     current_video_thumbnail VARCHAR(500) NULL COMMENT '現在再生中の動画サムネイル',
+    member_count            INT DEFAULT 0 COMMENT '現在の参加人数',
+    max_members             INT DEFAULT 10 COMMENT '最大参加人数',
     created_at              TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at              TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     INDEX idx_room_id (room_id),

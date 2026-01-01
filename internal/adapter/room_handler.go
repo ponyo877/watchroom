@@ -32,6 +32,8 @@ type RoomItem struct {
 	HasPassword  bool               `json:"has_password"`
 	ShortID      string             `json:"short_id"`
 	CurrentVideo *VideoInfoResponse `json:"current_video,omitempty"`
+	MemberCount  int                `json:"member_count"`
+	MaxMembers   int                `json:"max_members"`
 }
 
 type RoomListResponse struct {
@@ -76,6 +78,8 @@ func (h *Handler) HandleListRooms(w http.ResponseWriter, r *http.Request) {
 			CreatorName: room.CreatorName,
 			HasPassword: room.HasPassword,
 			ShortID:     room.ShortID,
+			MemberCount: room.MemberCount,
+			MaxMembers:  room.MaxMembers,
 		}
 		if room.CurrentVideo != nil {
 			item.CurrentVideo = &VideoInfoResponse{
@@ -250,6 +254,62 @@ func (h *Handler) HandleUpdateCurrentVideo(w http.ResponseWriter, r *http.Reques
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(SuccessResponse{Success: true})
+}
+
+func (h *Handler) HandleIncrementMemberCount(w http.ResponseWriter, r *http.Request, roomID string) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	err := h.roomUsecase.IncrementMemberCount(r.Context(), roomID)
+	if err != nil {
+		http.Error(w, "Failed to increment member count", http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(SuccessResponse{Success: true})
+}
+
+func (h *Handler) HandleDecrementMemberCount(w http.ResponseWriter, r *http.Request, roomID string) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	err := h.roomUsecase.DecrementMemberCount(r.Context(), roomID)
+	if err != nil {
+		http.Error(w, "Failed to decrement member count", http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(SuccessResponse{Success: true})
+}
+
+type MemberInfoResponse struct {
+	MemberCount int `json:"member_count"`
+	MaxMembers  int `json:"max_members"`
+}
+
+func (h *Handler) HandleGetMemberInfo(w http.ResponseWriter, r *http.Request, roomID string) {
+	if r.Method != http.MethodGet {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	memberCount, maxMembers, err := h.roomUsecase.GetMemberInfo(r.Context(), roomID)
+	if err != nil {
+		http.Error(w, "Failed to get member info", http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(MemberInfoResponse{
+		MemberCount: memberCount,
+		MaxMembers:  maxMembers,
+	})
 }
 
 // Ogen interface implementations

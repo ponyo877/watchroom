@@ -24,6 +24,8 @@ type RoomWithDetails struct {
 	HasPassword  bool
 	ShortID      string
 	CurrentVideo *VideoInfo
+	MemberCount  int
+	MaxMembers   int
 }
 
 type RoomUsecase struct {
@@ -104,6 +106,8 @@ func (u *RoomUsecase) ListRooms(ctx context.Context) ([]*RoomWithDetails, error)
 			HasPassword:  hasPassword,
 			ShortID:      shortID,
 			CurrentVideo: currentVideo,
+			MemberCount:  room.MemberCount,
+			MaxMembers:   room.MaxMembers,
 		})
 	}
 	return result, nil
@@ -111,6 +115,18 @@ func (u *RoomUsecase) ListRooms(ctx context.Context) ([]*RoomWithDetails, error)
 
 func (u *RoomUsecase) UpdateCurrentVideo(ctx context.Context, roomID, videoID, title, thumbnail string) error {
 	return u.roomRepo.UpdateCurrentVideo(ctx, roomID, videoID, title, thumbnail)
+}
+
+func (u *RoomUsecase) IncrementMemberCount(ctx context.Context, roomID string) error {
+	return u.roomRepo.IncrementMemberCount(ctx, roomID)
+}
+
+func (u *RoomUsecase) DecrementMemberCount(ctx context.Context, roomID string) error {
+	return u.roomRepo.DecrementMemberCount(ctx, roomID)
+}
+
+func (u *RoomUsecase) GetMemberInfo(ctx context.Context, roomID string) (memberCount int, maxMembers int, err error) {
+	return u.roomRepo.GetMemberInfo(ctx, roomID)
 }
 
 func (u *RoomUsecase) VerifyPassword(ctx context.Context, roomID, password string) (bool, error) {

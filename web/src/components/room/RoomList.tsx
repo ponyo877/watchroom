@@ -18,6 +18,8 @@ interface APIRoomItem {
   has_password: boolean;
   short_id: string;
   current_video?: APIVideoInfo;
+  member_count: number;
+  max_members: number;
 }
 
 interface APIRoomListResponse {
@@ -41,8 +43,8 @@ export default function RoomList() {
           creatorName: r.creator_name,
           hasPassword: r.has_password,
           shortId: r.short_id,
-          memberCount: 0,
-          maxMembers: 10,
+          memberCount: r.member_count,
+          maxMembers: r.max_members,
           currentVideo: r.current_video
             ? {
                 videoId: r.current_video.video_id,

@@ -12,6 +12,8 @@ type Room struct {
 	CurrentVideoID        *string
 	CurrentVideoTitle     *string
 	CurrentVideoThumbnail *string
+	MemberCount           int
+	MaxMembers            int
 	CreatedAt             time.Time
 	UpdatedAt             time.Time
 }

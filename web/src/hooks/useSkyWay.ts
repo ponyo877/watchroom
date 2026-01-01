@@ -18,6 +18,7 @@ import {
   parseMemberMetadata,
   parseRoomMetadata,
 } from '@/lib/skyway';
+import axiosInstance from '@/lib/api';
 
 interface UseSkyWayOptions {
   roomName: string;
@@ -253,6 +254,13 @@ export function useSkyWay({ roomName, token, onMessage }: UseSkyWayOptions) {
         }
       }
 
+      // Increment member count in DB
+      try {
+        await axiosInstance.post(`/api/rooms/${roomName}/member-count/increment`);
+      } catch (e) {
+        console.error('Failed to increment member count:', e);
+      }
+
       setIsConnected(true);
       roomStoreActions.setIsConnected(true);
     } catch (e) {
@@ -265,6 +273,15 @@ export function useSkyWay({ roomName, token, onMessage }: UseSkyWayOptions) {
   }, [token, roomName, user.id, user.name, user.iconUrl, subscribeToMember, roomStoreActions]);
 
   const disconnect = useCallback(async () => {
+    // Decrement member count in DB before leaving
+    if (roomRef.current) {
+      try {
+        await axiosInstance.post(`/api/rooms/${roomName}/member-count/decrement`);
+      } catch (e) {
+        console.error('Failed to decrement member count:', e);
+      }
+    }
+
     try {
       if (memberRef.current) {
         await memberRef.current.leave();
@@ -284,7 +301,7 @@ export function useSkyWay({ roomName, token, onMessage }: UseSkyWayOptions) {
       setIsConnected(false);
       roomStoreActions.setIsConnected(false);
     }
-  }, [roomStoreActions]);
+  }, [roomName, roomStoreActions]);
 
   useEffect(() => {
     if (token && roomName) {

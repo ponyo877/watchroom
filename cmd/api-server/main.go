@@ -75,6 +75,23 @@ func main() {
 				}
 			case "current-video":
 				handler.HandleUpdateCurrentVideo(w, r, roomID)
+			case "member-info":
+				handler.HandleGetMemberInfo(w, r, roomID)
+			default:
+				http.Error(w, "Not found", http.StatusNotFound)
+			}
+			return
+		}
+
+		if len(parts) == 3 && parts[1] == "member-count" {
+			roomID := parts[0]
+			action := parts[2]
+
+			switch action {
+			case "increment":
+				handler.HandleIncrementMemberCount(w, r, roomID)
+			case "decrement":
+				handler.HandleDecrementMemberCount(w, r, roomID)
 			default:
 				http.Error(w, "Not found", http.StatusNotFound)
 			}
