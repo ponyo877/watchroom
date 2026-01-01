@@ -42,7 +42,7 @@ func (s *SkyWayService) GenerateToken(userID string, roomName *string) (string, 
 		},
 	}
 
-	if roomName != nil {
+	if roomName != nil && *roomName != "" {
 		channelConfig["name"] = *roomName
 	}
 

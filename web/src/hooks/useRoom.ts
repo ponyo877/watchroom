@@ -159,10 +159,10 @@ export function useRoom({ roomId }: UseRoomOptions) {
   }, [roomStoreActions, navigate]);
 
   useEffect(() => {
-    if (userId) {
+    if (userId && roomId) {
       fetchToken();
     }
-  }, [userId, fetchToken]);
+  }, [userId, roomId, fetchToken]);
 
   // Derive combined error during rendering (not via Effect)
   const error = tokenError ?? skyWayError?.message ?? null;
