@@ -64,6 +64,8 @@ export default function RoomPage() {
   const [playHistory, setPlayHistory] = useState<any[]>([]);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
+  const [volume, setVolume] = useState(100);
+  const [isMuted, setIsMuted] = useState(false);
 
   // Player element ID
   const playerElementId = useRef(`youtube-player-${Date.now()}`);
@@ -420,6 +422,8 @@ export default function RoomPage() {
               duration={duration}
               playbackRate={roomStore.playbackState.playbackRate}
               hasControlPermission={roomStore.hasControlPermission}
+              volume={volume}
+              isMuted={isMuted}
               onPlay={() => {
                 play();
                 const newState = { isPlaying: true, currentTime, lastUpdated: Date.now() };
@@ -451,6 +455,25 @@ export default function RoomPage() {
                 roomStore.setPlaybackState(newState);
                 if (isConnected) {
                   updateRoomMetadata({ playbackState: { ...roomStore.playbackState, ...newState } });
+                }
+              }}
+              onVolumeChange={(newVolume) => {
+                setVolume(newVolume);
+                setIsMuted(false);
+                if (player) {
+                  player.setVolume(newVolume);
+                  player.unMute();
+                }
+              }}
+              onMuteToggle={() => {
+                const newMuted = !isMuted;
+                setIsMuted(newMuted);
+                if (player) {
+                  if (newMuted) {
+                    player.mute();
+                  } else {
+                    player.unMute();
+                  }
                 }
               }}
             />

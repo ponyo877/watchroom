@@ -22,7 +22,7 @@ export default function ReactionPicker({
 
   const handleSelect = (emoji: string) => {
     onSelectReaction(emoji);
-    setIsOpen(false);
+    // Keep picker open for consecutive reactions - user can close by clicking outside
   };
 
   return (
