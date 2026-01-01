@@ -34,6 +34,8 @@ export default function RoomList() {
           creatorName: r.creator_name,
           hasPassword: r.has_password,
           shortId: r.short_id,
+          memberCount: 0,
+          maxMembers: 10,
         }));
         setRooms(mappedRooms);
       } catch (err) {

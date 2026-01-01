@@ -167,15 +167,6 @@ export function useSkyWay({ roomName, token, onMessage }: UseSkyWayOptions) {
         roomStoreActions.removeMember(e.member.id);
       });
 
-      // Listen for metadata changes
-      room.onMetadataUpdated.add(() => {
-        const metadata = parseRoomMetadata(room.metadata);
-        if (metadata) {
-          roomStoreActions.setCurrentVideo(metadata.currentVideo);
-          roomStoreActions.setPlaybackState(metadata.playbackState);
-        }
-      });
-
       // Update initial members
       const members = room.members
         .map((m) => parseMemberMetadata(m.metadata))
@@ -184,9 +175,38 @@ export function useSkyWay({ roomName, token, onMessage }: UseSkyWayOptions) {
 
       // Set creator status
       roomStoreActions.setIsCreator(isCreator);
-      // For now, give all users control permission for video sync to work
-      // TODO: Implement proper permission system based on room settings
-      roomStoreActions.setHasControlPermission(true);
+
+      // Calculate control permission based on room settings
+      const calculatePermission = (roomMetadata: RoomMetadata | null): boolean => {
+        if (!roomMetadata) {
+          // Default: only creator has permission
+          return isCreator;
+        }
+        const permissionMode = roomMetadata.permissionMode || 'creator';
+        switch (permissionMode) {
+          case 'all':
+            return true;
+          case 'specific':
+            return isCreator || (roomMetadata.allowedUserIds || []).includes(user.id);
+          case 'creator':
+          default:
+            return isCreator;
+        }
+      };
+
+      // Listen for metadata changes
+      room.onMetadataUpdated.add(() => {
+        const metadata = parseRoomMetadata(room.metadata);
+        if (metadata) {
+          roomStoreActions.setCurrentVideo(metadata.currentVideo);
+          roomStoreActions.setPlaybackState(metadata.playbackState);
+          // Update permission when room settings change
+          roomStoreActions.setHasControlPermission(calculatePermission(metadata));
+        }
+      });
+
+      const initialRoomMeta = parseRoomMetadata(room.metadata);
+      roomStoreActions.setHasControlPermission(calculatePermission(initialRoomMeta));
 
       // Read initial room metadata for late joiners
       const initialRoomMetadata = parseRoomMetadata(room.metadata);
