@@ -255,7 +255,21 @@ export default function RoomPage() {
         historyItem,
         ...playHistory.filter((v) => v.videoId !== video.videoId),
       ].slice(0, 50);
-      updateRoomMetadata({ currentVideo: videoInfo, playHistory: newPlayHistory });
+
+      // Initialize playback state for the new video (loadVideoById auto-plays at position 0)
+      const initialPlaybackState = {
+        isPlaying: true,
+        currentTime: 0,
+        playbackRate: roomStore.playbackState.playbackRate,
+        lastUpdated: Date.now(),
+      };
+      roomStore.setPlaybackState(initialPlaybackState);
+
+      updateRoomMetadata({
+        currentVideo: videoInfo,
+        playHistory: newPlayHistory,
+        playbackState: initialPlaybackState,
+      });
 
       // Update current video in database for room list display
       if (actualRoomId) {
@@ -673,7 +687,15 @@ export default function RoomPage() {
         onSelectVideo={(video) => {
           roomStore.setCurrentVideo(video);
           if (isConnected && roomStore.hasControlPermission) {
-            updateRoomMetadata({ currentVideo: video });
+            // Initialize playback state for the selected video (loadVideoById auto-plays at position 0)
+            const initialPlaybackState = {
+              isPlaying: true,
+              currentTime: 0,
+              playbackRate: roomStore.playbackState.playbackRate,
+              lastUpdated: Date.now(),
+            };
+            roomStore.setPlaybackState(initialPlaybackState);
+            updateRoomMetadata({ currentVideo: video, playbackState: initialPlaybackState });
           }
           setShowPlayHistory(false);
         }}
