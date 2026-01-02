@@ -20,7 +20,7 @@ test.describe('Room List', () => {
     const { short_id: shortId } = await response.json();
 
     await homePage.goto();
-    await expect(page.locator('h1')).toContainText('部屋一覧');
+    await expect(page.locator('a:has-text("WatchRoom")')).toBeVisible();
 
     // Wait for loading to complete
     await expect(page.locator('text=部屋を読み込み中')).not.toBeVisible({ timeout: 10000 });
@@ -54,9 +54,9 @@ test.describe('Room List', () => {
     const roomCard = page.locator(`text=${roomName}`).first();
     await expect(roomCard).toBeVisible({ timeout: 10000 });
 
-    // Check for lock icon
-    const parentCard = roomCard.locator('xpath=ancestor::*[contains(@class, "card") or contains(@class, "rounded")]').first();
-    await expect(parentCard.locator('svg').first()).toBeVisible();
+    // Check for lock icon - it's a sibling of the room name in the flex container
+    const roomLink = page.locator(`a:has-text("${roomName}")`).first();
+    await expect(roomLink.locator('svg').first()).toBeVisible();
   });
 
   test('should refresh room list on page reload', async ({ page, homePage, request }) => {

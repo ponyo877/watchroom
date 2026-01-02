@@ -8,7 +8,7 @@ test.describe('Room Creation & Entry', () => {
 
   test('should create a new room and navigate to it', async ({ page, homePage }) => {
     await homePage.goto();
-    await expect(page.locator('h1')).toContainText('部屋一覧');
+    await expect(page.locator('a:has-text("WatchRoom")')).toBeVisible();
 
     const roomName = `Test Room ${Date.now()}`;
     await homePage.createRoom(roomName);

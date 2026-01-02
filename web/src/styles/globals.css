@@ -1,26 +1,48 @@
 @import "tailwindcss";
 
 @theme {
-  --color-background: oklch(1 0 0);
-  --color-foreground: oklch(0.145 0 0);
+  /* === Base Colors (Light Mode) === */
+  --color-background: oklch(0.99 0 0);
+  --color-foreground: oklch(0.13 0 0);
   --color-card: oklch(1 0 0);
-  --color-card-foreground: oklch(0.145 0 0);
+  --color-card-foreground: oklch(0.13 0 0);
   --color-popover: oklch(1 0 0);
-  --color-popover-foreground: oklch(0.145 0 0);
-  --color-primary: oklch(0.205 0 0);
-  --color-primary-foreground: oklch(0.985 0 0);
-  --color-secondary: oklch(0.97 0 0);
-  --color-secondary-foreground: oklch(0.205 0 0);
-  --color-muted: oklch(0.97 0 0);
-  --color-muted-foreground: oklch(0.556 0 0);
-  --color-accent: oklch(0.97 0 0);
-  --color-accent-foreground: oklch(0.205 0 0);
-  --color-destructive: oklch(0.577 0.245 27.325);
-  --color-destructive-foreground: oklch(0.577 0.245 27.325);
-  --color-border: oklch(0.922 0 0);
-  --color-input: oklch(0.922 0 0);
-  --color-ring: oklch(0.708 0 0);
+  --color-popover-foreground: oklch(0.13 0 0);
+
+  /* Vibrant Primary (Purple-Blue) */
+  --color-primary: oklch(0.55 0.25 260);
+  --color-primary-foreground: oklch(0.98 0 0);
+
+  /* Secondary */
+  --color-secondary: oklch(0.96 0.01 260);
+  --color-secondary-foreground: oklch(0.2 0 0);
+
+  /* Muted */
+  --color-muted: oklch(0.96 0.005 260);
+  --color-muted-foreground: oklch(0.5 0 0);
+
+  /* Accent (Teal) */
+  --color-accent: oklch(0.65 0.15 165);
+  --color-accent-foreground: oklch(0.98 0 0);
+
+  /* Destructive */
+  --color-destructive: oklch(0.55 0.22 25);
+  --color-destructive-foreground: oklch(0.98 0 0);
+
+  /* Borders and Inputs */
+  --color-border: oklch(0.9 0.01 260);
+  --color-input: oklch(0.9 0.01 260);
+  --color-ring: oklch(0.55 0.25 260);
+
+  /* Status Colors */
+  --color-success: oklch(0.6 0.2 145);
+  --color-warning: oklch(0.75 0.15 85);
+  --color-info: oklch(0.6 0.2 230);
+
+  /* Radius */
   --radius: 0.625rem;
+  --radius-lg: 1rem;
+  --radius-xl: 1.5rem;
 }
 
 @layer base {
@@ -33,23 +55,244 @@
 }
 
 .dark {
-  --color-background: oklch(0.145 0 0);
-  --color-foreground: oklch(0.985 0 0);
-  --color-card: oklch(0.145 0 0);
-  --color-card-foreground: oklch(0.985 0 0);
-  --color-popover: oklch(0.145 0 0);
-  --color-popover-foreground: oklch(0.985 0 0);
-  --color-primary: oklch(0.985 0 0);
-  --color-primary-foreground: oklch(0.205 0 0);
-  --color-secondary: oklch(0.269 0 0);
-  --color-secondary-foreground: oklch(0.985 0 0);
-  --color-muted: oklch(0.269 0 0);
-  --color-muted-foreground: oklch(0.708 0 0);
-  --color-accent: oklch(0.269 0 0);
-  --color-accent-foreground: oklch(0.985 0 0);
-  --color-destructive: oklch(0.396 0.141 25.768);
-  --color-destructive-foreground: oklch(0.637 0.237 25.331);
-  --color-border: oklch(0.269 0 0);
-  --color-input: oklch(0.269 0 0);
-  --color-ring: oklch(0.439 0 0);
+  /* === Dark Mode with Neon Accents === */
+  --color-background: oklch(0.12 0.01 260);
+  --color-foreground: oklch(0.95 0 0);
+  --color-card: oklch(0.16 0.015 260);
+  --color-card-foreground: oklch(0.95 0 0);
+  --color-popover: oklch(0.14 0.01 260);
+  --color-popover-foreground: oklch(0.95 0 0);
+
+  /* Neon Primary (Bright Purple) */
+  --color-primary: oklch(0.7 0.25 280);
+  --color-primary-foreground: oklch(0.1 0 0);
+
+  /* Secondary */
+  --color-secondary: oklch(0.25 0.02 260);
+  --color-secondary-foreground: oklch(0.95 0 0);
+
+  /* Muted */
+  --color-muted: oklch(0.22 0.015 260);
+  --color-muted-foreground: oklch(0.65 0.01 260);
+
+  /* Neon Accent (Cyan) */
+  --color-accent: oklch(0.75 0.2 165);
+  --color-accent-foreground: oklch(0.1 0 0);
+
+  /* Destructive */
+  --color-destructive: oklch(0.6 0.25 25);
+  --color-destructive-foreground: oklch(0.98 0 0);
+
+  /* Borders */
+  --color-border: oklch(0.28 0.02 260);
+  --color-input: oklch(0.22 0.015 260);
+  --color-ring: oklch(0.7 0.25 280);
+}
+
+/* === Keyframe Animations === */
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fade-in-down {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes scale-in {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes slide-in-right {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slide-in-bottom {
+  from {
+    opacity: 0;
+    transform: translateY(100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slide-out-bottom {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(100%);
+  }
+}
+
+/* Reaction float animation */
+@keyframes reaction-float {
+  0% {
+    transform: translateY(0) scale(0.5) rotate(-10deg);
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+    transform: translateY(-10%) scale(1) rotate(0deg);
+  }
+  90% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(-100vh) scale(0.8) rotate(10deg);
+    opacity: 0;
+  }
+}
+
+@keyframes reaction-wobble {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-5px) rotate(-3deg); }
+  75% { transform: translateX(5px) rotate(3deg); }
+}
+
+/* Loading skeleton shimmer */
+@keyframes skeleton-shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+/* Pulse glow for primary elements */
+@keyframes pulse-glow {
+  0%, 100% {
+    box-shadow: 0 0 5px var(--color-primary);
+  }
+  50% {
+    box-shadow: 0 0 20px var(--color-primary);
+  }
+}
+
+/* === Animation Utility Classes === */
+.animate-fade-in {
+  animation: fade-in 0.3s ease-out forwards;
+}
+
+.animate-fade-in-up {
+  animation: fade-in-up 0.4s ease-out forwards;
+}
+
+.animate-fade-in-down {
+  animation: fade-in-down 0.4s ease-out forwards;
+}
+
+.animate-scale-in {
+  animation: scale-in 0.3s ease-out forwards;
+}
+
+.animate-slide-in-right {
+  animation: slide-in-right 0.3s ease-out forwards;
+}
+
+.animate-slide-in-bottom {
+  animation: slide-in-bottom 0.3s ease-out forwards;
+}
+
+.animate-slide-out-bottom {
+  animation: slide-out-bottom 0.3s ease-out forwards;
+}
+
+.animate-reaction-float {
+  animation: reaction-float 4s ease-out forwards;
+}
+
+.animate-reaction-wobble {
+  animation: reaction-wobble 0.5s ease-in-out infinite;
+}
+
+/* Skeleton loading */
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--color-muted) 0%,
+    oklch(0.8 0 0 / 0.3) 50%,
+    var(--color-muted) 100%
+  );
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 1.5s infinite;
+}
+
+/* === Glassmorphism Utilities === */
+.glass {
+  background: oklch(from var(--color-card) l c h / 0.7);
+  backdrop-filter: blur(12px) saturate(180%);
+  -webkit-backdrop-filter: blur(12px) saturate(180%);
+  border: 1px solid oklch(from var(--color-border) l c h / 0.5);
+}
+
+.glass-strong {
+  background: oklch(from var(--color-card) l c h / 0.85);
+  backdrop-filter: blur(20px) saturate(200%);
+  -webkit-backdrop-filter: blur(20px) saturate(200%);
+  border: 1px solid oklch(from var(--color-border) l c h / 0.3);
+}
+
+/* === Interactive Button Base === */
+.btn-interactive {
+  transition: all 0.2s ease-out;
+}
+
+.btn-interactive:hover {
+  transform: scale(1.05);
+}
+
+.btn-interactive:active {
+  transform: scale(0.95);
+}
+
+.btn-interactive:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--color-background), 0 0 0 4px var(--color-primary);
+}
+
+/* === Glow Effects (Dark Mode) === */
+.dark .glow-primary {
+  box-shadow: 0 0 20px oklch(from var(--color-primary) l c h / 0.4);
+}
+
+.dark .glow-accent {
+  box-shadow: 0 0 20px oklch(from var(--color-accent) l c h / 0.4);
+}
+
+.dark .text-glow {
+  text-shadow: 0 0 10px currentColor;
 }
