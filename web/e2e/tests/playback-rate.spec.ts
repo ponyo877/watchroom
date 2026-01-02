@@ -14,7 +14,7 @@ test.describe('Playback Rate Change', () => {
     const { short_id: shortId } = await response.json();
 
     await page.goto(`/r/${shortId}`);
-    await page.waitForSelector('button[title="NewVideo"]', { timeout: ROOM_LOAD_TIMEOUT });
+    await page.waitForSelector('button[title="AddVideo"]', { timeout: ROOM_LOAD_TIMEOUT });
 
     // Look for playback rate selector (usually shows "1x" by default)
     const rateSelector = page.locator('button:has-text("1x"), select:has-text("1x")').first();

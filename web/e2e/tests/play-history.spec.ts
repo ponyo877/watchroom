@@ -14,7 +14,7 @@ test.describe('Play History', () => {
     const { short_id: shortId } = await response.json();
 
     await page.goto(`/r/${shortId}`);
-    await page.waitForSelector('button[title="NewVideo"]', { timeout: ROOM_LOAD_TIMEOUT });
+    await page.waitForSelector('button[title="AddVideo"]', { timeout: ROOM_LOAD_TIMEOUT });
 
     // Look for history button
     const historyButton = page.locator('button[title*="履歴"], button:has-text("履歴")').first();

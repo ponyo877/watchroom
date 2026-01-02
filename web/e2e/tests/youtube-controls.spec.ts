@@ -14,9 +14,9 @@ test.describe('YouTube Player Controls', () => {
     const { short_id: shortId } = await response.json();
 
     await page.goto(`/r/${shortId}`);
-    await page.waitForSelector('button[title="NewVideo"]', { timeout: ROOM_LOAD_TIMEOUT });
+    await page.waitForSelector('button[title="AddVideo"]', { timeout: ROOM_LOAD_TIMEOUT });
 
-    await page.click('button[title="NewVideo"]');
+    await page.click('button[title="AddVideo"]');
     await page.waitForSelector('input[placeholder*="検索"]', { timeout: 5000 });
     await page.fill('input[placeholder*="検索"]', 'test');
     await page.keyboard.press('Enter');
@@ -54,9 +54,9 @@ test.describe('YouTube Player Controls', () => {
     const { short_id: shortId } = await response.json();
 
     await page.goto(`/r/${shortId}`);
-    await page.waitForSelector('button[title="NewVideo"]', { timeout: ROOM_LOAD_TIMEOUT });
+    await page.waitForSelector('button[title="AddVideo"]', { timeout: ROOM_LOAD_TIMEOUT });
 
-    await page.click('button[title="NewVideo"]');
+    await page.click('button[title="AddVideo"]');
     await page.waitForSelector('input[placeholder*="検索"]', { timeout: 5000 });
     await page.fill('input[placeholder*="検索"]', 'test');
     await page.keyboard.press('Enter');

@@ -46,7 +46,7 @@ test.describe('UI Button Styles', () => {
 });
 
 test.describe('Video Search Button', () => {
-  test('should display NewVideo button with Film icon in room page', async ({ page, request }) => {
+  test('should display AddVideo button with Film icon in room page', async ({ page, request }) => {
     // Create a test room
     const roomId = `test-room-${Date.now()}`;
     const response = await request.post('http://localhost:8080/api/rooms', {
@@ -56,12 +56,19 @@ test.describe('Video Search Button', () => {
 
     await page.goto(`/r/${shortId}`);
 
-    // Wait for and verify the NewVideo button
-    const newVideoButton = page.locator('button[title="NewVideo"]');
-    await expect(newVideoButton).toBeVisible({ timeout: 10000 });
+    // Wait for and verify the AddVideo button in header (use .first() as there are 2 buttons)
+    const addVideoButton = page.locator('header button[title="AddVideo"]');
+    await expect(addVideoButton).toBeVisible({ timeout: 10000 });
 
     // Verify it has an SVG icon (Film icon)
-    const icon = newVideoButton.locator('svg');
+    const icon = addVideoButton.locator('svg');
     await expect(icon).toBeVisible();
+
+    // Verify it has the main button styling (green background)
+    const bgColor = await addVideoButton.evaluate((el) => {
+      return window.getComputedStyle(el).backgroundColor;
+    });
+    // #4A7C59 converts to rgb(74, 124, 89)
+    expect(bgColor).toBe('rgb(74, 124, 89)');
   });
 });

@@ -445,10 +445,11 @@ export default function RoomPage() {
             <div className="flex items-center gap-1 md:gap-2">
               <button
                 onClick={() => setShowVideoSearch(true)}
-                className="p-2 hover:bg-accent rounded-md"
-                title="NewVideo"
+                className="flex items-center gap-2 px-3 py-2 bg-[#4A7C59] text-white rounded-md shadow-lg shadow-[#4A7C59]/25 hover:shadow-xl hover:shadow-[#4A7C59]/30 hover:scale-105 active:scale-95 transition-all duration-200"
+                title="AddVideo"
               >
-                <Film className="h-5 w-5" />
+                <Film className="h-4 w-4" />
+                <span className="hidden md:inline">AddVideo</span>
               </button>
               <button
                 onClick={() => setShowPlayHistory(true)}
@@ -506,10 +507,11 @@ export default function RoomPage() {
                   <p className="text-white/50 mb-4">動画が選択されていません</p>
                   <button
                     onClick={() => setShowVideoSearch(true)}
-                    className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-md"
+                    className="flex items-center gap-2 px-4 py-2 bg-[#4A7C59] text-white rounded-md shadow-lg shadow-[#4A7C59]/25 hover:shadow-xl hover:shadow-[#4A7C59]/30 hover:scale-105 active:scale-95 transition-all duration-200"
+                    title="AddVideo"
                   >
                     <Film className="h-4 w-4" />
-                    <span>NewVideo</span>
+                    <span>AddVideo</span>
                   </button>
                 </div>
               </div>

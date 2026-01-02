@@ -14,7 +14,7 @@ test.describe('Room Creation & Entry', () => {
     await homePage.createRoom(roomName);
 
     await expect(page).toHaveURL(/\/(room|r)\//);
-    await page.waitForSelector('button[title="NewVideo"]', { timeout: ROOM_LOAD_TIMEOUT });
+    await page.waitForSelector('button[title="AddVideo"]', { timeout: ROOM_LOAD_TIMEOUT });
   });
 
   test('should handle password protected rooms', async ({ page, request }) => {
@@ -32,7 +32,7 @@ test.describe('Room Creation & Entry', () => {
     await page.fill('input[type="password"]', password);
     await page.click('button:has-text("入室")');
 
-    await page.waitForSelector('button[title="NewVideo"]', { timeout: ROOM_LOAD_TIMEOUT });
+    await page.waitForSelector('button[title="AddVideo"]', { timeout: ROOM_LOAD_TIMEOUT });
   });
 
   test('should reject wrong password', async ({ page, request }) => {

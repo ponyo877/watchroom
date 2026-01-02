@@ -33,7 +33,7 @@ test.describe('Logo and Favicon', () => {
 
     // Navigate to room page
     await page.goto(`/r/${shortId}`);
-    await page.waitForSelector('button[title="NewVideo"]', { timeout: 10000 });
+    await page.waitForSelector('button[title="AddVideo"]', { timeout: 10000 });
 
     // Click on home link (leave room button goes home)
     const leaveButton = page.locator('button[title="部屋を出る"]');
