@@ -1,6 +1,8 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
+import { Search } from 'lucide-react';
 import RoomCard from './RoomCard';
 import Loading from '@/components/common/Loading';
+import { Input } from '@/components/ui/Input';
 import axiosInstance from '@/lib/api';
 import type { Room } from '@/types/room';
 
@@ -30,6 +32,20 @@ export default function RoomList() {
   const [rooms, setRooms] = useState<Room[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
+
+  const filteredRooms = useMemo(() => {
+    if (!searchQuery.trim()) {
+      return rooms;
+    }
+    const query = searchQuery.toLowerCase().trim();
+    return rooms.filter((room) => {
+      const nameMatch = room.name.toLowerCase().includes(query);
+      const creatorMatch = room.creatorName.toLowerCase().includes(query);
+      const videoMatch = room.currentVideo?.title?.toLowerCase().includes(query);
+      return nameMatch || creatorMatch || videoMatch;
+    });
+  }, [rooms, searchQuery]);
 
   useEffect(() => {
     const fetchRooms = async () => {
@@ -91,16 +107,40 @@ export default function RoomList() {
   }
 
   return (
-    <div className="grid gap-x-4 gap-y-6 sm:grid-cols-2 lg:grid-cols-3">
-      {rooms.map((room, index) => (
-        <div
-          key={room.roomId}
-          className="animate-fade-in-up opacity-0"
-          style={{ animationDelay: `${index * 50}ms`, animationFillMode: 'forwards' }}
-        >
-          <RoomCard room={room} />
+    <div className="space-y-6">
+      {/* Search Bar */}
+      <div className="relative max-w-md">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+        <Input
+          type="text"
+          placeholder="部屋を検索..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="pl-10"
+          data-testid="room-search-input"
+        />
+      </div>
+
+      {/* Room Grid */}
+      {filteredRooms.length === 0 ? (
+        <div className="py-8 text-center">
+          <p className="text-muted-foreground">
+            「{searchQuery}」に一致する部屋が見つかりませんでした
+          </p>
         </div>
-      ))}
+      ) : (
+        <div className="grid gap-x-4 gap-y-6 sm:grid-cols-2 lg:grid-cols-3">
+          {filteredRooms.map((room, index) => (
+            <div
+              key={room.roomId}
+              className="animate-fade-in-up opacity-0"
+              style={{ animationDelay: `${index * 50}ms`, animationFillMode: 'forwards' }}
+            >
+              <RoomCard room={room} />
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
