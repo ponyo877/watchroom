@@ -90,7 +90,7 @@ export function useVideoSync({ elementId, onSendSync }: UseVideoSyncOptions) {
   }, [elementId, handleStateChange]);
 
   const syncToState = useCallback(
-    (state: typeof playbackState) => {
+    (state: typeof playbackState, isInitialSync = false) => {
       if (!player || !isReady) return;
 
       isSyncingRef.current = true;
@@ -105,6 +105,10 @@ export function useVideoSync({ elementId, onSendSync }: UseVideoSyncOptions) {
 
       // Sync playback state
       if (state.isPlaying && !isPlaying(player)) {
+        // For initial sync (late joiners), mute to bypass browser autoplay policy
+        if (isInitialSync) {
+          player.mute();
+        }
         player.playVideo();
       } else if (!state.isPlaying && isPlaying(player)) {
         player.pauseVideo();
@@ -193,14 +197,27 @@ export function useVideoSync({ elementId, onSendSync }: UseVideoSyncOptions) {
       if (playbackState.lastUpdated > 0) {
         // Late joiner: sync to existing state
         hasInitialSyncRef.current = true;
+
+        let retryCount = 0;
+        const maxRetries = 50; // 5 seconds (100ms × 50)
+
         // Wait for video to finish loading before syncing
         const waitForVideoReady = () => {
           const playerState = player.getPlayerState();
+
+          // Timeout: force sync after max retries
+          if (retryCount >= maxRetries) {
+            console.warn('[useVideoSync] Video ready timeout, forcing sync');
+            syncToState(playbackState, true); // isInitialSync = true
+            return;
+          }
+
           // UNSTARTED(-1) or BUFFERING(3) means still loading
           if (playerState === -1 || playerState === 3) {
+            retryCount++;
             setTimeout(waitForVideoReady, 100);
           } else {
-            syncToState(playbackState);
+            syncToState(playbackState, true); // isInitialSync = true
           }
         };
         setTimeout(waitForVideoReady, 100);

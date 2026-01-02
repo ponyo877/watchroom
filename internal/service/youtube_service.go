@@ -4,14 +4,22 @@ import (
 	"context"
 	"fmt"
 	"strings"
+	"time"
 
 	"google.golang.org/api/option"
 	"google.golang.org/api/youtube/v3"
 )
 
+const (
+	// キャッシュTTL
+	SearchCacheTTL = 1 * time.Hour
+	VideoCacheTTL  = 24 * time.Hour
+)
+
 type YouTubeService struct {
 	apiKey  string
 	service *youtube.Service
+	cache   *MemoryCache
 }
 
 type Video struct {
@@ -30,8 +38,10 @@ type SearchResult struct {
 }
 
 func NewYouTubeService(apiKey string) (*YouTubeService, error) {
+	cache := NewMemoryCache()
+
 	if apiKey == "" {
-		return &YouTubeService{apiKey: ""}, nil
+		return &YouTubeService{apiKey: "", cache: cache}, nil
 	}
 
 	ctx := context.Background()
@@ -43,6 +53,7 @@ func NewYouTubeService(apiKey string) (*YouTubeService, error) {
 	return &YouTubeService{
 		apiKey:  apiKey,
 		service: service,
+		cache:   cache,
 	}, nil
 }
 
@@ -51,7 +62,36 @@ func (s *YouTubeService) Search(ctx context.Context, query string, maxResults in
 		return s.mockSearch(query), nil
 	}
 
+	// キャッシュキーを生成（pageTokenも含める）
+	cacheKey := fmt.Sprintf("search:%s:%d:%s", query, maxResults, pageToken)
+
+	// キャッシュをチェック
+	if cached, ok := s.cache.Get(cacheKey); ok {
+		if result, ok := cached.(*SearchResult); ok {
+			return result, nil
+		}
+	}
+
+	// YouTube APIで検索
+	result, err := s.searchFromYouTubeAPI(ctx, query, maxResults, pageToken)
+	if err != nil {
+		// クオータ超過時は空の結果を返す（500エラーではなく）
+		return &SearchResult{Items: []Video{}, NextPageToken: ""}, nil
+	}
+
+	// 結果をキャッシュ
+	s.cache.Set(cacheKey, result, SearchCacheTTL)
+	return result, nil
+}
+
+// searchFromYouTubeAPI はYouTube Data APIで検索する
+func (s *YouTubeService) searchFromYouTubeAPI(ctx context.Context, query string, maxResults int64, pageToken string) (*SearchResult, error) {
+	// タイムアウト付きのcontextを作成（30秒）
+	ctx, cancel := context.WithTimeout(ctx, 30*time.Second)
+	defer cancel()
+
 	call := s.service.Search.List([]string{"id", "snippet"}).
+		Context(ctx).
 		Q(query).
 		Type("video").
 		MaxResults(maxResults).
@@ -116,6 +156,14 @@ func (s *YouTubeService) GetVideo(ctx context.Context, videoID string) (*Video, 
 		return s.mockGetVideo(videoID), nil
 	}
 
+	// キャッシュをチェック
+	cacheKey := fmt.Sprintf("video:%s", videoID)
+	if cached, ok := s.cache.Get(cacheKey); ok {
+		if video, ok := cached.(*Video); ok {
+			return video, nil
+		}
+	}
+
 	call := s.service.Videos.List([]string{"snippet", "contentDetails"}).
 		Id(videoID)
 
@@ -138,7 +186,7 @@ func (s *YouTubeService) GetVideo(ctx context.Context, videoID string) (*Video, 
 		}
 	}
 
-	return &Video{
+	video := &Video{
 		VideoID:      item.Id,
 		Title:        item.Snippet.Title,
 		Description:  item.Snippet.Description,
@@ -146,7 +194,12 @@ func (s *YouTubeService) GetVideo(ctx context.Context, videoID string) (*Video, 
 		ChannelTitle: item.Snippet.ChannelTitle,
 		PublishedAt:  item.Snippet.PublishedAt,
 		Duration:     item.ContentDetails.Duration,
-	}, nil
+	}
+
+	// キャッシュに保存（24時間）
+	s.cache.Set(cacheKey, video, VideoCacheTTL)
+
+	return video, nil
 }
 
 func (s *YouTubeService) mockSearch(query string) *SearchResult {
