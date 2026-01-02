@@ -10,9 +10,9 @@ export default function RoomCard({ room }: RoomCardProps) {
   return (
     <Link
       to={`/r/${room.shortId}`}
-      className="block p-4 border border-border rounded-lg bg-card hover:bg-accent transition-colors"
+      className="block group"
     >
-      <div className="aspect-video bg-muted rounded-md mb-3 overflow-hidden relative">
+      <div className="aspect-video bg-muted rounded-xl mb-3 overflow-hidden relative">
         {room.currentVideo ? (
           <>
             <img
@@ -33,24 +33,25 @@ export default function RoomCard({ room }: RoomCardProps) {
         )}
       </div>
 
-      <div className="space-y-2">
-        <div className="flex items-center gap-2">
-          <h3 className="font-semibold text-foreground truncate flex-1">
+      <div className="space-y-1 px-1">
+        <div className="flex items-start gap-2">
+          <h3 className="font-medium text-foreground text-sm leading-snug line-clamp-2 flex-1 group-hover:text-primary transition-colors">
             {room.name}
           </h3>
-          {room.hasPassword && <Lock className="h-4 w-4 text-muted-foreground" />}
+          {room.hasPassword && <Lock className="h-4 w-4 text-muted-foreground flex-shrink-0 mt-0.5" />}
         </div>
 
         {room.currentVideo && (
-          <p className="text-sm text-muted-foreground truncate">
+          <p className="text-xs text-muted-foreground line-clamp-1">
             {room.currentVideo.title}
           </p>
         )}
 
-        <div className="flex items-center justify-between text-sm text-muted-foreground">
+        <div className="flex items-center gap-2 text-xs text-muted-foreground">
           <span>{room.creatorName}</span>
+          <span>•</span>
           <div className="flex items-center gap-1">
-            <Users className="h-4 w-4" />
+            <Users className="h-3.5 w-3.5" />
             <span>
               {room.memberCount}/{room.maxMembers}
             </span>
