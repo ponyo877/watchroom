@@ -9,6 +9,7 @@ type Room struct {
 	CreatorID             string
 	CreatorName           string
 	IsActive              bool
+	IsPermanent           bool
 	CurrentVideoID        *string
 	CurrentVideoTitle     *string
 	CurrentVideoThumbnail *string

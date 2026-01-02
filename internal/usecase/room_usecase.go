@@ -29,11 +29,11 @@ type RoomWithDetails struct {
 }
 
 type RoomUsecase struct {
-	roomRepo     *repository.RoomRepository
-	shortURLRepo *repository.ShortURLRepository
+	roomRepo     repository.RoomRepository
+	shortURLRepo repository.ShortURLRepository
 }
 
-func NewRoomUsecase(roomRepo *repository.RoomRepository, shortURLRepo *repository.ShortURLRepository) *RoomUsecase {
+func NewRoomUsecase(roomRepo repository.RoomRepository, shortURLRepo repository.ShortURLRepository) *RoomUsecase {
 	return &RoomUsecase{
 		roomRepo:     roomRepo,
 		shortURLRepo: shortURLRepo,
@@ -122,7 +122,7 @@ func (u *RoomUsecase) IncrementMemberCount(ctx context.Context, roomID string) e
 }
 
 func (u *RoomUsecase) DecrementMemberCount(ctx context.Context, roomID string) error {
-	return u.roomRepo.DecrementMemberCount(ctx, roomID)
+	return u.roomRepo.DecrementAndDeleteIfEmpty(ctx, roomID)
 }
 
 func (u *RoomUsecase) GetMemberInfo(ctx context.Context, roomID string) (memberCount int, maxMembers int, err error) {

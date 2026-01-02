@@ -12,10 +12,10 @@ var ErrRoomFull = errors.New("room is full")
 
 type AuthUsecase struct {
 	skyWayService *service.SkyWayService
-	roomRepo      *repository.RoomRepository
+	roomRepo      repository.RoomRepository
 }
 
-func NewAuthUsecase(skyWayService *service.SkyWayService, roomRepo *repository.RoomRepository) *AuthUsecase {
+func NewAuthUsecase(skyWayService *service.SkyWayService, roomRepo repository.RoomRepository) *AuthUsecase {
 	return &AuthUsecase{
 		skyWayService: skyWayService,
 		roomRepo:      roomRepo,

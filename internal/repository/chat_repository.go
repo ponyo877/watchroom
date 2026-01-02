@@ -7,22 +7,24 @@ import (
 	"github.com/ponyo877/youtube-friend-watch/internal/model"
 )
 
-type ChatRepository struct {
+// ChatRepositoryMySQL is the MySQL implementation of ChatRepository
+type ChatRepositoryMySQL struct {
 	db *sql.DB
 }
 
-func NewChatRepository(db *sql.DB) *ChatRepository {
-	return &ChatRepository{db: db}
+// NewChatRepositoryMySQL creates a new MySQL-based ChatRepository
+func NewChatRepositoryMySQL(db *sql.DB) *ChatRepositoryMySQL {
+	return &ChatRepositoryMySQL{db: db}
 }
 
-func (r *ChatRepository) Create(ctx context.Context, msg *model.ChatMessage) error {
+func (r *ChatRepositoryMySQL) Create(ctx context.Context, msg *model.ChatMessage) error {
 	_, err := r.db.ExecContext(ctx,
 		"INSERT INTO chat_messages (message_id, room_id, sender_id, sender_name, sender_icon_url, text) VALUES (?, ?, ?, ?, ?, ?)",
 		msg.MessageID, msg.RoomID, msg.SenderID, msg.SenderName, msg.SenderIconUrl, msg.Text)
 	return err
 }
 
-func (r *ChatRepository) GetRecentByRoomID(ctx context.Context, roomID string, limit int) ([]*model.ChatMessage, error) {
+func (r *ChatRepositoryMySQL) GetRecentByRoomID(ctx context.Context, roomID string, limit int) ([]*model.ChatMessage, error) {
 	rows, err := r.db.QueryContext(ctx,
 		"SELECT id, message_id, room_id, sender_id, sender_name, sender_icon_url, text, created_at FROM chat_messages WHERE room_id = ? ORDER BY id DESC LIMIT ?",
 		roomID, limit)
@@ -46,4 +48,11 @@ func (r *ChatRepository) GetRecentByRoomID(ctx context.Context, roomID string, l
 	}
 
 	return messages, rows.Err()
+}
+
+func (r *ChatRepositoryMySQL) DeleteByRoomID(ctx context.Context, roomID string) error {
+	_, err := r.db.ExecContext(ctx,
+		"DELETE FROM chat_messages WHERE room_id = ?",
+		roomID)
+	return err
 }

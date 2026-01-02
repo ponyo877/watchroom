@@ -3,14 +3,13 @@ package adapter
 import (
 	"encoding/json"
 	"net/http"
-	"strconv"
 	"time"
 
 	"github.com/ponyo877/youtube-friend-watch/internal/model"
 )
 
 type ReportResponse struct {
-	ID          int    `json:"id"`
+	ID          string `json:"id"`
 	RoomID      string `json:"room_id"`
 	ReporterID  string `json:"reporter_id"`
 	TargetID    string `json:"target_id"`
@@ -88,8 +87,7 @@ func (h *Handler) HandleUpdateReportStatus(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	id, err := strconv.Atoi(reportID)
-	if err != nil {
+	if reportID == "" {
 		http.Error(w, "Invalid report ID", http.StatusBadRequest)
 		return
 	}
@@ -106,7 +104,7 @@ func (h *Handler) HandleUpdateReportStatus(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	if err := h.reportRepo.UpdateStatus(r.Context(), id, status); err != nil {
+	if err := h.reportRepo.UpdateStatus(r.Context(), reportID, status); err != nil {
 		http.Error(w, "Failed to update report", http.StatusInternalServerError)
 		return
 	}

@@ -1,21 +1,41 @@
 services:
-  mysql:
-    image: mysql:8.4
-    platform: linux/amd64
-    container_name: watchroom-mysql
+  # MySQL is commented out - Redis is now the default
+  # Uncomment if you need MySQL mode (USE_REDIS=false)
+  # mysql:
+  #   image: mysql:8.4
+  #   platform: linux/amd64
+  #   container_name: watchroom-mysql
+  #   ports:
+  #     - "3306:3306"
+  #   environment:
+  #     MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-rootpassword}
+  #     MYSQL_DATABASE: ${MYSQL_DATABASE:-watchroom}
+  #     MYSQL_USER: ${MYSQL_USER:-watchroom}
+  #     MYSQL_PASSWORD: ${MYSQL_PASSWORD:-watchroom}
+  #     TZ: Asia/Tokyo
+  #   volumes:
+  #     - mysql_data:/var/lib/mysql
+  #     - ./db/init:/docker-entrypoint-initdb.d:ro
+  #   healthcheck:
+  #     test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+  #     interval: 10s
+  #     timeout: 5s
+  #     retries: 5
+  #   networks:
+  #     - watchroom-network
+
+  redis:
+    image: redis:7.2-alpine
+    container_name: watchroom-redis
     ports:
-      - "3306:3306"
+      - "6379:6379"
     environment:
-      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-rootpassword}
-      MYSQL_DATABASE: ${MYSQL_DATABASE:-watchroom}
-      MYSQL_USER: ${MYSQL_USER:-watchroom}
-      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-watchroom}
       TZ: Asia/Tokyo
     volumes:
-      - mysql_data:/var/lib/mysql
-      - ./db/init:/docker-entrypoint-initdb.d:ro
+      - redis_data:/data
+    command: redis-server --appendonly yes
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      test: ["CMD", "redis-cli", "ping"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -30,11 +50,6 @@ services:
     ports:
       - "8080:8080"
     environment:
-      MYSQL_HOST: mysql
-      MYSQL_PORT: 3306
-      MYSQL_DATABASE: ${MYSQL_DATABASE:-watchroom}
-      MYSQL_USER: ${MYSQL_USER:-watchroom}
-      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-watchroom}
       SKYWAY_APP_ID: ${SKYWAY_APP_ID}
       SKYWAY_SECRET_KEY: ${SKYWAY_SECRET_KEY}
       YOUTUBE_API_KEY: ${YOUTUBE_API_KEY}
@@ -45,11 +60,20 @@ services:
       R2_PUBLIC_URL: ${R2_PUBLIC_URL}
       ADMIN_USERNAME: ${ADMIN_USERNAME:-admin}
       ADMIN_PASSWORD: ${ADMIN_PASSWORD:-admin123}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      USE_REDIS: ${USE_REDIS:-true}
+      # MySQL settings (only needed if USE_REDIS=false)
+      # MYSQL_HOST: mysql
+      # MYSQL_PORT: 3306
+      # MYSQL_DATABASE: ${MYSQL_DATABASE:-watchroom}
+      # MYSQL_USER: ${MYSQL_USER:-watchroom}
+      # MYSQL_PASSWORD: ${MYSQL_PASSWORD:-watchroom}
     volumes:
       - .:/app
       - go_mod_cache:/go/pkg/mod
     depends_on:
-      mysql:
+      redis:
         condition: service_healthy
     networks:
       - watchroom-network
@@ -71,7 +95,8 @@ services:
       - watchroom-network
 
 volumes:
-  mysql_data:
+  # mysql_data:  # Uncomment if using MySQL
+  redis_data:
   go_mod_cache:
   web_node_modules:
 

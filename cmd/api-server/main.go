@@ -3,16 +3,20 @@ package main
 //go:generate go run github.com/ogen-go/ogen/cmd/ogen@latest --target ./openapi --package openapi --clean ../../typespec/tsp-output/@typespec/openapi3/openapi.yaml
 
 import (
+	"context"
 	"database/sql"
 	"log"
 	"net/http"
 	"os"
 	"strings"
+	"time"
 
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/ponyo877/youtube-friend-watch/internal/adapter"
 	"github.com/ponyo877/youtube-friend-watch/internal/config"
+	"github.com/ponyo877/youtube-friend-watch/internal/job"
 	"github.com/ponyo877/youtube-friend-watch/internal/middleware"
+	"github.com/redis/go-redis/v9"
 )
 
 func main() {
@@ -21,18 +25,47 @@ func main() {
 		log.Fatalf("Failed to load config: %v", err)
 	}
 
-	db, err := sql.Open("mysql", cfg.Database.DSN())
-	if err != nil {
-		log.Fatalf("Failed to connect to database: %v", err)
-	}
-	defer db.Close()
+	var handler *adapter.Handler
+	ctx := context.Background()
 
-	if err := db.Ping(); err != nil {
-		log.Fatalf("Failed to ping database: %v", err)
-	}
-	log.Println("Connected to database")
+	if cfg.UseRedis {
+		// Initialize Redis client
+		redisClient := redis.NewClient(&redis.Options{
+			Addr:     cfg.Redis.Addr(),
+			Password: cfg.Redis.Password,
+			DB:       cfg.Redis.DB,
+		})
 
-	handler := adapter.NewHandler(cfg, db)
+		if err := redisClient.Ping(ctx).Err(); err != nil {
+			log.Fatalf("Failed to connect to Redis: %v", err)
+		}
+		log.Println("Connected to Redis")
+
+		handler = adapter.NewHandlerWithRedis(cfg, nil, redisClient)
+
+		// Start cleanup jobs
+		roomCleanupJob := job.NewRoomCleanupJob(handler.GetRoomRepo(), time.Minute)
+		roomCleanupJob.Start(ctx)
+		defer roomCleanupJob.Stop()
+
+		banCleanupJob := job.NewBanCleanupJob(handler.GetBanRepo(), time.Hour)
+		banCleanupJob.Start(ctx)
+		defer banCleanupJob.Stop()
+	} else {
+		// MySQL mode
+		db, err := sql.Open("mysql", cfg.Database.DSN())
+		if err != nil {
+			log.Fatalf("Failed to connect to database: %v", err)
+		}
+		defer db.Close()
+
+		if err := db.Ping(); err != nil {
+			log.Fatalf("Failed to ping database: %v", err)
+		}
+		log.Println("Connected to database")
+
+		handler = adapter.NewHandler(cfg, db)
+	}
 
 	mux := http.NewServeMux()
 

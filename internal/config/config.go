@@ -8,10 +8,12 @@ import (
 type Config struct {
 	Server   ServerConfig
 	Database DatabaseConfig
+	Redis    RedisConfig
 	SkyWay   SkyWayConfig
 	YouTube  YouTubeConfig
 	R2       R2Config
 	Admin    AdminConfig
+	UseRedis bool
 }
 
 type ServerConfig struct {
@@ -24,6 +26,17 @@ type DatabaseConfig struct {
 	Database string
 	User     string
 	Password string
+}
+
+type RedisConfig struct {
+	Host     string
+	Port     string
+	Password string
+	DB       int
+}
+
+func (c *RedisConfig) Addr() string {
+	return fmt.Sprintf("%s:%s", c.Host, c.Port)
 }
 
 type SkyWayConfig struct {
@@ -60,6 +73,13 @@ func Load() (*Config, error) {
 			User:     getEnv("MYSQL_USER", "watchroom"),
 			Password: getEnv("MYSQL_PASSWORD", "watchroom"),
 		},
+		Redis: RedisConfig{
+			Host:     getEnv("REDIS_HOST", "localhost"),
+			Port:     getEnv("REDIS_PORT", "6379"),
+			Password: os.Getenv("REDIS_PASSWORD"),
+			DB:       0,
+		},
+		UseRedis: getEnv("USE_REDIS", "true") == "true",
 		SkyWay: SkyWayConfig{
 			AppID:     os.Getenv("SKYWAY_APP_ID"),
 			SecretKey: os.Getenv("SKYWAY_SECRET_KEY"),

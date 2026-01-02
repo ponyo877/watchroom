@@ -8,22 +8,24 @@ import (
 	"github.com/ponyo877/youtube-friend-watch/internal/model"
 )
 
-type BanRepository struct {
+// BanRepositoryMySQL is the MySQL implementation of BanRepository
+type BanRepositoryMySQL struct {
 	db *sql.DB
 }
 
-func NewBanRepository(db *sql.DB) *BanRepository {
-	return &BanRepository{db: db}
+// NewBanRepositoryMySQL creates a new MySQL-based BanRepository
+func NewBanRepositoryMySQL(db *sql.DB) *BanRepositoryMySQL {
+	return &BanRepositoryMySQL{db: db}
 }
 
-func (r *BanRepository) Create(ctx context.Context, ban *model.GlobalBan) error {
+func (r *BanRepositoryMySQL) Create(ctx context.Context, ban *model.GlobalBan) error {
 	_, err := r.db.ExecContext(ctx,
 		"INSERT INTO global_bans (user_id, reason, expires_at) VALUES (?, ?, ?)",
 		ban.UserID, ban.Reason, ban.ExpiresAt)
 	return err
 }
 
-func (r *BanRepository) GetByUserID(ctx context.Context, userID string) (*model.GlobalBan, error) {
+func (r *BanRepositoryMySQL) GetByUserID(ctx context.Context, userID string) (*model.GlobalBan, error) {
 	var ban model.GlobalBan
 	var expiresAt sql.NullTime
 	err := r.db.QueryRowContext(ctx,
@@ -41,7 +43,7 @@ func (r *BanRepository) GetByUserID(ctx context.Context, userID string) (*model.
 	return &ban, nil
 }
 
-func (r *BanRepository) List(ctx context.Context) ([]*model.GlobalBan, error) {
+func (r *BanRepositoryMySQL) List(ctx context.Context) ([]*model.GlobalBan, error) {
 	rows, err := r.db.QueryContext(ctx,
 		"SELECT id, user_id, reason, banned_at, expires_at, created_at FROM global_bans ORDER BY banned_at DESC")
 	if err != nil {
@@ -64,7 +66,7 @@ func (r *BanRepository) List(ctx context.Context) ([]*model.GlobalBan, error) {
 	return bans, rows.Err()
 }
 
-func (r *BanRepository) IsUserBanned(ctx context.Context, userID string) (bool, error) {
+func (r *BanRepositoryMySQL) IsUserBanned(ctx context.Context, userID string) (bool, error) {
 	var exists bool
 	err := r.db.QueryRowContext(ctx,
 		`SELECT EXISTS(
@@ -75,14 +77,14 @@ func (r *BanRepository) IsUserBanned(ctx context.Context, userID string) (bool, 
 	return exists, err
 }
 
-func (r *BanRepository) Delete(ctx context.Context, userID string) error {
+func (r *BanRepositoryMySQL) Delete(ctx context.Context, userID string) error {
 	_, err := r.db.ExecContext(ctx,
 		"DELETE FROM global_bans WHERE user_id = ?",
 		userID)
 	return err
 }
 
-func (r *BanRepository) DeleteExpired(ctx context.Context) error {
+func (r *BanRepositoryMySQL) DeleteExpired(ctx context.Context) error {
 	_, err := r.db.ExecContext(ctx,
 		"DELETE FROM global_bans WHERE expires_at IS NOT NULL AND expires_at <= CURRENT_TIMESTAMP")
 	return err

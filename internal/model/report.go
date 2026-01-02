@@ -11,7 +11,7 @@ const (
 )
 
 type Report struct {
-	ID          int
+	ID          string // UUID for Redis compatibility
 	RoomID      string
 	ReporterID  string
 	TargetID    string
