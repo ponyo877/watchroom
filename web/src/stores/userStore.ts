@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { generateId } from '@/lib/utils';
+import { getRandomChampionName } from '@/lib/champions';
 
 interface UserState {
   id: string;
@@ -25,7 +26,7 @@ export const useUserStore = create<UserState>()(
           const id = generateId();
           set({
             id,
-            name: `Guest_${id.slice(0, 6)}`,
+            name: getRandomChampionName(),
           });
         }
       },
