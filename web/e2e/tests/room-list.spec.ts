@@ -20,7 +20,7 @@ test.describe('Room List', () => {
     const { short_id: shortId } = await response.json();
 
     await homePage.goto();
-    await expect(page.locator('a:has-text("WatchRoom")')).toBeVisible();
+    await expect(page.locator('header img[alt="WatchRoom"]')).toBeVisible();
 
     // Wait for loading to complete
     await expect(page.locator('text=部屋を読み込み中')).not.toBeVisible({ timeout: 10000 });

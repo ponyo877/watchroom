@@ -18,8 +18,8 @@ export default function Header({ onCreateRoom }: HeaderProps) {
     <header className="sticky top-0 z-40 bg-background/80 backdrop-blur-xl backdrop-saturate-150 border-b border-border/50 shadow-sm">
       <div className="container mx-auto px-4">
         <div className="flex h-16 items-center justify-between">
-          <Link to="/" className="text-xl font-bold text-foreground hover:text-primary transition-colors duration-200">
-            WatchRoom
+          <Link to="/" className="hover:opacity-80 transition-opacity duration-200">
+            <img src="/logo.svg" alt="WatchRoom" className="h-13" />
           </Link>
 
           <div className="flex items-center gap-2 md:gap-4">
