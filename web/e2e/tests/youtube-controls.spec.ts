@@ -6,6 +6,44 @@ const ROOM_LOAD_TIMEOUT = 10000;
 test.describe.configure({ mode: 'serial' });
 
 test.describe('YouTube Player Controls', () => {
+  test('should have transparent overlay above iframe when video is playing', async ({ page, request }) => {
+    const roomId = generateRoomId();
+    const response = await request.post('http://localhost:8080/api/rooms', {
+      data: { room_id: roomId },
+    });
+    const { short_id: shortId } = await response.json();
+
+    await page.goto(`/r/${shortId}`);
+    await page.waitForSelector('button[title="NewVideo"]', { timeout: ROOM_LOAD_TIMEOUT });
+
+    await page.click('button[title="NewVideo"]');
+    await page.waitForSelector('input[placeholder*="検索"]', { timeout: 5000 });
+    await page.fill('input[placeholder*="検索"]', 'test');
+    await page.keyboard.press('Enter');
+    await page.waitForTimeout(3000);
+
+    const videoResult = page.locator('button:has(img):has(h3)').first();
+    if (await videoResult.isVisible({ timeout: 10000 }).catch(() => false)) {
+      await videoResult.click();
+
+      // Wait for YouTube iframe to load
+      const iframe = page.locator('iframe[src*="youtube"]');
+      await expect(iframe).toBeVisible({ timeout: 10000 });
+
+      // Check that the click blocker overlay exists
+      const overlay = page.locator('[data-testid="iframe-click-blocker"]');
+      await expect(overlay).toBeVisible();
+
+      // Verify overlay has z-index higher than iframe (z-10 = 10)
+      const zIndex = await overlay.evaluate((el) => {
+        return window.getComputedStyle(el).zIndex;
+      });
+      expect(parseInt(zIndex)).toBeGreaterThanOrEqual(10);
+    } else {
+      test.skip(true, 'YouTube search results not available');
+    }
+  });
+
   test('should hide native YouTube controls', async ({ page, request }) => {
     test.setTimeout(90000);
 

@@ -1,8 +1,10 @@
 import { useEffect, useRef, useState } from 'react';
+import { cn } from '@/lib/utils';
 import type { ReactionItem } from '@/types/room';
 
 interface ReactionOverlayProps {
   reactions: ReactionItem[];
+  className?: string;
 }
 
 interface FloatingReaction extends ReactionItem {
@@ -10,7 +12,7 @@ interface FloatingReaction extends ReactionItem {
   y: number;
 }
 
-export default function ReactionOverlay({ reactions }: ReactionOverlayProps) {
+export default function ReactionOverlay({ reactions, className }: ReactionOverlayProps) {
   const [floatingReactions, setFloatingReactions] = useState<FloatingReaction[]>([]);
   // Track seen reaction IDs to avoid adding duplicates (prevents infinite loop)
   const seenReactionIdsRef = useRef<Set<string>>(new Set());
@@ -48,7 +50,7 @@ export default function ReactionOverlay({ reactions }: ReactionOverlayProps) {
   }, []);
 
   return (
-    <div className="absolute inset-0 pointer-events-none overflow-hidden">
+    <div className={cn("absolute inset-0 pointer-events-none overflow-hidden", className)}>
       {floatingReactions.map((reaction) => (
         <div
           key={reaction.id}

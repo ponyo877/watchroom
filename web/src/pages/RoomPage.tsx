@@ -490,6 +490,17 @@ export default function RoomPage() {
               style={{ display: roomStore.currentVideo ? 'block' : 'none' }}
             />
 
+            {/* Transparent overlay to block iframe clicks */}
+            {roomStore.currentVideo && (
+              <div
+                className="absolute inset-0 z-10"
+                data-testid="iframe-click-blocker"
+                onClick={(e) => e.stopPropagation()}
+                onMouseDown={(e) => e.stopPropagation()}
+                style={{ pointerEvents: 'auto' }}
+              />
+            )}
+
             {/* No video selected message */}
             {!roomStore.currentVideo && (
               <div className="w-full h-full flex items-center justify-center">
@@ -506,8 +517,8 @@ export default function RoomPage() {
               </div>
             )}
 
-            {/* Reaction overlay */}
-            <ReactionOverlay reactions={roomStore.reactions} />
+            {/* Reaction overlay - z-index higher than blocker */}
+            <ReactionOverlay reactions={roomStore.reactions} className="z-20" />
           </div>
 
           {/* Player controls */}
