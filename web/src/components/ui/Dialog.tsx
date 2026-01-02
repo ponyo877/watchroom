@@ -111,9 +111,9 @@ export function DialogFooter({ children, className }: DialogFooterProps) {
   );
 }
 
-export function DialogClose({ children, className }: { children: React.ReactNode; className?: string }) {
+export function DialogClose({ children, className, asChild }: { children: React.ReactNode; className?: string; asChild?: boolean }) {
   return (
-    <DialogPrimitive.Close className={className}>
+    <DialogPrimitive.Close className={className} asChild={asChild}>
       {children}
     </DialogPrimitive.Close>
   );
