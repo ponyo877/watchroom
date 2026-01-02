@@ -1,8 +1,6 @@
 import { useEffect, useState, useMemo } from 'react';
-import { Search } from 'lucide-react';
 import RoomCard from './RoomCard';
 import Loading from '@/components/common/Loading';
-import { Input } from '@/components/ui/Input';
 import axiosInstance from '@/lib/api';
 import type { Room } from '@/types/room';
 
@@ -28,11 +26,14 @@ interface APIRoomListResponse {
   rooms: APIRoomItem[];
 }
 
-export default function RoomList() {
+interface RoomListProps {
+  searchQuery?: string;
+}
+
+export default function RoomList({ searchQuery = '' }: RoomListProps) {
   const [rooms, setRooms] = useState<Room[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [searchQuery, setSearchQuery] = useState('');
 
   const filteredRooms = useMemo(() => {
     if (!searchQuery.trim()) {
@@ -108,19 +109,6 @@ export default function RoomList() {
 
   return (
     <div className="space-y-6">
-      {/* Search Bar */}
-      <div className="relative max-w-md">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
-        <Input
-          type="text"
-          placeholder="部屋を検索..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          className="pl-10"
-          data-testid="room-search-input"
-        />
-      </div>
-
       {/* Room Grid */}
       {filteredRooms.length === 0 ? (
         <div className="py-8 text-center">
