@@ -72,3 +72,7 @@ web/public/mockServiceWorker.js
 
 # pnpm
 .pnpm-store/
+
+
+# for LLM
+web/src/content/learn/
