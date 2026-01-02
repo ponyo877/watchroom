@@ -38,6 +38,8 @@ export function useSkyWay({ roomName, token, onMessage }: UseSkyWayOptions) {
   const subscribedPublicationsRef = useRef<Set<string>>(new Set());
   // Flag to prevent double-decrement of member count
   const hasDecrementedRef = useRef(false);
+  // Store origin for sendBeacon (needs absolute URL when navigating away)
+  const apiOriginRef = useRef(window.location.origin);
 
   const user = useUserStore();
   // Get store actions without subscribing to state changes
@@ -318,16 +320,8 @@ export function useSkyWay({ roomName, token, onMessage }: UseSkyWayOptions) {
   }, [token, roomName, user.id, user.name, user.iconUrl, subscribeToMember, roomStoreActions]);
 
   const disconnect = useCallback(async () => {
-    // Decrement member count if not already decremented
-    // Each member is responsible for decrementing their own count
-    if (!hasDecrementedRef.current && roomRef.current) {
-      hasDecrementedRef.current = true;
-      try {
-        await axiosInstance.post(`/api/rooms/${roomName}/member-count/decrement`);
-      } catch (e) {
-        console.error('Failed to decrement member count:', e);
-      }
-    }
+    // Note: Member count decrement is handled by useEffect cleanup
+    // using synchronous sendBeacon for reliable delivery
 
     try {
       if (memberRef.current) {
@@ -348,7 +342,7 @@ export function useSkyWay({ roomName, token, onMessage }: UseSkyWayOptions) {
       setIsConnected(false);
       roomStoreActions.setIsConnected(false);
     }
-  }, [roomName, roomStoreActions]);
+  }, [roomStoreActions]);
 
   useEffect(() => {
     if (token && roomName) {
@@ -356,6 +350,12 @@ export function useSkyWay({ roomName, token, onMessage }: UseSkyWayOptions) {
     }
 
     return () => {
+      // Synchronous sendBeacon ensures decrement even when context closes abruptly
+      // (e.g., Playwright context.close() which doesn't wait for async operations)
+      if (roomRef.current && !hasDecrementedRef.current) {
+        hasDecrementedRef.current = true;
+        navigator.sendBeacon(`${apiOriginRef.current}/api/rooms/${roomName}/member-count/decrement`);
+      }
       disconnect();
     };
   }, [token, roomName, connect, disconnect]);
@@ -367,7 +367,7 @@ export function useSkyWay({ roomName, token, onMessage }: UseSkyWayOptions) {
       // Check flag to prevent double-decrement (if disconnect was already called)
       if (roomRef.current && !hasDecrementedRef.current) {
         hasDecrementedRef.current = true;
-        navigator.sendBeacon(`/api/rooms/${roomName}/member-count/decrement`);
+        navigator.sendBeacon(`${apiOriginRef.current}/api/rooms/${roomName}/member-count/decrement`);
       }
     };
 

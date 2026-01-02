@@ -1,4 +1,4 @@
-import { APIRequestContext } from '@playwright/test';
+import { APIRequestContext, BrowserContext, Page } from '@playwright/test';
 
 const API_BASE_URL = 'http://localhost:8080';
 
@@ -108,4 +108,33 @@ export function generateRoomId(): string {
  */
 export function wait(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+/**
+ * Safely close a browser context by navigating away first.
+ * This ensures React's useEffect cleanup runs and sendBeacon is sent.
+ */
+export async function safeCloseContext(context: BrowserContext, page?: Page): Promise<void> {
+  try {
+    // Get the first page if not provided
+    const targetPage = page || context.pages()[0];
+    if (targetPage && !targetPage.isClosed()) {
+      // Navigate away to trigger React unmount
+      await targetPage.goto('about:blank', { timeout: 2000 }).catch(() => {});
+      // Small delay to allow sendBeacon to be queued
+      await wait(100);
+    }
+  } catch {
+    // Ignore errors - page might already be closed
+  }
+  await context.close();
+}
+
+/**
+ * Safely close multiple browser contexts
+ */
+export async function safeCloseContexts(contexts: BrowserContext[]): Promise<void> {
+  for (const context of contexts) {
+    await safeCloseContext(context);
+  }
 }

@@ -203,6 +203,18 @@ function generateUserId(): string {
  * Extended test with custom fixtures
  */
 export const test = base.extend<TestFixtures>({
+  // Override default page to ensure cleanup navigates away first
+  page: async ({ page }, use) => {
+    await use(page);
+    // Navigate away before context closes to trigger React unmount and sendBeacon
+    try {
+      await page.goto('about:blank', { timeout: 2000 });
+      await page.waitForTimeout(100);
+    } catch {
+      // Ignore if page is already closed
+    }
+  },
+
   createUser: async ({ browser }, use) => {
     const sessions: UserSession[] = [];
 
@@ -231,6 +243,15 @@ export const test = base.extend<TestFixtures>({
 
     // Cleanup all sessions
     for (const session of sessions) {
+      // Navigate away from room page to trigger React unmount and sendBeacon
+      // This ensures member count is decremented before context closes
+      try {
+        await session.page.goto('about:blank', { timeout: 2000 });
+        // Small delay to allow sendBeacon to be queued
+        await session.page.waitForTimeout(100);
+      } catch {
+        // Ignore navigation errors (page might already be closed)
+      }
       await session.context.close();
     }
   },

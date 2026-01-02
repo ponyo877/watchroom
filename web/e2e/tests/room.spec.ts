@@ -1,5 +1,5 @@
 import { test, expect } from '../fixtures/test-fixtures';
-import { generateRoomId } from '../helpers/api';
+import { generateRoomId, safeCloseContext } from '../helpers/api';
 
 const ROOM_LOAD_TIMEOUT = 10000;
 
@@ -108,8 +108,8 @@ test.describe('Room Multi-user', () => {
       // Bob may or may not be visible depending on P2P sync timing
       // Just verify the member list is working
     } finally {
-      await contextA.close();
-      await contextB.close();
+      await safeCloseContext(contextA, pageA);
+      await safeCloseContext(contextB, pageB);
     }
   });
 });

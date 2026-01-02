@@ -1,5 +1,5 @@
 import { test, expect } from '../fixtures/test-fixtures';
-import { generateRoomId } from '../helpers/api';
+import { generateRoomId, safeCloseContext, safeCloseContexts } from '../helpers/api';
 
 const ROOM_LOAD_TIMEOUT = 8000;
 
@@ -75,9 +75,9 @@ test.describe('Member Management', () => {
       pageContentA = await pageA.content();
       // RegularMember should be gone (or at least the count reduced)
     } finally {
-      await contextA.close();
+      await safeCloseContext(contextA, pageA);
       if (!pageB.isClosed()) {
-        await contextB.close();
+        await safeCloseContext(contextB, pageB);
       }
     }
   });
@@ -126,7 +126,7 @@ test.describe('Member Management', () => {
       expect(pageContent).toContain('User2');
       expect(pageContent).toContain('User3');
     } finally {
-      await Promise.all(contexts.map(ctx => ctx.close()));
+      await safeCloseContexts(contexts);
     }
   });
 });

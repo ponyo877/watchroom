@@ -1,5 +1,5 @@
 import { test, expect } from '../fixtures/test-fixtures';
-import { generateRoomId } from '../helpers/api';
+import { generateRoomId, safeCloseContext } from '../helpers/api';
 
 const ROOM_LOAD_TIMEOUT = 10000;
 const P2P_SYNC_TIMEOUT = 15000;
@@ -73,8 +73,8 @@ test.describe('Chat Sync (P2P)', () => {
         test.skip(true, 'Chat input not visible');
       }
     } finally {
-      await contextA.close();
-      await contextB.close();
+      await safeCloseContext(contextA, pageA);
+      await safeCloseContext(contextB, pageB);
     }
   });
 });

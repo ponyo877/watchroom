@@ -1,5 +1,5 @@
 import { test, expect } from '../fixtures/test-fixtures';
-import { generateRoomId } from '../helpers/api';
+import { generateRoomId, safeCloseContext } from '../helpers/api';
 
 const ROOM_LOAD_TIMEOUT = 10000;
 const SYNC_TIMEOUT = 8000;
@@ -65,8 +65,8 @@ test.describe('Video Playback Sync (P2P)', () => {
         ]);
       }
     } finally {
-      await contextA.close();
-      await contextB.close();
+      await safeCloseContext(contextA, pageA);
+      await safeCloseContext(contextB, pageB);
     }
   });
 
@@ -122,8 +122,8 @@ test.describe('Video Playback Sync (P2P)', () => {
         await pageB.waitForSelector('iframe[src*="youtube"]', { timeout: ROOM_LOAD_TIMEOUT }).catch(() => null);
       }
     } finally {
-      await contextA.close();
-      await contextB.close();
+      await safeCloseContext(contextA, pageA);
+      await safeCloseContext(contextB, pageB);
     }
   });
 });

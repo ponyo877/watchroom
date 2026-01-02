@@ -29,6 +29,13 @@ test.describe('API Tests', () => {
       expect(tokenRes.status()).toBe(403);
       const error = await tokenRes.json();
       expect(error.error).toBe('room_full');
+
+      // Cleanup: decrement all
+      await Promise.all(
+        Array(10).fill(null).map(() =>
+          request.post(`${API_BASE}/api/rooms/${roomId}/member-count/decrement`)
+        )
+      );
     });
 
     test('should allow token when room is not full', async ({ request }) => {
@@ -48,6 +55,13 @@ test.describe('API Tests', () => {
       });
       expect(tokenRes.status()).toBe(200);
       expect((await tokenRes.json()).token).toBeDefined();
+
+      // Cleanup: decrement all
+      await Promise.all(
+        Array(5).fill(null).map(() =>
+          request.post(`${API_BASE}/api/rooms/${roomId}/member-count/decrement`)
+        )
+      );
     });
 
     test('should allow token for new room', async ({ request }) => {
@@ -81,6 +95,9 @@ test.describe('API Tests', () => {
       await request.post(`${API_BASE}/api/rooms/${roomId}/member-count/decrement`);
       info = await (await request.get(`${API_BASE}/api/rooms/${roomId}/member-info`)).json();
       expect(info.member_count).toBe(1);
+
+      // Cleanup: decrement remaining
+      await request.post(`${API_BASE}/api/rooms/${roomId}/member-count/decrement`);
     });
 
     test('should not go below 0 on decrement', async ({ request }) => {
@@ -109,6 +126,13 @@ test.describe('API Tests', () => {
       const list = await (await request.get(`${API_BASE}/api/rooms`)).json();
       const room = list.rooms.find((r: { room_id: string }) => r.room_id === roomId);
       expect(room.member_count).toBe(3);
+
+      // Cleanup: decrement all
+      await Promise.all(
+        Array(3).fill(null).map(() =>
+          request.post(`${API_BASE}/api/rooms/${roomId}/member-count/decrement`)
+        )
+      );
     });
   });
 
