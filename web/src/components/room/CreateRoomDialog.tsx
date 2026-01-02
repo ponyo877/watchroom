@@ -1,9 +1,16 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { X } from 'lucide-react';
+import { Plus } from 'lucide-react';
 import { generateId } from '@/lib/utils';
 import axiosInstance from '@/lib/api';
 import { useUserStore } from '@/stores/userStore';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from '@/components/ui/Dialog';
 
 interface CreateRoomDialogProps {
   open: boolean;
@@ -53,23 +60,12 @@ export default function CreateRoomDialog({
     }
   };
 
-  if (!open) return null;
-
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
-      <div
-        className="absolute inset-0 bg-black/50"
-        onClick={() => onOpenChange(false)}
-      />
-      <div className="relative bg-card border border-border rounded-lg p-6 w-full max-w-md mx-4">
-        <button
-          onClick={() => onOpenChange(false)}
-          className="absolute top-4 right-4 p-1 rounded-md hover:bg-accent"
-        >
-          <X className="h-4 w-4" />
-        </button>
-
-        <h2 className="text-xl font-semibold mb-4">部屋を作成</h2>
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent>
+        <DialogHeader icon={<Plus className="h-5 w-5 text-primary" />}>
+          <DialogTitle>部屋を作成</DialogTitle>
+        </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
@@ -85,7 +81,7 @@ export default function CreateRoomDialog({
               value={roomName}
               onChange={(e) => setRoomName(e.target.value)}
               placeholder="例: Music Night"
-              className="w-full px-3 py-2 border border-input rounded-md bg-background"
+              className="w-full px-4 py-2.5 border border-input rounded-xl bg-background/50 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary/50 hover:border-primary/30 transition-all duration-200"
               required
             />
           </div>
@@ -103,9 +99,9 @@ export default function CreateRoomDialog({
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="パスワードを設定（空欄で公開）"
-              className="w-full px-3 py-2 border border-input rounded-md bg-background"
+              className="w-full px-4 py-2.5 border border-input rounded-xl bg-background/50 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary/50 hover:border-primary/30 transition-all duration-200"
             />
-            <p className="text-xs text-muted-foreground mt-1">
+            <p className="text-xs text-muted-foreground mt-1.5">
               パスワードを設定すると、入室時に必要になります
             </p>
           </div>
@@ -114,24 +110,24 @@ export default function CreateRoomDialog({
             <p className="text-sm text-destructive">{error}</p>
           )}
 
-          <div className="flex gap-3 pt-2">
+          <DialogFooter>
             <button
               type="button"
               onClick={() => onOpenChange(false)}
-              className="flex-1 px-4 py-2 border border-border rounded-md hover:bg-accent"
+              className="flex-1 px-4 py-2.5 border border-border rounded-xl hover:bg-accent/50 transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]"
             >
               キャンセル
             </button>
             <button
               type="submit"
               disabled={isLoading || !roomName.trim()}
-              className="flex-1 px-4 py-2 bg-primary text-primary-foreground rounded-md hover:opacity-90 disabled:opacity-50"
+              className="flex-1 px-4 py-2.5 bg-primary text-primary-foreground rounded-xl shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/30 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:shadow-none disabled:scale-100 transition-all duration-200"
             >
               {isLoading ? '作成中...' : '作成'}
             </button>
-          </div>
+          </DialogFooter>
         </form>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }

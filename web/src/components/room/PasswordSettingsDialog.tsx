@@ -1,5 +1,11 @@
 import { useState } from 'react';
-import { Lock, X, Eye, EyeOff, Trash2 } from 'lucide-react';
+import { Lock, Eye, EyeOff, Trash2 } from 'lucide-react';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/Dialog';
 
 interface PasswordSettingsDialogProps {
   open: boolean;
@@ -94,40 +100,33 @@ export default function PasswordSettingsDialog({
     }
   };
 
-  if (!open) return null;
+  const inputClassName = "w-full px-4 py-2.5 pr-10 border border-input rounded-xl bg-background/50 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary/50 hover:border-primary/30 transition-all duration-200";
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
-      <div className="absolute inset-0 bg-black/50" onClick={onClose} />
-      <div className="relative bg-card border border-border rounded-lg p-6 w-full max-w-md mx-4">
-        <button
-          onClick={onClose}
-          className="absolute top-4 right-4 p-1 rounded-md hover:bg-accent"
-        >
-          <X className="h-4 w-4" />
-        </button>
-
-        <div className="flex items-center gap-3 mb-6">
-          <div className="p-2 bg-muted rounded-full">
-            <Lock className="h-5 w-5 text-muted-foreground" />
-          </div>
-          <h2 className="font-semibold text-lg">パスワード設定</h2>
-        </div>
+    <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose()}>
+      <DialogContent>
+        <DialogHeader icon={<Lock className="h-5 w-5 text-muted-foreground" />}>
+          <DialogTitle>パスワード設定</DialogTitle>
+        </DialogHeader>
 
         {hasPassword && (
           <div className="flex gap-2 mb-4">
             <button
               onClick={() => { setMode('set'); resetForm(); }}
-              className={`flex-1 px-3 py-2 rounded-md text-sm ${
-                mode === 'set' ? 'bg-primary text-primary-foreground' : 'bg-muted'
+              className={`flex-1 px-3 py-2.5 rounded-xl text-sm transition-all duration-200 ${
+                mode === 'set'
+                  ? 'bg-primary text-primary-foreground shadow-lg shadow-primary/25'
+                  : 'bg-muted hover:bg-muted/80'
               }`}
             >
               変更
             </button>
             <button
               onClick={() => { setMode('remove'); resetForm(); }}
-              className={`flex-1 px-3 py-2 rounded-md text-sm ${
-                mode === 'remove' ? 'bg-destructive text-white' : 'bg-muted'
+              className={`flex-1 px-3 py-2.5 rounded-xl text-sm transition-all duration-200 ${
+                mode === 'remove'
+                  ? 'bg-destructive text-white shadow-lg shadow-destructive/25'
+                  : 'bg-muted hover:bg-muted/80'
               }`}
             >
               削除
@@ -147,12 +146,12 @@ export default function PasswordSettingsDialog({
                     type={showPasswords ? 'text' : 'password'}
                     value={oldPassword}
                     onChange={(e) => setOldPassword(e.target.value)}
-                    className="w-full px-3 py-2 pr-10 border border-input rounded-md bg-background"
+                    className={inputClassName}
                   />
                   <button
                     type="button"
                     onClick={() => setShowPasswords(!showPasswords)}
-                    className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-muted-foreground"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-muted-foreground hover:text-foreground transition-colors"
                   >
                     {showPasswords ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                   </button>
@@ -168,7 +167,7 @@ export default function PasswordSettingsDialog({
                 type={showPasswords ? 'text' : 'password'}
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
-                className="w-full px-3 py-2 border border-input rounded-md bg-background"
+                className={inputClassName.replace('pr-10', '')}
               />
             </div>
 
@@ -180,7 +179,7 @@ export default function PasswordSettingsDialog({
                 type={showPasswords ? 'text' : 'password'}
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
-                className="w-full px-3 py-2 border border-input rounded-md bg-background"
+                className={inputClassName.replace('pr-10', '')}
               />
             </div>
 
@@ -189,7 +188,7 @@ export default function PasswordSettingsDialog({
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full px-4 py-2 bg-primary text-primary-foreground rounded-md hover:opacity-90 disabled:opacity-50"
+              className="w-full px-4 py-2.5 bg-primary text-primary-foreground rounded-xl shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/30 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:shadow-none disabled:scale-100 transition-all duration-200"
             >
               {isLoading ? '設定中...' : 'パスワードを設定'}
             </button>
@@ -208,7 +207,7 @@ export default function PasswordSettingsDialog({
                 type={showPasswords ? 'text' : 'password'}
                 value={oldPassword}
                 onChange={(e) => setOldPassword(e.target.value)}
-                className="w-full px-3 py-2 border border-input rounded-md bg-background"
+                className={inputClassName.replace('pr-10', '')}
               />
             </div>
 
@@ -217,14 +216,14 @@ export default function PasswordSettingsDialog({
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full px-4 py-2 bg-destructive text-white rounded-md hover:opacity-90 disabled:opacity-50 flex items-center justify-center gap-2"
+              className="w-full px-4 py-2.5 bg-destructive text-white rounded-xl shadow-lg shadow-destructive/25 hover:shadow-xl hover:shadow-destructive/30 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:shadow-none disabled:scale-100 transition-all duration-200 flex items-center justify-center gap-2"
             >
               <Trash2 className="h-4 w-4" />
               {isLoading ? '削除中...' : 'パスワードを削除'}
             </button>
           </form>
         )}
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }

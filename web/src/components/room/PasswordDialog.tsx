@@ -1,5 +1,13 @@
 import { useState } from 'react';
-import { Lock, X, Eye, EyeOff } from 'lucide-react';
+import { Lock, Eye, EyeOff } from 'lucide-react';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from '@/components/ui/Dialog';
 
 interface PasswordDialogProps {
   roomName?: string;
@@ -44,30 +52,15 @@ export default function PasswordDialog({
     }
   };
 
-  if (!open) return null;
-
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
-      <div className="absolute inset-0 bg-black/50" onClick={onCancel} />
-      <div className="relative bg-card border border-border rounded-lg p-6 w-full max-w-sm mx-4">
-        <button
-          onClick={onCancel}
-          className="absolute top-4 right-4 p-1 rounded-md hover:bg-accent"
-        >
-          <X className="h-4 w-4" />
-        </button>
-
-        <div className="flex items-center gap-3 mb-4">
-          <div className="p-2 bg-muted rounded-full">
-            <Lock className="h-5 w-5 text-muted-foreground" />
-          </div>
-          <div>
-            <h2 className="font-semibold">パスワードが必要です</h2>
-            {roomName && (
-              <p className="text-sm text-muted-foreground">{roomName}</p>
-            )}
-          </div>
-        </div>
+    <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onCancel()}>
+      <DialogContent className="max-w-sm">
+        <DialogHeader icon={<Lock className="h-5 w-5 text-muted-foreground" />}>
+          <DialogTitle>パスワードが必要です</DialogTitle>
+          {roomName && (
+            <DialogDescription>{roomName}</DialogDescription>
+          )}
+        </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
@@ -81,13 +74,13 @@ export default function PasswordDialog({
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="パスワードを入力"
-                className="w-full px-3 py-2 pr-10 border border-input rounded-md bg-background"
+                className="w-full px-4 py-2.5 pr-10 border border-input rounded-xl bg-background/50 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary/50 hover:border-primary/30 transition-all duration-200"
                 autoFocus
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-muted-foreground hover:text-foreground"
+                className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-muted-foreground hover:text-foreground transition-colors"
               >
                 {showPassword ? (
                   <EyeOff className="h-4 w-4" />
@@ -102,24 +95,24 @@ export default function PasswordDialog({
             <p className="text-sm text-destructive">{error || externalError}</p>
           )}
 
-          <div className="flex gap-3">
+          <DialogFooter>
             <button
               type="button"
               onClick={onCancel}
-              className="flex-1 px-4 py-2 border border-border rounded-md hover:bg-accent"
+              className="flex-1 px-4 py-2.5 border border-border rounded-xl hover:bg-accent/50 transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]"
             >
               キャンセル
             </button>
             <button
               type="submit"
               disabled={isLoading || !password.trim()}
-              className="flex-1 px-4 py-2 bg-primary text-primary-foreground rounded-md hover:opacity-90 disabled:opacity-50"
+              className="flex-1 px-4 py-2.5 bg-primary text-primary-foreground rounded-xl shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/30 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:shadow-none disabled:scale-100 transition-all duration-200"
             >
               {isLoading ? '確認中...' : '入室'}
             </button>
-          </div>
+          </DialogFooter>
         </form>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }

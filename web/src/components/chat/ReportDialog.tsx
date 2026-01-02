@@ -1,6 +1,13 @@
 import { useState } from 'react';
-import { AlertTriangle, X } from 'lucide-react';
+import { AlertTriangle, Check } from 'lucide-react';
 import type { ChatMessageItem } from '@/types/room';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from '@/components/ui/Dialog';
 
 interface ReportDialogProps {
   open: boolean;
@@ -61,42 +68,17 @@ export default function ReportDialog({
     }
   };
 
-  if (!open) return null;
-
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
-      <div className="absolute inset-0 bg-black/50" onClick={onClose} />
-      <div className="relative bg-card border border-border rounded-lg p-6 w-full max-w-md mx-4">
-        <button
-          onClick={onClose}
-          className="absolute top-4 right-4 p-1 rounded-md hover:bg-accent"
-        >
-          <X className="h-4 w-4" />
-        </button>
-
-        <div className="flex items-center gap-3 mb-4">
-          <div className="p-2 bg-destructive/10 rounded-full">
-            <AlertTriangle className="h-5 w-5 text-destructive" />
-          </div>
-          <h2 className="font-semibold">メッセージを通報</h2>
-        </div>
+    <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose()}>
+      <DialogContent>
+        <DialogHeader icon={<AlertTriangle className="h-5 w-5 text-destructive" />}>
+          <DialogTitle>メッセージを通報</DialogTitle>
+        </DialogHeader>
 
         {success ? (
-          <div className="text-center py-8">
-            <div className="w-16 h-16 mx-auto mb-4 bg-green-100 rounded-full flex items-center justify-center">
-              <svg
-                className="w-8 h-8 text-green-600"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M5 13l4 4L19 7"
-                />
-              </svg>
+          <div className="text-center py-8 animate-scale-in">
+            <div className="w-16 h-16 mx-auto mb-4 bg-success/20 rounded-full flex items-center justify-center">
+              <Check className="w-8 h-8 text-success" />
             </div>
             <p className="text-lg font-medium">通報を受け付けました</p>
             <p className="text-sm text-muted-foreground mt-1">
@@ -107,7 +89,7 @@ export default function ReportDialog({
           <form onSubmit={handleSubmit} className="space-y-4">
             {/* Reported message preview */}
             {message && (
-              <div className="p-3 bg-muted rounded-lg">
+              <div className="p-3 bg-muted/50 rounded-xl">
                 <p className="text-xs text-muted-foreground mb-1">
                   通報対象メッセージ
                 </p>
@@ -127,10 +109,10 @@ export default function ReportDialog({
                 {REPORT_REASONS.map((reason) => (
                   <label
                     key={reason.value}
-                    className={`flex items-center p-3 rounded-lg border cursor-pointer transition-colors ${
+                    className={`flex items-center p-3 rounded-xl border cursor-pointer transition-all duration-200 ${
                       selectedReason === reason.value
-                        ? 'border-primary bg-primary/5'
-                        : 'border-border hover:bg-accent'
+                        ? 'border-primary bg-primary/5 shadow-sm'
+                        : 'border-border hover:bg-accent/50 hover:border-primary/30'
                     }`}
                   >
                     <input
@@ -156,32 +138,32 @@ export default function ReportDialog({
                 value={additionalInfo}
                 onChange={(e) => setAdditionalInfo(e.target.value)}
                 placeholder="追加の情報があれば入力してください"
-                className="w-full px-3 py-2 border border-input rounded-md bg-background text-sm resize-none"
+                className="w-full px-4 py-2.5 border border-input rounded-xl bg-background/50 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary/50 hover:border-primary/30 transition-all duration-200 text-sm resize-none"
                 rows={3}
               />
             </div>
 
             {error && <p className="text-sm text-destructive">{error}</p>}
 
-            <div className="flex gap-3">
+            <DialogFooter>
               <button
                 type="button"
                 onClick={onClose}
-                className="flex-1 px-4 py-2 border border-border rounded-md hover:bg-accent"
+                className="flex-1 px-4 py-2.5 border border-border rounded-xl hover:bg-accent/50 transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]"
               >
                 キャンセル
               </button>
               <button
                 type="submit"
                 disabled={isLoading || !selectedReason}
-                className="flex-1 px-4 py-2 bg-destructive text-white rounded-md hover:opacity-90 disabled:opacity-50"
+                className="flex-1 px-4 py-2.5 bg-destructive text-white rounded-xl shadow-lg shadow-destructive/25 hover:shadow-xl hover:shadow-destructive/30 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:shadow-none disabled:scale-100 transition-all duration-200"
               >
                 {isLoading ? '送信中...' : '通報する'}
               </button>
-            </div>
+            </DialogFooter>
           </form>
         )}
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }
