@@ -96,4 +96,26 @@ test.describe('User Settings Dialog', () => {
     await expect(page.locator('text=ユーザーID')).toBeVisible();
     await expect(dialog.locator('input[type="text"]')).toBeVisible();
   });
+
+  test('account button should have adequate padding', async ({ page }) => {
+    await page.goto('/');
+    await page.waitForSelector('button:has-text("NewRoom")', { timeout: 10000 });
+
+    // Find the account button
+    const accountButton = page.locator('[data-testid="account-button"]');
+    await expect(accountButton).toBeVisible();
+
+    // Check padding values (px-2 = 8px, py-1.5 = 6px)
+    const paddingLeft = await accountButton.evaluate((el) => {
+      return window.getComputedStyle(el).paddingLeft;
+    });
+    const paddingTop = await accountButton.evaluate((el) => {
+      return window.getComputedStyle(el).paddingTop;
+    });
+
+    // Verify horizontal padding is at least 8px (0.5rem)
+    expect(parseInt(paddingLeft)).toBeGreaterThanOrEqual(8);
+    // Verify vertical padding is at least 6px (0.375rem)
+    expect(parseInt(paddingTop)).toBeGreaterThanOrEqual(6);
+  });
 });

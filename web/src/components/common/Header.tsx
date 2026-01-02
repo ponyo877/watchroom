@@ -45,8 +45,9 @@ export default function Header({ onCreateRoom, searchQuery, onSearchChange }: He
           <div className="flex items-center gap-2 md:gap-4">
             <button
               onClick={() => setShowUserSettings(true)}
-              className="flex items-center gap-2 p-1 hover:bg-accent rounded-md"
+              className="flex items-center gap-2 px-2 py-1.5 hover:bg-accent rounded-lg transition-colors duration-200"
               title="ユーザー設定"
+              data-testid="account-button"
             >
               <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center overflow-hidden">
                 {userIconUrl ? (
