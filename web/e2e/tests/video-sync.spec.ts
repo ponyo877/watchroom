@@ -40,14 +40,14 @@ test.describe('Video Playback Sync (P2P)', () => {
     try {
       // User A enters first
       await pageA.goto(`/r/${shortId}`);
-      await pageA.waitForSelector('button[title="動画を検索"]', { timeout: ROOM_LOAD_TIMEOUT });
+      await pageA.waitForSelector('button[title="NewVideo"]', { timeout: ROOM_LOAD_TIMEOUT });
 
       // User B enters
       await pageB.goto(`/r/${shortId}`);
-      await pageB.waitForSelector('button[title="動画を検索"]', { timeout: ROOM_LOAD_TIMEOUT });
+      await pageB.waitForSelector('button[title="NewVideo"]', { timeout: ROOM_LOAD_TIMEOUT });
 
       // User A opens video search
-      await pageA.click('button[title="動画を検索"]');
+      await pageA.click('button[title="NewVideo"]');
       await pageA.waitForSelector('input[placeholder*="検索"]', { timeout: 5000 });
 
       // Search and select video
@@ -113,9 +113,9 @@ test.describe('Video Playback Sync (P2P)', () => {
     try {
       // User A enters and sets up video first
       await pageA.goto(`/r/${shortId}`);
-      await pageA.waitForSelector('button[title="動画を検索"]', { timeout: ROOM_LOAD_TIMEOUT });
+      await pageA.waitForSelector('button[title="NewVideo"]', { timeout: ROOM_LOAD_TIMEOUT });
 
-      await pageA.click('button[title="動画を検索"]');
+      await pageA.click('button[title="NewVideo"]');
       await pageA.waitForSelector('input[placeholder*="検索"]', { timeout: 5000 });
       await pageA.fill('input[placeholder*="検索"]', 'music');
       await pageA.keyboard.press('Enter');
@@ -203,9 +203,9 @@ test.describe('Video Playback Sync (P2P)', () => {
     try {
       // Creator enters and sets up video
       await pageA.goto(`/r/${shortId}`);
-      await pageA.waitForSelector('button[title="動画を検索"]', { timeout: ROOM_LOAD_TIMEOUT });
+      await pageA.waitForSelector('button[title="NewVideo"]', { timeout: ROOM_LOAD_TIMEOUT });
 
-      await pageA.click('button[title="動画を検索"]');
+      await pageA.click('button[title="NewVideo"]');
       await pageA.waitForSelector('input[placeholder*="検索"]', { timeout: 5000 });
       await pageA.fill('input[placeholder*="検索"]', 'music');
       await pageA.keyboard.press('Enter');
@@ -291,9 +291,9 @@ test.describe('Video Playback Sync (P2P)', () => {
     try {
       // Controller enters and sets up video
       await pageA.goto(`/r/${shortId}`);
-      await pageA.waitForSelector('button[title="動画を検索"]', { timeout: ROOM_LOAD_TIMEOUT });
+      await pageA.waitForSelector('button[title="NewVideo"]', { timeout: ROOM_LOAD_TIMEOUT });
 
-      await pageA.click('button[title="動画を検索"]');
+      await pageA.click('button[title="NewVideo"]');
       await pageA.waitForSelector('input[placeholder*="検索"]', { timeout: 5000 });
       await pageA.fill('input[placeholder*="検索"]', 'music');
       await pageA.keyboard.press('Enter');
@@ -359,9 +359,9 @@ test.describe('Video Playback Sync (P2P)', () => {
     try {
       // User A enters and sets up video first
       await pageA.goto(`/r/${shortId}`);
-      await pageA.waitForSelector('button[title="動画を検索"]', { timeout: ROOM_LOAD_TIMEOUT });
+      await pageA.waitForSelector('button[title="NewVideo"]', { timeout: ROOM_LOAD_TIMEOUT });
 
-      await pageA.click('button[title="動画を検索"]');
+      await pageA.click('button[title="NewVideo"]');
       await pageA.waitForSelector('input[placeholder*="検索"]', { timeout: 5000 });
       await pageA.fill('input[placeholder*="検索"]', 'music');
       await pageA.keyboard.press('Enter');
@@ -442,9 +442,9 @@ test.describe('Video Playback Sync (P2P)', () => {
     try {
       // Creator enters and sets up video
       await pageA.goto(`/r/${shortId}`);
-      await pageA.waitForSelector('button[title="動画を検索"]', { timeout: ROOM_LOAD_TIMEOUT });
+      await pageA.waitForSelector('button[title="NewVideo"]', { timeout: ROOM_LOAD_TIMEOUT });
 
-      await pageA.click('button[title="動画を検索"]');
+      await pageA.click('button[title="NewVideo"]');
       await pageA.waitForSelector('input[placeholder*="検索"]', { timeout: 5000 });
       await pageA.fill('input[placeholder*="検索"]', 'music');
       await pageA.keyboard.press('Enter');
@@ -529,9 +529,9 @@ test.describe('Late Joiner Edge Cases', () => {
     try {
       // Creator enters
       await pageA.goto(`/r/${shortId}`);
-      await pageA.waitForSelector('button[title="動画を検索"]', { timeout: ROOM_LOAD_TIMEOUT });
+      await pageA.waitForSelector('button[title="NewVideo"]', { timeout: ROOM_LOAD_TIMEOUT });
 
-      await pageA.click('button[title="動画を検索"]');
+      await pageA.click('button[title="NewVideo"]');
       await pageA.waitForSelector('input[placeholder*="検索"]', { timeout: 5000 });
       await pageA.fill('input[placeholder*="検索"]', 'music');
       await pageA.keyboard.press('Enter');
@@ -598,9 +598,9 @@ test.describe('Late Joiner Edge Cases', () => {
     try {
       // Creator enters and starts video
       await pageA.goto(`/r/${shortId}`);
-      await pageA.waitForSelector('button[title="動画を検索"]', { timeout: ROOM_LOAD_TIMEOUT });
+      await pageA.waitForSelector('button[title="NewVideo"]', { timeout: ROOM_LOAD_TIMEOUT });
 
-      await pageA.click('button[title="動画を検索"]');
+      await pageA.click('button[title="NewVideo"]');
       await pageA.waitForSelector('input[placeholder*="検索"]', { timeout: 5000 });
       await pageA.fill('input[placeholder*="検索"]', 'music');
       await pageA.keyboard.press('Enter');

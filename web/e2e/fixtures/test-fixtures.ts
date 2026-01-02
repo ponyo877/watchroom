@@ -90,7 +90,7 @@ class RoomPage {
 
   // Video controls
   async openVideoSearch() {
-    await this.page.click('button[title="動画を検索"]');
+    await this.page.click('button[title="NewVideo"]');
   }
 
   async searchVideo(query: string) {

@@ -20,15 +20,15 @@ test.describe('Permission System', () => {
     await creator.page.waitForURL(/\/(room|r)\//, { timeout: 15000 });
 
     const roomUrl = creator.page.url();
-    await creator.page.waitForSelector('button[title="動画を検索"]', { timeout: ROOM_LOAD_TIMEOUT });
+    await creator.page.waitForSelector('button[title="NewVideo"]', { timeout: ROOM_LOAD_TIMEOUT });
 
     // Create viewer
     const viewer = await createUser('Viewer');
     await viewer.page.goto(roomUrl);
-    await viewer.page.waitForSelector('button[title="動画を検索"]', { timeout: ROOM_LOAD_TIMEOUT });
+    await viewer.page.waitForSelector('button[title="NewVideo"]', { timeout: ROOM_LOAD_TIMEOUT });
 
     // Creator searches for video
-    await creator.page.click('button[title="動画を検索"]');
+    await creator.page.click('button[title="NewVideo"]');
     await creator.page.waitForSelector('input[placeholder*="検索"]', { timeout: 3000 });
     await creator.page.fill('input[placeholder*="検索"]', 'test');
     await creator.page.keyboard.press('Enter');

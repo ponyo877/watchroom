@@ -5,7 +5,7 @@ import {
   Users,
   History,
   LogOut,
-  Search,
+  Film,
   MessageCircle,
 } from 'lucide-react';
 import { useRoomStore } from '@/stores/roomStore';
@@ -446,9 +446,9 @@ export default function RoomPage() {
               <button
                 onClick={() => setShowVideoSearch(true)}
                 className="p-2 hover:bg-accent rounded-md"
-                title="動画を検索"
+                title="NewVideo"
               >
-                <Search className="h-5 w-5" />
+                <Film className="h-5 w-5" />
               </button>
               <button
                 onClick={() => setShowPlayHistory(true)}
@@ -497,9 +497,10 @@ export default function RoomPage() {
                   <p className="text-white/50 mb-4">動画が選択されていません</p>
                   <button
                     onClick={() => setShowVideoSearch(true)}
-                    className="px-4 py-2 bg-primary text-primary-foreground rounded-md"
+                    className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-md"
                   >
-                    動画を検索
+                    <Film className="h-4 w-4" />
+                    <span>NewVideo</span>
                   </button>
                 </div>
               </div>

@@ -44,3 +44,24 @@ test.describe('UI Button Styles', () => {
     await expect(icon).toBeVisible();
   });
 });
+
+test.describe('Video Search Button', () => {
+  test('should display NewVideo button with Film icon in room page', async ({ page, request }) => {
+    // Create a test room
+    const roomId = `test-room-${Date.now()}`;
+    const response = await request.post('http://localhost:8080/api/rooms', {
+      data: { room_id: roomId },
+    });
+    const { short_id: shortId } = await response.json();
+
+    await page.goto(`/r/${shortId}`);
+
+    // Wait for and verify the NewVideo button
+    const newVideoButton = page.locator('button[title="NewVideo"]');
+    await expect(newVideoButton).toBeVisible({ timeout: 10000 });
+
+    // Verify it has an SVG icon (Film icon)
+    const icon = newVideoButton.locator('svg');
+    await expect(icon).toBeVisible();
+  });
+});
