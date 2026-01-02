@@ -39,25 +39,30 @@ export default function MemberList({
     <div className="p-4">
       <h3 className="font-semibold mb-3">メンバー ({members.length})</h3>
       <div className="space-y-2">
-        {members.map((member) => {
+        {members.map((member, index) => {
           const isCurrentUser = member.id === currentUserId;
           const hasPermission = allowedUserIds.includes(member.id);
 
           return (
             <div
               key={member.id}
-              className="flex items-center gap-3 p-2 rounded-lg hover:bg-accent group"
+              className="flex items-center gap-3 p-2 rounded-xl hover:bg-accent/50 group transition-all duration-200 animate-fade-in opacity-0"
+              style={{ animationDelay: `${index * 50}ms`, animationFillMode: 'forwards' }}
             >
-              <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center overflow-hidden">
-                {member.iconUrl ? (
-                  <img
-                    src={member.iconUrl}
-                    alt={member.name}
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  <User className="h-4 w-4 text-muted-foreground" />
-                )}
+              <div className="relative">
+                <div className={`w-8 h-8 rounded-full bg-muted flex items-center justify-center overflow-hidden ring-2 ${member.isCreator ? 'ring-yellow-500/50' : 'ring-border/50'} transition-all duration-200 group-hover:ring-primary/50`}>
+                  {member.iconUrl ? (
+                    <img
+                      src={member.iconUrl}
+                      alt={member.name}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <User className="h-4 w-4 text-muted-foreground" />
+                  )}
+                </div>
+                {/* Online status indicator */}
+                <div className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-success rounded-full border-2 border-background" />
               </div>
               <div className="flex-1 min-w-0">
                 <span className="truncate text-sm block">

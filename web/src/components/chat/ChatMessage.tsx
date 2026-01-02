@@ -16,18 +16,22 @@ export default function ChatMessage({ message, onReport }: ChatMessageProps) {
 
   return (
     <div className={`flex gap-2 group ${isOwnMessage ? 'flex-row-reverse' : ''}`}>
-      <div className="w-8 h-8 rounded-full bg-muted flex-shrink-0 flex items-center justify-center overflow-hidden">
-        {message.senderIconUrl ? (
-          <img
-            src={message.senderIconUrl}
-            alt={message.senderName}
-            className="w-full h-full object-cover"
-          />
-        ) : (
-          <span className="text-xs font-medium text-muted-foreground">
-            {message.senderName.charAt(0).toUpperCase()}
-          </span>
-        )}
+      <div className="relative">
+        <div className="w-8 h-8 rounded-full bg-muted flex-shrink-0 flex items-center justify-center overflow-hidden ring-2 ring-border/50">
+          {message.senderIconUrl ? (
+            <img
+              src={message.senderIconUrl}
+              alt={message.senderName}
+              className="w-full h-full object-cover"
+            />
+          ) : (
+            <span className="text-xs font-medium text-muted-foreground">
+              {message.senderName.charAt(0).toUpperCase()}
+            </span>
+          )}
+        </div>
+        {/* Online indicator */}
+        <div className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-success rounded-full border-2 border-background" />
       </div>
 
       <div className={`flex flex-col max-w-[70%] ${isOwnMessage ? 'items-end' : ''}`}>
@@ -35,17 +39,17 @@ export default function ChatMessage({ message, onReport }: ChatMessageProps) {
           <span className="text-xs font-medium text-muted-foreground">
             {message.senderName}
           </span>
-          <span className="text-xs text-muted-foreground">
+          <span className="text-xs text-muted-foreground/70">
             {formatRelativeTime(new Date(message.timestamp))}
           </span>
         </div>
 
         <div className="flex items-center gap-1">
           <div
-            className={`px-3 py-2 rounded-lg text-sm ${
+            className={`px-3 py-2 rounded-2xl text-sm shadow-sm ${
               isOwnMessage
-                ? 'bg-primary text-primary-foreground'
-                : 'bg-muted text-foreground'
+                ? 'bg-gradient-to-br from-primary to-primary/80 text-primary-foreground rounded-br-md'
+                : 'bg-muted/80 backdrop-blur-sm text-foreground rounded-bl-md'
             }`}
           >
             {message.text}

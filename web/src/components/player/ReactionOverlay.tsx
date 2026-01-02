@@ -52,31 +52,17 @@ export default function ReactionOverlay({ reactions }: ReactionOverlayProps) {
       {floatingReactions.map((reaction) => (
         <div
           key={reaction.id}
-          className="absolute text-4xl animate-float-down"
+          className="absolute text-4xl animate-reaction-float drop-shadow-lg"
           style={{
             left: `${reaction.x}%`,
-            animationDuration: '3s',
+            bottom: 0,
           }}
         >
-          {reaction.emoji}
+          <span className="inline-block animate-reaction-wobble">
+            {reaction.emoji}
+          </span>
         </div>
       ))}
-
-      <style>{`
-        @keyframes float-down {
-          0% {
-            transform: translateY(-20px);
-            opacity: 1;
-          }
-          100% {
-            transform: translateY(100vh);
-            opacity: 0;
-          }
-        }
-        .animate-float-down {
-          animation: float-down 3s ease-out forwards;
-        }
-      `}</style>
     </div>
   );
 }

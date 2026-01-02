@@ -63,12 +63,12 @@ export default function PlayerControls({
   };
 
   return (
-    <div className="h-full flex items-center gap-4 px-4">
+    <div className="h-full flex items-center gap-4 px-4 bg-gradient-to-t from-black/10 to-transparent">
       {/* Play/Pause */}
       <button
         onClick={isPlaying ? onPause : onPlay}
         disabled={!hasControlPermission}
-        className="p-2 hover:bg-accent rounded-full disabled:opacity-50"
+        className="p-2 hover:bg-accent rounded-full disabled:opacity-50 transition-all duration-200 hover:scale-110 active:scale-95"
       >
         {isPlaying ? (
           <Pause className="h-5 w-5" />
@@ -81,14 +81,14 @@ export default function PlayerControls({
       <button
         onClick={() => skip(-10)}
         disabled={!hasControlPermission}
-        className="p-2 hover:bg-accent rounded-full disabled:opacity-50"
+        className="p-2 hover:bg-accent rounded-full disabled:opacity-50 transition-all duration-200 hover:scale-110 active:scale-95"
       >
         <SkipBack className="h-4 w-4" />
       </button>
       <button
         onClick={() => skip(10)}
         disabled={!hasControlPermission}
-        className="p-2 hover:bg-accent rounded-full disabled:opacity-50"
+        className="p-2 hover:bg-accent rounded-full disabled:opacity-50 transition-all duration-200 hover:scale-110 active:scale-95"
       >
         <SkipForward className="h-4 w-4" />
       </button>
@@ -117,7 +117,7 @@ export default function PlayerControls({
         <button
           onClick={onMuteToggle}
           onMouseEnter={() => setShowVolumeSlider(true)}
-          className="p-2 hover:bg-accent rounded-full"
+          className="p-2 hover:bg-accent rounded-full transition-all duration-200 hover:scale-110 active:scale-95"
           title="音量（自分のみ）"
         >
           {isMuted || volume === 0 ? (
@@ -128,7 +128,7 @@ export default function PlayerControls({
         </button>
         {showVolumeSlider && (
           <div
-            className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 p-3 bg-card border border-border rounded-lg shadow-lg"
+            className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 p-3 bg-card/95 backdrop-blur-lg border border-border/50 rounded-xl shadow-xl animate-fade-in-up"
             onMouseLeave={() => setShowVolumeSlider(false)}
           >
             <div className="flex flex-col items-center gap-2">
@@ -153,7 +153,7 @@ export default function PlayerControls({
         value={playbackRate}
         onChange={(e) => onPlaybackRateChange(parseFloat(e.target.value))}
         disabled={!hasControlPermission}
-        className="px-2 py-1 text-sm bg-transparent border border-border rounded disabled:opacity-50"
+        className="px-2 py-1 text-sm bg-background/50 backdrop-blur-sm border border-border rounded-lg disabled:opacity-50 hover:border-primary/50 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary/50"
       >
         {PLAYBACK_RATES.map((rate) => (
           <option key={rate} value={rate}>
