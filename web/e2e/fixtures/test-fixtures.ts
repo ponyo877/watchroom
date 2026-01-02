@@ -34,7 +34,7 @@ class HomePage {
   }
 
   async clickCreateRoom() {
-    await this.page.click('button:has-text("部屋を作成")');
+    await this.page.click('button:has-text("NewRoom")');
   }
 
   async fillRoomName(name: string) {

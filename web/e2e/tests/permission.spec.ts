@@ -13,7 +13,7 @@ test.describe('Permission System', () => {
     await creator.page.goto('/');
     await creator.page.waitForLoadState('networkidle');
 
-    await creator.page.click('button:has-text("部屋を作成")');
+    await creator.page.click('button:has-text("NewRoom")');
     await creator.page.waitForSelector('input#roomName', { timeout: 3000 });
     await creator.page.fill('input#roomName', `Permission Test ${Date.now()}`);
     await creator.page.click('button[type="submit"]:has-text("作成")');

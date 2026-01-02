@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Plus, User } from 'lucide-react';
+import { Monitor, User } from 'lucide-react';
 import { useUserStore } from '@/stores/userStore';
 import ThemeToggle from './ThemeToggle';
 import UserSettings from '@/components/user/UserSettings';
@@ -51,8 +51,8 @@ export default function Header({ onCreateRoom }: HeaderProps) {
                 onClick={onCreateRoom}
                 className="flex items-center gap-2 px-3 md:px-4 py-2 bg-[#4A7C59] text-white rounded-md shadow-lg shadow-[#4A7C59]/25 hover:shadow-xl hover:shadow-[#4A7C59]/30 hover:scale-105 active:scale-95 transition-all duration-200"
               >
-                <Plus className="h-4 w-4" />
-                <span className="hidden md:inline">部屋を作成</span>
+                <Monitor className="h-4 w-4" />
+                <span className="hidden md:inline">NewRoom</span>
               </button>
             )}
           </div>

@@ -5,8 +5,8 @@ test.describe('UI Button Styles', () => {
     // Navigate to home page
     await page.goto('/');
 
-    // Find the create room button
-    const createRoomButton = page.locator('button:has-text("部屋を作成")');
+    // Find the create room button (now labeled "NewRoom")
+    const createRoomButton = page.locator('button:has-text("NewRoom")');
     await expect(createRoomButton).toBeVisible();
 
     // Check the background color is deep green (#4A7C59)
@@ -21,7 +21,7 @@ test.describe('UI Button Styles', () => {
   test('create room button should have white text', async ({ page }) => {
     await page.goto('/');
 
-    const createRoomButton = page.locator('button:has-text("部屋を作成")');
+    const createRoomButton = page.locator('button:has-text("NewRoom")');
     await expect(createRoomButton).toBeVisible();
 
     const textColor = await createRoomButton.evaluate((el) => {
@@ -30,5 +30,17 @@ test.describe('UI Button Styles', () => {
 
     // White is rgb(255, 255, 255)
     expect(textColor).toBe('rgb(255, 255, 255)');
+  });
+
+  test('create room button should display "NewRoom" text', async ({ page }) => {
+    await page.goto('/');
+
+    // Verify the button displays "NewRoom" text (visible on desktop)
+    const createRoomButton = page.locator('button:has-text("NewRoom")');
+    await expect(createRoomButton).toBeVisible();
+
+    // The button should have a Monitor icon (SVG)
+    const icon = createRoomButton.locator('svg');
+    await expect(icon).toBeVisible();
   });
 });
