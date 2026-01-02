@@ -471,13 +471,11 @@ export default function RoomPage() {
               >
                 <Settings className="h-5 w-5" />
               </button>
-              <div className="hidden md:block">
-                <ShareButton
-                  roomId={actualRoomId || ''}
-                  shortId={shortId}
-                  roomName={roomStore.room?.name || 'WatchRoom'}
-                />
-              </div>
+              <ShareButton
+                roomId={actualRoomId || ''}
+                shortId={shortId}
+                roomName={roomStore.room?.name || 'WatchRoom'}
+              />
             </div>
           </header>
 

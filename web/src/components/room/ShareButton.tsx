@@ -60,10 +60,10 @@ export default function ShareButton({ roomId, shortId, roomName }: ShareButtonPr
     <div className="relative">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-2 px-3 py-2 bg-primary text-primary-foreground rounded-md hover:opacity-90 transition-opacity"
+        className="p-2 hover:bg-accent rounded-md"
+        title="シェア"
       >
-        <Share2 className="h-4 w-4" />
-        <span className="text-sm">シェア</span>
+        <Share2 className="h-5 w-5" />
       </button>
 
       {isOpen && (

@@ -40,7 +40,8 @@ test.describe('UI Controls', () => {
 
       await page.goto(`/r/${shortId}`);
 
-      const shareButton = page.locator('button:has-text("シェア")');
+      // Share button is now icon-only with title attribute
+      const shareButton = page.locator('button[title="シェア"]');
       await expect(shareButton).toBeVisible({ timeout: ROOM_LOAD_TIMEOUT });
       await shareButton.click();
 
@@ -59,7 +60,8 @@ test.describe('UI Controls', () => {
 
       await page.goto(`/r/${shortId}`);
 
-      const shareButton = page.locator('button:has-text("シェア")');
+      // Share button is now icon-only with title attribute
+      const shareButton = page.locator('button[title="シェア"]');
       await expect(shareButton).toBeVisible({ timeout: ROOM_LOAD_TIMEOUT });
       await shareButton.click();
 
