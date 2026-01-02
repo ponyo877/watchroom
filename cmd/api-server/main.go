@@ -16,6 +16,7 @@ import (
 	"github.com/ponyo877/youtube-friend-watch/internal/config"
 	"github.com/ponyo877/youtube-friend-watch/internal/job"
 	"github.com/ponyo877/youtube-friend-watch/internal/middleware"
+	"github.com/ponyo877/youtube-friend-watch/internal/repository"
 	"github.com/redis/go-redis/v9"
 )
 
@@ -42,6 +43,11 @@ func main() {
 		log.Println("Connected to Redis")
 
 		handler = adapter.NewHandlerWithRedis(cfg, nil, redisClient)
+
+		// Seed permanent rooms (idempotent - skips if already exist)
+		if err := repository.SeedPermanentRooms(ctx, handler.GetRoomRepo(), handler.GetShortURLRepo()); err != nil {
+			log.Printf("Warning: Failed to seed permanent rooms: %v", err)
+		}
 
 		// Start cleanup jobs
 		roomCleanupJob := job.NewRoomCleanupJob(handler.GetRoomRepo(), time.Minute)

@@ -105,6 +105,11 @@ func (h *Handler) GetBanRepo() repository.BanRepository {
 	return h.banRepo
 }
 
+// GetShortURLRepo returns the short URL repository for seeding
+func (h *Handler) GetShortURLRepo() repository.ShortURLRepository {
+	return h.shortURLRepo
+}
+
 // NewError creates an error response
 func (h *Handler) NewError(ctx context.Context, err error) error {
 	return err
