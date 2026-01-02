@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"database/sql"
+	"time"
 
 	"github.com/ponyo877/youtube-friend-watch/internal/model"
 )
@@ -176,6 +177,25 @@ func (r *RoomRepositoryMySQL) DecrementAndDeleteIfEmpty(ctx context.Context, roo
 	}
 
 	return tx.Commit()
+}
+
+// SyncMemberCount updates the member count to the actual SkyWay room members count
+func (r *RoomRepositoryMySQL) SyncMemberCount(ctx context.Context, roomID string, actualCount int) error {
+	_, err := r.db.ExecContext(ctx,
+		"UPDATE rooms SET member_count = ?, updated_at = CURRENT_TIMESTAMP WHERE room_id = ?",
+		actualCount, roomID)
+	return err
+}
+
+// ResetStaleMemberCounts resets member count to 0 for rooms not updated within staleDuration
+// This handles cases where clients crashed without properly decrementing member count
+func (r *RoomRepositoryMySQL) ResetStaleMemberCounts(ctx context.Context, staleDuration time.Duration) error {
+	_, err := r.db.ExecContext(ctx,
+		`UPDATE rooms SET member_count = 0
+		WHERE member_count > 0
+		AND updated_at < DATE_SUB(NOW(), INTERVAL ? SECOND)`,
+		int(staleDuration.Seconds()))
+	return err
 }
 
 // DeleteEmptyNonPermanentRooms deletes non-permanent rooms that are:

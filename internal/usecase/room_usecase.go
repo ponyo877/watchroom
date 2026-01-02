@@ -129,6 +129,10 @@ func (u *RoomUsecase) GetMemberInfo(ctx context.Context, roomID string) (memberC
 	return u.roomRepo.GetMemberInfo(ctx, roomID)
 }
 
+func (u *RoomUsecase) SyncMemberCount(ctx context.Context, roomID string, actualCount int) error {
+	return u.roomRepo.SyncMemberCount(ctx, roomID, actualCount)
+}
+
 func (u *RoomUsecase) VerifyPassword(ctx context.Context, roomID, password string) (bool, error) {
 	hash, err := u.roomRepo.GetPasswordHash(ctx, roomID)
 	if err != nil {

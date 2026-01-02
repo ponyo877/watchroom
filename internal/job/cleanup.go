@@ -56,6 +56,16 @@ func (j *RoomCleanupJob) run(ctx context.Context) {
 }
 
 func (j *RoomCleanupJob) cleanup(ctx context.Context) {
+	// First, reset member counts for stale rooms (not updated in 10 minutes)
+	// This handles cases where clients crashed without decrementing member count
+	staleDuration := 10 * time.Minute
+	if err := j.roomRepo.ResetStaleMemberCounts(ctx, staleDuration); err != nil {
+		log.Printf("[RoomCleanupJob] Error resetting stale member counts: %v", err)
+	} else {
+		log.Println("[RoomCleanupJob] Stale member counts reset successfully")
+	}
+
+	// Then, delete empty non-permanent rooms
 	if err := j.roomRepo.DeleteEmptyNonPermanentRooms(ctx); err != nil {
 		log.Printf("[RoomCleanupJob] Error cleaning up empty rooms: %v", err)
 	} else {

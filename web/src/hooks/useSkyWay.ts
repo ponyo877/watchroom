@@ -302,6 +302,8 @@ export function useSkyWay({ roomName, token, onMessage }: UseSkyWayOptions) {
       }
 
       // Increment member count in DB
+      // Note: Member count accuracy is maintained by periodic cleanup job
+      // that resets stale room counts
       try {
         await axiosInstance.post(`/api/rooms/${roomName}/member-count/increment`);
       } catch (e) {

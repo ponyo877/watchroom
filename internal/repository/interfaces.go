@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"time"
 
 	"github.com/ponyo877/youtube-friend-watch/internal/model"
 )
@@ -24,6 +25,10 @@ type RoomRepository interface {
 	HasPassword(ctx context.Context, roomID string) (bool, error)
 	// Member management with cleanup
 	DecrementAndDeleteIfEmpty(ctx context.Context, roomID string) error
+	// Sync member count with actual SkyWay room members
+	SyncMemberCount(ctx context.Context, roomID string, actualCount int) error
+	// Reset member count for stale rooms (not updated for a while)
+	ResetStaleMemberCounts(ctx context.Context, staleDuration time.Duration) error
 	// Cleanup (for Redis implementation)
 	DeleteEmptyNonPermanentRooms(ctx context.Context) error
 }

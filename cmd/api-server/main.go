@@ -139,6 +139,8 @@ func main() {
 				handler.HandleIncrementMemberCount(w, r, roomID)
 			case "decrement":
 				handler.HandleDecrementMemberCount(w, r, roomID)
+			case "sync":
+				handler.HandleSyncMemberCount(w, r, roomID)
 			default:
 				http.Error(w, "Not found", http.StatusNotFound)
 			}

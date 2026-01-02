@@ -293,6 +293,10 @@ type MemberInfoResponse struct {
 	MaxMembers  int `json:"max_members"`
 }
 
+type SyncMemberCountRequest struct {
+	ActualCount int `json:"actual_count"`
+}
+
 func (h *Handler) HandleGetMemberInfo(w http.ResponseWriter, r *http.Request, roomID string) {
 	if r.Method != http.MethodGet {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
@@ -310,6 +314,28 @@ func (h *Handler) HandleGetMemberInfo(w http.ResponseWriter, r *http.Request, ro
 		MemberCount: memberCount,
 		MaxMembers:  maxMembers,
 	})
+}
+
+func (h *Handler) HandleSyncMemberCount(w http.ResponseWriter, r *http.Request, roomID string) {
+	if r.Method != http.MethodPut {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	var req SyncMemberCountRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		return
+	}
+
+	err := h.roomUsecase.SyncMemberCount(r.Context(), roomID, req.ActualCount)
+	if err != nil {
+		http.Error(w, "Failed to sync member count", http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(SuccessResponse{Success: true})
 }
 
 // Ogen interface implementations

@@ -299,6 +299,51 @@ func (r *RoomRepositoryRedis) HasPassword(ctx context.Context, roomID string) (b
 	return exists > 0, nil
 }
 
+// SyncMemberCount updates the member count to the actual SkyWay room members count
+func (r *RoomRepositoryRedis) SyncMemberCount(ctx context.Context, roomID string, actualCount int) error {
+	key := roomPrefix + roomID
+	exists, err := r.client.Exists(ctx, key).Result()
+	if err != nil {
+		return err
+	}
+	if exists == 0 {
+		return nil
+	}
+
+	return r.client.HSet(ctx, key,
+		fieldMemberCount, strconv.Itoa(actualCount),
+		fieldUpdatedAt, time.Now().Unix(),
+	).Err()
+}
+
+// ResetStaleMemberCounts resets member count to 0 for rooms not updated within staleDuration
+func (r *RoomRepositoryRedis) ResetStaleMemberCounts(ctx context.Context, staleDuration time.Duration) error {
+	roomIDs, err := r.client.ZRange(ctx, roomsActiveKey, 0, -1).Result()
+	if err != nil {
+		return err
+	}
+
+	staleThreshold := time.Now().Add(-staleDuration)
+
+	for _, roomID := range roomIDs {
+		room, err := r.GetByRoomID(ctx, roomID)
+		if err != nil || room == nil {
+			continue
+		}
+
+		// Reset member count if room is stale and has non-zero member count
+		if room.MemberCount > 0 && room.UpdatedAt.Before(staleThreshold) {
+			key := roomPrefix + roomID
+			r.client.HSet(ctx, key,
+				fieldMemberCount, "0",
+				fieldUpdatedAt, time.Now().Unix(),
+			)
+		}
+	}
+
+	return nil
+}
+
 // DeleteEmptyNonPermanentRooms deletes non-permanent rooms that are:
 // 1. Empty (member_count == 0), OR
 // 2. Stale (not updated in the last hour) - handles cases where member count wasn't properly decremented
