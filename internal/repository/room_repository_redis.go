@@ -299,12 +299,16 @@ func (r *RoomRepositoryRedis) HasPassword(ctx context.Context, roomID string) (b
 	return exists > 0, nil
 }
 
-// DeleteEmptyNonPermanentRooms deletes rooms with member_count == 0 and is_permanent == false
+// DeleteEmptyNonPermanentRooms deletes non-permanent rooms that are:
+// 1. Empty (member_count == 0), OR
+// 2. Stale (not updated in the last hour) - handles cases where member count wasn't properly decremented
 func (r *RoomRepositoryRedis) DeleteEmptyNonPermanentRooms(ctx context.Context) error {
 	roomIDs, err := r.client.ZRange(ctx, roomsActiveKey, 0, -1).Result()
 	if err != nil {
 		return err
 	}
+
+	staleThreshold := time.Now().Add(-1 * time.Hour)
 
 	for _, roomID := range roomIDs {
 		room, err := r.GetByRoomID(ctx, roomID)
@@ -312,7 +316,14 @@ func (r *RoomRepositoryRedis) DeleteEmptyNonPermanentRooms(ctx context.Context) 
 			continue
 		}
 
-		if room.MemberCount <= 0 && !room.IsPermanent {
+		// Skip permanent rooms
+		if room.IsPermanent {
+			continue
+		}
+
+		// Delete if empty OR stale (not updated in the last hour)
+		shouldDelete := room.MemberCount <= 0 || room.UpdatedAt.Before(staleThreshold)
+		if shouldDelete {
 			if err := r.deleteRoomWithRelatedData(ctx, roomID); err != nil {
 				continue
 			}

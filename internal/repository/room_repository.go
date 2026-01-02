@@ -178,8 +178,41 @@ func (r *RoomRepositoryMySQL) DecrementAndDeleteIfEmpty(ctx context.Context, roo
 	return tx.Commit()
 }
 
-// DeleteEmptyNonPermanentRooms is a no-op for MySQL as it handles deletion in DecrementAndDeleteIfEmpty
+// DeleteEmptyNonPermanentRooms deletes non-permanent rooms that are:
+// 1. Empty (member_count == 0), OR
+// 2. Stale (not updated in the last hour) - handles cases where member count wasn't properly decremented
 func (r *RoomRepositoryMySQL) DeleteEmptyNonPermanentRooms(ctx context.Context) error {
-	// MySQL uses immediate deletion in DecrementAndDeleteIfEmpty, so this is a no-op
+	// Get rooms to delete
+	rows, err := r.db.QueryContext(ctx,
+		`SELECT room_id FROM rooms
+		WHERE is_permanent = FALSE
+		AND (member_count <= 0 OR updated_at < DATE_SUB(NOW(), INTERVAL 1 HOUR))`)
+	if err != nil {
+		return err
+	}
+	defer rows.Close()
+
+	var roomIDs []string
+	for rows.Next() {
+		var roomID string
+		if err := rows.Scan(&roomID); err != nil {
+			return err
+		}
+		roomIDs = append(roomIDs, roomID)
+	}
+	if err := rows.Err(); err != nil {
+		return err
+	}
+
+	// Delete each room and its related data
+	for _, roomID := range roomIDs {
+		// Delete related data first
+		r.db.ExecContext(ctx, "DELETE FROM room_passwords WHERE room_id = ?", roomID)
+		r.db.ExecContext(ctx, "DELETE FROM short_urls WHERE room_id = ?", roomID)
+		r.db.ExecContext(ctx, "DELETE FROM chat_messages WHERE room_id = ?", roomID)
+		// Delete the room
+		r.db.ExecContext(ctx, "DELETE FROM rooms WHERE room_id = ?", roomID)
+	}
+
 	return nil
 }

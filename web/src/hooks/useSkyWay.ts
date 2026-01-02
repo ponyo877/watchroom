@@ -36,6 +36,8 @@ export function useSkyWay({ roomName, token, onMessage }: UseSkyWayOptions) {
   const dataStreamRef = useRef<LocalDataStream | null>(null);
   const isConnectingRef = useRef(false);
   const subscribedPublicationsRef = useRef<Set<string>>(new Set());
+  // Flag to prevent double-decrement of member count
+  const hasDecrementedRef = useRef(false);
 
   const user = useUserStore();
   // Get store actions without subscribing to state changes
@@ -116,6 +118,8 @@ export function useSkyWay({ roomName, token, onMessage }: UseSkyWayOptions) {
       return;
     }
     isConnectingRef.current = true;
+    // Reset decrement flag for new connection
+    hasDecrementedRef.current = false;
 
     try {
       setError(null);
@@ -170,14 +174,11 @@ export function useSkyWay({ roomName, token, onMessage }: UseSkyWayOptions) {
         // 1. Remove member from local store
         roomStoreActions.removeMember(e.member.id);
 
-        // 2. Decrement DB member count (handles both graceful and forced disconnection)
-        try {
-          await axiosInstance.post(`/api/rooms/${roomName}/member-count/decrement`);
-        } catch (err) {
-          console.error('Failed to decrement member count on member left:', err);
-        }
+        // Note: Member count decrement is NOT done here.
+        // Each member is responsible for decrementing their own count
+        // via disconnect() or beforeunload to prevent double-decrement.
 
-        // 3. Check if leaving member was the creator
+        // 2. Check if leaving member was the creator
         if (leavingMemberMetadata?.isCreator) {
           const currentRoomMetadata = parseRoomMetadata(room.metadata);
           const currentPermissionMode = currentRoomMetadata?.permissionMode || 'creator';
@@ -317,8 +318,16 @@ export function useSkyWay({ roomName, token, onMessage }: UseSkyWayOptions) {
   }, [token, roomName, user.id, user.name, user.iconUrl, subscribeToMember, roomStoreActions]);
 
   const disconnect = useCallback(async () => {
-    // Note: Member count is decremented via onMemberLeft handler
-    // to handle both graceful leave and forced disconnection
+    // Decrement member count if not already decremented
+    // Each member is responsible for decrementing their own count
+    if (!hasDecrementedRef.current && roomRef.current) {
+      hasDecrementedRef.current = true;
+      try {
+        await axiosInstance.post(`/api/rooms/${roomName}/member-count/decrement`);
+      } catch (e) {
+        console.error('Failed to decrement member count:', e);
+      }
+    }
 
     try {
       if (memberRef.current) {
@@ -355,7 +364,9 @@ export function useSkyWay({ roomName, token, onMessage }: UseSkyWayOptions) {
   useEffect(() => {
     const handleBeforeUnload = () => {
       // Use sendBeacon for reliable request delivery even when tab is closing
-      if (roomRef.current) {
+      // Check flag to prevent double-decrement (if disconnect was already called)
+      if (roomRef.current && !hasDecrementedRef.current) {
+        hasDecrementedRef.current = true;
         navigator.sendBeacon(`/api/rooms/${roomName}/member-count/decrement`);
       }
     };
