@@ -29,7 +29,12 @@ import ShareButton from '@/components/room/ShareButton';
 import BottomSheet from '@/components/common/BottomSheet';
 import Loading from '@/components/common/Loading';
 import type { YouTubeVideo } from '@/types/youtube';
-import type { SyncMessage } from '@/types/message';
+import type {
+  SyncMessage,
+  StateRequestMessage,
+  StateResponseMessage,
+  HeartbeatMessage,
+} from '@/types/message';
 
 export default function RoomPage() {
   const { roomId, shortId } = useParams();
@@ -72,6 +77,24 @@ export default function RoomPage() {
   // Player element ID
   const playerElementId = useRef(`youtube-player-${Date.now()}`);
 
+  // Refs for video sync handlers (to avoid circular dependency)
+  const stateRequestHandlerRef = useRef<(message: StateRequestMessage) => void>(() => {});
+  const stateResponseHandlerRef = useRef<(message: StateResponseMessage) => void>(() => {});
+  const heartbeatHandlerRef = useRef<(message: HeartbeatMessage) => void>(() => {});
+
+  // Stable callbacks that delegate to refs
+  const handleIncomingStateRequest = useCallback((message: StateRequestMessage) => {
+    stateRequestHandlerRef.current(message);
+  }, []);
+
+  const handleIncomingStateResponse = useCallback((message: StateResponseMessage) => {
+    stateResponseHandlerRef.current(message);
+  }, []);
+
+  const handleIncomingHeartbeat = useCallback((message: HeartbeatMessage) => {
+    heartbeatHandlerRef.current(message);
+  }, []);
+
   // SkyWay room connection
   const {
     isConnected,
@@ -83,10 +106,31 @@ export default function RoomPage() {
     updateRoomMetadata,
   } = useRoom({
     roomId: actualRoomId || '',
+    onStateRequest: handleIncomingStateRequest,
+    onStateResponse: handleIncomingStateResponse,
+    onHeartbeat: handleIncomingHeartbeat,
   });
 
   // Video sync hook
   const handleSendSync = useCallback((message: SyncMessage) => {
+    if (isConnected) {
+      skySendMessage(message);
+    }
+  }, [isConnected, skySendMessage]);
+
+  const handleSendStateRequest = useCallback((message: StateRequestMessage) => {
+    if (isConnected) {
+      skySendMessage(message);
+    }
+  }, [isConnected, skySendMessage]);
+
+  const handleSendStateResponse = useCallback((message: StateResponseMessage) => {
+    if (isConnected) {
+      skySendMessage(message);
+    }
+  }, [isConnected, skySendMessage]);
+
+  const handleSendHeartbeat = useCallback((message: HeartbeatMessage) => {
     if (isConnected) {
       skySendMessage(message);
     }
@@ -99,10 +143,23 @@ export default function RoomPage() {
     pause,
     seek,
     setPlaybackRate,
+    handleStateRequest,
+    handleStateResponse,
+    handleHeartbeat,
   } = useVideoSync({
     elementId: playerElementId.current,
     onSendSync: handleSendSync,
+    onSendStateRequest: handleSendStateRequest,
+    onSendStateResponse: handleSendStateResponse,
+    onSendHeartbeat: handleSendHeartbeat,
   });
+
+  // Wire up video sync handlers to refs
+  useEffect(() => {
+    stateRequestHandlerRef.current = handleStateRequest;
+    stateResponseHandlerRef.current = handleStateResponse;
+    heartbeatHandlerRef.current = handleHeartbeat;
+  }, [handleStateRequest, handleStateResponse, handleHeartbeat]);
 
   // Update current time from player
   useEffect(() => {

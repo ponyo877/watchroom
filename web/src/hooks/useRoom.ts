@@ -5,13 +5,29 @@ import { useUserStore } from '@/stores/userStore';
 import { useSkyWay } from './useSkyWay';
 import { useChat } from './useChat';
 import { useReaction } from './useReaction';
-import type { DataStreamMessage, SyncMessage, ChatMessage, ReactionMessage } from '@/types/message';
+import type {
+  DataStreamMessage,
+  SyncMessage,
+  ChatMessage,
+  ReactionMessage,
+  StateRequestMessage,
+  StateResponseMessage,
+  HeartbeatMessage,
+} from '@/types/message';
 
 interface UseRoomOptions {
   roomId: string;
+  onStateRequest?: (message: StateRequestMessage) => void;
+  onStateResponse?: (message: StateResponseMessage) => void;
+  onHeartbeat?: (message: HeartbeatMessage) => void;
 }
 
-export function useRoom({ roomId }: UseRoomOptions) {
+export function useRoom({
+  roomId,
+  onStateRequest,
+  onStateResponse,
+  onHeartbeat,
+}: UseRoomOptions) {
   const navigate = useNavigate();
   const [token, setToken] = useState<string>('');
   const [isLoading, setIsLoading] = useState(true);
@@ -25,6 +41,9 @@ export function useRoom({ roomId }: UseRoomOptions) {
   const handleSyncMessageRef = useRef<(message: SyncMessage) => void>(() => {});
   const handleChatMessageRef = useRef<(message: ChatMessage) => void>(() => {});
   const handleReactionMessageRef = useRef<(message: ReactionMessage) => void>(() => {});
+  const handleStateRequestRef = useRef<(message: StateRequestMessage) => void>(() => {});
+  const handleStateResponseRef = useRef<(message: StateResponseMessage) => void>(() => {});
+  const handleHeartbeatRef = useRef<(message: HeartbeatMessage) => void>(() => {});
 
   // Main message handler that uses refs
   const handleMessage = useCallback((message: DataStreamMessage) => {
@@ -37,6 +56,15 @@ export function useRoom({ roomId }: UseRoomOptions) {
         break;
       case 'reaction':
         handleReactionMessageRef.current(message as ReactionMessage);
+        break;
+      case 'state_request':
+        handleStateRequestRef.current(message as StateRequestMessage);
+        break;
+      case 'state_response':
+        handleStateResponseRef.current(message as StateResponseMessage);
+        break;
+      case 'heartbeat':
+        handleHeartbeatRef.current(message as HeartbeatMessage);
         break;
     }
   }, []);
@@ -70,6 +98,27 @@ export function useRoom({ roomId }: UseRoomOptions) {
   useEffect(() => {
     handleReactionMessageRef.current = handleReactionMessage;
   }, [handleReactionMessage]);
+
+  // Update state request handler ref
+  useEffect(() => {
+    if (onStateRequest) {
+      handleStateRequestRef.current = onStateRequest;
+    }
+  }, [onStateRequest]);
+
+  // Update state response handler ref
+  useEffect(() => {
+    if (onStateResponse) {
+      handleStateResponseRef.current = onStateResponse;
+    }
+  }, [onStateResponse]);
+
+  // Update heartbeat handler ref
+  useEffect(() => {
+    if (onHeartbeat) {
+      handleHeartbeatRef.current = onHeartbeat;
+    }
+  }, [onHeartbeat]);
 
   // Sync message handler
   const handleSyncMessage = useCallback(
