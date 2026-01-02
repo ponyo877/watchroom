@@ -92,8 +92,14 @@ export default function RoomList() {
 
   return (
     <div className="grid gap-x-4 gap-y-6 sm:grid-cols-2 lg:grid-cols-3">
-      {rooms.map((room) => (
-        <RoomCard key={room.roomId} room={room} />
+      {rooms.map((room, index) => (
+        <div
+          key={room.roomId}
+          className="animate-fade-in-up opacity-0"
+          style={{ animationDelay: `${index * 50}ms`, animationFillMode: 'forwards' }}
+        >
+          <RoomCard room={room} />
+        </div>
       ))}
     </div>
   );

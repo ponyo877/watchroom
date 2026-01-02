@@ -15,10 +15,10 @@ export default function Header({ onCreateRoom }: HeaderProps) {
   const [showUserSettings, setShowUserSettings] = useState(false);
 
   return (
-    <header className="border-b border-border bg-card">
+    <header className="sticky top-0 z-40 bg-background/80 backdrop-blur-xl backdrop-saturate-150 border-b border-border/50 shadow-sm">
       <div className="container mx-auto px-4">
         <div className="flex h-16 items-center justify-between">
-          <Link to="/" className="text-xl font-bold text-foreground">
+          <Link to="/" className="text-xl font-bold text-foreground hover:text-primary transition-colors duration-200">
             WatchRoom
           </Link>
 
@@ -49,7 +49,7 @@ export default function Header({ onCreateRoom }: HeaderProps) {
             {onCreateRoom && (
               <button
                 onClick={onCreateRoom}
-                className="flex items-center gap-2 px-3 md:px-4 py-2 bg-primary text-primary-foreground rounded-md hover:opacity-90 transition-opacity"
+                className="flex items-center gap-2 px-3 md:px-4 py-2 bg-primary text-primary-foreground rounded-md shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/30 hover:scale-105 active:scale-95 transition-all duration-200"
               >
                 <Plus className="h-4 w-4" />
                 <span className="hidden md:inline">部屋を作成</span>

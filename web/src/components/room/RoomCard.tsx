@@ -10,22 +10,24 @@ export default function RoomCard({ room }: RoomCardProps) {
   return (
     <Link
       to={`/r/${room.shortId}`}
-      className="block group"
+      className="block group transition-all duration-300 ease-out hover:scale-[1.02] hover:-translate-y-1"
     >
-      <div className="aspect-video bg-muted rounded-xl mb-3 overflow-hidden relative">
+      <div className="aspect-video bg-gradient-to-br from-muted/80 to-muted/40 rounded-xl mb-3 overflow-hidden relative shadow-lg hover:shadow-xl hover:shadow-primary/10 transition-shadow duration-300">
         {room.currentVideo ? (
           <>
             <img
               src={room.currentVideo.thumbnail}
               alt={room.currentVideo.title}
-              className="w-full h-full object-cover"
+              className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
             />
-            <div className="absolute inset-0 bg-black/30 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
-              <Play className="h-12 w-12 text-white" />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+              <div className="w-16 h-16 rounded-full bg-white/90 backdrop-blur-sm flex items-center justify-center transform scale-75 group-hover:scale-100 transition-transform duration-300 shadow-lg">
+                <Play className="h-8 w-8 text-primary ml-1" fill="currentColor" />
+              </div>
             </div>
           </>
         ) : (
-          <div className="w-full h-full flex items-center justify-center">
+          <div className="w-full h-full flex items-center justify-center backdrop-blur-sm">
             <span className="text-muted-foreground text-sm">
               動画が選択されていません
             </span>
