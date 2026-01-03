@@ -82,6 +82,16 @@
     inset: 0 !important;
     z-index: 50 !important;
   }
+
+  /* Landscape Dialog Optimizations - reduce padding for more space */
+  [data-radix-dialog-content] {
+    padding: 1rem;
+  }
+
+  [data-radix-dialog-content] > button:first-of-type {
+    top: 0.75rem;
+    right: 0.75rem;
+  }
 }
 
 /* === Scrollbar Hide (for mobile) === */
@@ -361,6 +371,25 @@
 
 .animate-slide-out-bottom {
   animation: slide-out-bottom 0.3s ease-out forwards;
+}
+
+/* === Landscape Side Panel Animations === */
+@keyframes slide-in-from-right {
+  from { transform: translateX(100%); }
+  to { transform: translateX(0); }
+}
+
+@keyframes slide-out-to-right {
+  from { transform: translateX(0); }
+  to { transform: translateX(100%); }
+}
+
+.animate-slide-in-from-right {
+  animation: slide-in-from-right 0.3s ease-out forwards;
+}
+
+.animate-slide-out-to-right {
+  animation: slide-out-to-right 0.2s ease-in forwards;
 }
 
 .animate-reaction-float {

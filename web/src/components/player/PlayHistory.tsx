@@ -29,7 +29,7 @@ export default function PlayHistory({
 }: PlayHistoryProps) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-lg max-h-[80vh] flex flex-col">
+      <DialogContent className="max-w-lg">
         <div className="flex items-center justify-between">
           <DialogHeader icon={<History className="h-5 w-5 text-muted-foreground" />}>
             <DialogTitle className="flex items-center gap-2">

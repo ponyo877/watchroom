@@ -12,7 +12,6 @@ import {
   Play,
   Pause,
 } from 'lucide-react';
-import { useViewportHeight } from '@/hooks/useViewportHeight';
 import { useMobileLandscapeFullscreen, useIsMobile } from '@/hooks/useLandscape';
 import { useRoomStore } from '@/stores/roomStore';
 import { useUserStore } from '@/stores/userStore';
@@ -34,6 +33,7 @@ import PasswordDialog from '@/components/room/PasswordDialog';
 import PasswordSettingsDialog from '@/components/room/PasswordSettingsDialog';
 import ShareButton from '@/components/room/ShareButton';
 import BottomSheet from '@/components/common/BottomSheet';
+import LandscapeSidePanel from '@/components/common/LandscapeSidePanel';
 import Loading from '@/components/common/Loading';
 import type { YouTubeVideo } from '@/types/youtube';
 import type {
@@ -48,7 +48,6 @@ export default function RoomPage() {
   const navigate = useNavigate();
 
   // モバイル対応フック
-  useViewportHeight();
   const isLandscapeFullscreen = useMobileLandscapeFullscreen();
   const isMobile = useIsMobile();
 
@@ -78,6 +77,9 @@ export default function RoomPage() {
   // 横向きフルスクリーン時のコントロール表示
   const [showLandscapeControls, setShowLandscapeControls] = useState(false);
   const landscapeControlsTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  // 横向きフルスクリーン時のサイドパネル
+  const [showLandscapeChat, setShowLandscapeChat] = useState(false);
+  const [showLandscapeMembers, setShowLandscapeMembers] = useState(false);
 
   // Derive password dialog visibility during rendering (not via Effect)
   const showPasswordDialog = roomInfo?.hasPassword === true && !isPasswordVerified;
@@ -403,6 +405,19 @@ export default function RoomPage() {
     [banUser]
   );
 
+  // 横向きコントロールの自動非表示タイマーをリセット
+  const resetLandscapeControlsTimer = useCallback(() => {
+    if (landscapeControlsTimeoutRef.current) {
+      clearTimeout(landscapeControlsTimeoutRef.current);
+    }
+    // サイドパネルが開いている間は自動非表示しない
+    if (!showLandscapeChat && !showLandscapeMembers) {
+      landscapeControlsTimeoutRef.current = setTimeout(() => {
+        setShowLandscapeControls(false);
+      }, 3000);
+    }
+  }, [showLandscapeChat, showLandscapeMembers]);
+
   // 動画エリアタップで再生/停止（モバイル用）
   const handleVideoTap = useCallback(() => {
     if (!roomStore.hasControlPermission || !roomStore.currentVideo) return;
@@ -410,13 +425,7 @@ export default function RoomPage() {
     // 横向きフルスクリーン時はコントロール表示をトグル
     if (isLandscapeFullscreen) {
       setShowLandscapeControls((prev) => !prev);
-      // 3秒後に自動的に非表示
-      if (landscapeControlsTimeoutRef.current) {
-        clearTimeout(landscapeControlsTimeoutRef.current);
-      }
-      landscapeControlsTimeoutRef.current = setTimeout(() => {
-        setShowLandscapeControls(false);
-      }, 3000);
+      resetLandscapeControlsTimer();
       return;
     }
 
@@ -448,13 +457,18 @@ export default function RoomPage() {
     isConnected,
     updateRoomMetadata,
     isLandscapeFullscreen,
+    resetLandscapeControlsTimer,
   ]);
 
-  // 横向きフルスクリーン解除時にコントロールタイマーをクリア
+  // 横向きフルスクリーン解除時にコントロールタイマーをクリア＆サイドパネルを閉じる
   useEffect(() => {
-    if (!isLandscapeFullscreen && landscapeControlsTimeoutRef.current) {
-      clearTimeout(landscapeControlsTimeoutRef.current);
+    if (!isLandscapeFullscreen) {
+      if (landscapeControlsTimeoutRef.current) {
+        clearTimeout(landscapeControlsTimeoutRef.current);
+      }
       setShowLandscapeControls(false);
+      setShowLandscapeChat(false);
+      setShowLandscapeMembers(false);
     }
   }, [isLandscapeFullscreen]);
 
@@ -677,6 +691,42 @@ export default function RoomPage() {
             />
           </div>
 
+          {/* Landscape action bar - 横向きフルスクリーン時のコントロール表示中のみ */}
+          {isLandscapeFullscreen && showLandscapeControls && (
+            <div className="h-12 bg-gradient-to-t from-black/80 to-transparent flex items-center justify-center gap-6 px-4 relative z-20">
+              <button
+                onClick={() => {
+                  setShowLandscapeChat(true);
+                  setShowLandscapeControls(true);
+                }}
+                className="flex items-center gap-2 px-3 py-2 rounded-lg bg-white/10 active:bg-white/20 transition-colors touch-feedback"
+                title="チャット"
+              >
+                <MessageCircle className="h-5 w-5 text-white" />
+                <span className="text-sm text-white">チャット</span>
+              </button>
+              <button
+                onClick={() => {
+                  setShowLandscapeMembers(true);
+                  setShowLandscapeControls(true);
+                }}
+                className="flex items-center gap-2 px-3 py-2 rounded-lg bg-white/10 active:bg-white/20 transition-colors touch-feedback"
+                title="メンバー"
+              >
+                <Users className="h-5 w-5 text-white" />
+                <span className="text-sm text-white">メンバー</span>
+              </button>
+              <button
+                onClick={() => setShowPlayHistory(true)}
+                className="flex items-center gap-2 px-3 py-2 rounded-lg bg-white/10 active:bg-white/20 transition-colors touch-feedback"
+                title="履歴"
+              >
+                <History className="h-5 w-5 text-white" />
+              </button>
+              <ReactionPicker onSelectReaction={handleSendReaction} compact />
+            </div>
+          )}
+
           {/* Mobile bottom navigation - 横向きフルスクリーン時は非表示 */}
           <div className={`h-14 border-t border-border bg-card flex items-center justify-around md:hidden relative z-20 pb-safe ${isLandscapeFullscreen ? 'hidden' : ''}`}>
             <button
@@ -808,6 +858,57 @@ export default function RoomPage() {
           allowedUserIds={allowedUserIds}
         />
       </BottomSheet>
+
+      {/* Landscape Chat Side Panel */}
+      <LandscapeSidePanel
+        open={showLandscapeChat}
+        onClose={() => {
+          setShowLandscapeChat(false);
+          resetLandscapeControlsTimer();
+        }}
+        title="チャット"
+      >
+        <div className="h-full">
+          <ChatPanel
+            messages={roomStore.chatMessages}
+            onSendMessage={handleSendChatMessage}
+            roomId={actualRoomId || ''}
+          />
+        </div>
+      </LandscapeSidePanel>
+
+      {/* Landscape Members Side Panel */}
+      <LandscapeSidePanel
+        open={showLandscapeMembers}
+        onClose={() => {
+          setShowLandscapeMembers(false);
+          resetLandscapeControlsTimer();
+        }}
+        title="メンバー"
+      >
+        <MemberList
+          members={roomStore.members}
+          currentUserId={userId}
+          isCreator={roomStore.isCreator}
+          onKick={handleKickUser}
+          onBan={handleBanUser}
+          onGrantPermission={(id) => {
+            roomStore.addAllowedUserId(id);
+            if (isConnected) {
+              const newAllowedUserIds = [...allowedUserIds.filter((i) => i !== id), id];
+              updateRoomMetadata({ allowedUserIds: newAllowedUserIds });
+            }
+          }}
+          onRevokePermission={(id) => {
+            roomStore.removeAllowedUserId(id);
+            if (isConnected) {
+              const newAllowedUserIds = allowedUserIds.filter((i) => i !== id);
+              updateRoomMetadata({ allowedUserIds: newAllowedUserIds });
+            }
+          }}
+          allowedUserIds={allowedUserIds}
+        />
+      </LandscapeSidePanel>
 
       {/* Modals */}
       <RoomSettings

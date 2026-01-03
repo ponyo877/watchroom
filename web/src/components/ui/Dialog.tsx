@@ -47,19 +47,27 @@ export function DialogContent({
       />
       <DialogPrimitive.Content
         className={cn(
-          `fixed left-1/2 top-1/2 z-50 -translate-x-1/2 -translate-y-1/2
-          w-full max-w-md mx-4
-          bg-card/95 backdrop-blur-xl border border-border/50 rounded-2xl p-6
-          shadow-2xl shadow-black/20
-          data-[state=open]:animate-scale-in
-          data-[state=closed]:animate-scale-out
-          focus:outline-none`,
+          // Base positioning
+          `fixed left-1/2 top-1/2 z-50 -translate-x-1/2 -translate-y-1/2`,
+          // Responsive width: full width with 1rem margin on each side
+          `w-[calc(100%-2rem)] max-w-md`,
+          // Height constraints using --vh for proper mobile viewport
+          `max-h-[calc(var(--vh,1vh)*85-var(--safe-area-inset-top)-var(--safe-area-inset-bottom))]`,
+          // Layout for scrollable content
+          `flex flex-col overflow-hidden`,
+          // Visual styling
+          `bg-card/95 backdrop-blur-xl border border-border/50 rounded-2xl p-6`,
+          `shadow-2xl shadow-black/20`,
+          // Animations
+          `data-[state=open]:animate-scale-in`,
+          `data-[state=closed]:animate-scale-out`,
+          `focus:outline-none`,
           className
         )}
       >
         {showCloseButton && (
           <DialogPrimitive.Close
-            className="absolute top-4 right-4 p-1.5 rounded-lg
+            className="absolute top-4 right-4 p-1.5 rounded-lg z-10
               text-muted-foreground hover:text-foreground
               hover:bg-accent/50 transition-all duration-200
               hover:scale-110 active:scale-95

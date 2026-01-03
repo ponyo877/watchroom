@@ -42,12 +42,13 @@ export default function UserSettings({ open, onClose }: UserSettingsProps) {
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-h-[90vh] overflow-y-auto">
+      <DialogContent>
         <DialogHeader icon={<Settings className="h-5 w-5" />}>
           <DialogTitle>ユーザー設定</DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-6">
+        <div className="flex-1 overflow-y-auto min-h-0 -mx-6 px-6">
+          <div className="space-y-6">
           {/* Profile Icon */}
           <div>
             <label className="block text-sm font-medium mb-3">
@@ -97,9 +98,10 @@ export default function UserSettings({ open, onClose }: UserSettingsProps) {
               このIDは変更できません
             </p>
           </div>
+          </div>
         </div>
 
-        <DialogFooter className="mt-6 border-t border-border pt-4">
+        <DialogFooter className="mt-6 border-t border-border pt-4 flex-shrink-0">
           <DialogClose asChild>
             <Button variant="outline" className="w-full">
               閉じる

@@ -150,7 +150,7 @@ export default function VideoSearch({ open, onOpenChange, onSelectVideo }: Video
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[80vh] flex flex-col">
+      <DialogContent className="max-w-2xl">
         <DialogHeader icon={<Search className="h-5 w-5 text-muted-foreground" />}>
           <DialogTitle>動画を検索</DialogTitle>
         </DialogHeader>

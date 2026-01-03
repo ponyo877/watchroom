@@ -109,7 +109,8 @@ export default function PasswordSettingsDialog({
           <DialogTitle>パスワード設定</DialogTitle>
         </DialogHeader>
 
-        {hasPassword && (
+        <div className="flex-1 overflow-y-auto min-h-0 -mx-6 px-6">
+          {hasPassword && (
           <div className="flex gap-2 mb-4">
             <button
               onClick={() => { setMode('set'); resetForm(); }}
@@ -223,6 +224,7 @@ export default function PasswordSettingsDialog({
             </button>
           </form>
         )}
+        </div>
       </DialogContent>
     </Dialog>
   );

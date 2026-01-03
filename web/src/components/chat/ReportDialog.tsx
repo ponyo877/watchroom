@@ -86,66 +86,68 @@ export default function ReportDialog({
             </p>
           </div>
         ) : (
-          <form onSubmit={handleSubmit} className="space-y-4">
-            {/* Reported message preview */}
-            {message && (
-              <div className="p-3 bg-muted/50 rounded-xl">
-                <p className="text-xs text-muted-foreground mb-1">
-                  通報対象メッセージ
-                </p>
-                <p className="text-sm">
-                  <span className="font-medium">{message.senderName}:</span>{' '}
-                  {message.text}
-                </p>
-              </div>
-            )}
+          <form onSubmit={handleSubmit} className="flex-1 flex flex-col min-h-0">
+            <div className="flex-1 overflow-y-auto space-y-4 -mx-6 px-6">
+              {/* Reported message preview */}
+              {message && (
+                <div className="p-3 bg-muted/50 rounded-xl">
+                  <p className="text-xs text-muted-foreground mb-1">
+                    通報対象メッセージ
+                  </p>
+                  <p className="text-sm">
+                    <span className="font-medium">{message.senderName}:</span>{' '}
+                    {message.text}
+                  </p>
+                </div>
+              )}
 
-            {/* Report reason */}
-            <div>
-              <label className="block text-sm font-medium mb-2">
-                通報理由 <span className="text-destructive">*</span>
-              </label>
-              <div className="space-y-2">
-                {REPORT_REASONS.map((reason) => (
-                  <label
-                    key={reason.value}
-                    className={`flex items-center p-3 rounded-xl border cursor-pointer transition-all duration-200 ${
-                      selectedReason === reason.value
-                        ? 'border-primary bg-primary/5 shadow-sm'
-                        : 'border-border hover:bg-accent/50 hover:border-primary/30'
-                    }`}
-                  >
-                    <input
-                      type="radio"
-                      name="reason"
-                      value={reason.value}
-                      checked={selectedReason === reason.value}
-                      onChange={(e) => setSelectedReason(e.target.value)}
-                      className="sr-only"
-                    />
-                    <span className="text-sm">{reason.label}</span>
-                  </label>
-                ))}
+              {/* Report reason */}
+              <div>
+                <label className="block text-sm font-medium mb-2">
+                  通報理由 <span className="text-destructive">*</span>
+                </label>
+                <div className="space-y-2">
+                  {REPORT_REASONS.map((reason) => (
+                    <label
+                      key={reason.value}
+                      className={`flex items-center p-3 rounded-xl border cursor-pointer transition-all duration-200 ${
+                        selectedReason === reason.value
+                          ? 'border-primary bg-primary/5 shadow-sm'
+                          : 'border-border hover:bg-accent/50 hover:border-primary/30'
+                      }`}
+                    >
+                      <input
+                        type="radio"
+                        name="reason"
+                        value={reason.value}
+                        checked={selectedReason === reason.value}
+                        onChange={(e) => setSelectedReason(e.target.value)}
+                        className="sr-only"
+                      />
+                      <span className="text-sm">{reason.label}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              {/* Additional info */}
+              <div>
+                <label className="block text-sm font-medium mb-1">
+                  詳細（任意）
+                </label>
+                <textarea
+                  value={additionalInfo}
+                  onChange={(e) => setAdditionalInfo(e.target.value)}
+                  placeholder="追加の情報があれば入力してください"
+                  className="w-full px-4 py-2.5 border border-input rounded-xl bg-background/50 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary/50 hover:border-primary/30 transition-all duration-200 text-sm resize-none"
+                  rows={3}
+                />
               </div>
             </div>
 
-            {/* Additional info */}
-            <div>
-              <label className="block text-sm font-medium mb-1">
-                詳細（任意）
-              </label>
-              <textarea
-                value={additionalInfo}
-                onChange={(e) => setAdditionalInfo(e.target.value)}
-                placeholder="追加の情報があれば入力してください"
-                className="w-full px-4 py-2.5 border border-input rounded-xl bg-background/50 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary/50 hover:border-primary/30 transition-all duration-200 text-sm resize-none"
-                rows={3}
-              />
-            </div>
+            {error && <p className="text-sm text-destructive pt-2">{error}</p>}
 
-            {error && <p className="text-sm text-destructive">{error}</p>}
-
-            <DialogFooter>
+            <DialogFooter className="flex-shrink-0 pt-4">
               <button
                 type="button"
                 onClick={onClose}

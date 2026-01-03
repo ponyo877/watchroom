@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { useEffect } from 'react';
 import { useUserStore } from '@/stores/userStore';
 import { useUIStore } from '@/stores/uiStore';
+import { useViewportHeight } from '@/hooks/useViewportHeight';
 import HomePage from '@/pages/HomePage';
 import RoomPage from '@/pages/RoomPage';
 import AdminPage from '@/pages/AdminPage';
@@ -30,6 +31,9 @@ function ThemeProvider({ children }: { children: React.ReactNode }) {
 
 function App() {
   const initialize = useUserStore((state) => state.initialize);
+
+  // Initialize viewport height for mobile browsers (URL bar handling)
+  useViewportHeight();
 
   useEffect(() => {
     initialize();

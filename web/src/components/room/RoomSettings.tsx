@@ -58,7 +58,7 @@ export default function RoomSettings({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[80vh] flex flex-col">
+      <DialogContent>
         <DialogHeader icon={<Settings className="h-5 w-5 text-muted-foreground" />}>
           <DialogTitle>部屋設定</DialogTitle>
         </DialogHeader>
