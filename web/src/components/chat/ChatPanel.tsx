@@ -50,7 +50,7 @@ export default function ChatPanel({ messages, onSendMessage, onSelectReaction, r
   }, [messages]);
 
   return (
-    <div className="h-full flex flex-col bg-card/50 backdrop-blur-sm">
+    <div className="h-full flex flex-col bg-card/50 backdrop-blur-sm rounded-b-xl overflow-hidden">
 
       <div className="flex-1 overflow-y-auto p-4 space-y-3 relative">
         {/* Top fade gradient */}
