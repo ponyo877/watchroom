@@ -11,13 +11,13 @@ export default function MemberListCompact({
   currentUserId,
 }: MemberListCompactProps) {
   return (
-    <div className="p-3 border-b border-border/50">
-      <div className="flex items-center gap-2 mb-2">
+    <div className="px-3 py-2 border-b border-border/50">
+      <div className="flex items-center gap-2 mb-1">
         <span className="text-xs font-medium text-muted-foreground">
           Members ({members.length})
         </span>
       </div>
-      <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-thin">
+      <div className="flex items-center gap-1.5 overflow-x-auto pb-0.5 scrollbar-thin">
         {members.map((member) => {
           const isCurrentUser = member.id === currentUserId;
           return (
@@ -27,7 +27,7 @@ export default function MemberListCompact({
               title={`${member.name}${isCurrentUser ? ' (you)' : ''}${member.isCreator ? ' - Creator' : ''}`}
             >
               <div
-                className={`w-8 h-8 rounded-full bg-muted flex items-center justify-center overflow-hidden ring-2 ${member.isCreator ? 'ring-yellow-500/50' : 'ring-border/50'
+                className={`w-6 h-6 rounded-full bg-muted flex items-center justify-center overflow-hidden ring-1 ${member.isCreator ? 'ring-yellow-500/50' : 'ring-border/50'
                   } transition-all duration-200 group-hover:ring-primary/50`}
               >
                 {member.iconUrl ? (
@@ -37,15 +37,15 @@ export default function MemberListCompact({
                     className="w-full h-full object-cover"
                   />
                 ) : (
-                  <User className="h-4 w-4 text-muted-foreground" />
+                  <User className="h-3 w-3 text-muted-foreground" />
                 )}
               </div>
               {/* Creator crown */}
               {member.isCreator && (
-                <Crown className="absolute -top-1 -right-1 h-3 w-3 text-yellow-500" />
+                <Crown className="absolute -top-0.5 -right-0.5 h-2.5 w-2.5 text-yellow-500" />
               )}
               {/* Online indicator */}
-              <div className="absolute -bottom-0.5 -right-0.5 w-2 h-2 bg-success rounded-full border border-background" />
+              <div className="absolute bottom-0 right-0 w-1.5 h-1.5 bg-success rounded-full border border-background" />
             </div>
           );
         })}
