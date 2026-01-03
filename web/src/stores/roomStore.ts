@@ -61,7 +61,12 @@ export const useRoomStore = create<RoomState>((set) => ({
   playHistory: [],
 
   setRoom: (room) => set({ room }),
-  setMembers: (members) => set({ members }),
+  setMembers: (members) =>
+    set({
+      members: members.filter(
+        (member, index, self) => self.findIndex((m) => m.id === member.id) === index
+      ),
+    }),
   addMember: (member) =>
     set((state) => ({
       members: [...state.members.filter((m) => m.id !== member.id), member],
@@ -76,13 +81,23 @@ export const useRoomStore = create<RoomState>((set) => ({
       playbackState: { ...state.playbackState, ...newState },
     })),
   addChatMessage: (message) =>
-    set((state) => ({
-      chatMessages: [...state.chatMessages, message].slice(-100),
-    })),
+    set((state) => {
+      if (state.chatMessages.some((m) => m.id === message.id)) {
+        return state;
+      }
+      return {
+        chatMessages: [...state.chatMessages, message].slice(-100),
+      };
+    }),
   addReaction: (reaction) =>
-    set((state) => ({
-      reactions: [...state.reactions, reaction],
-    })),
+    set((state) => {
+      if (state.reactions.some((r) => r.id === reaction.id)) {
+        return state;
+      }
+      return {
+        reactions: [...state.reactions, reaction],
+      };
+    }),
   removeReaction: (reactionId) =>
     set((state) => ({
       reactions: state.reactions.filter((r) => r.id !== reactionId),

@@ -173,8 +173,10 @@ export function useSkyWay({ roomName, token, onMessage }: UseSkyWayOptions) {
       room.onMemberLeft.add(async (e) => {
         const leavingMemberMetadata = parseMemberMetadata(e.member.metadata);
 
-        // 1. Remove member from local store
-        roomStoreActions.removeMember(e.member.id);
+        // 1. Remove member from local store (use user.id from metadata, not SkyWay member.id)
+        if (leavingMemberMetadata) {
+          roomStoreActions.removeMember(leavingMemberMetadata.id);
+        }
 
         // Note: Member count decrement is NOT done here.
         // Each member is responsible for decrementing their own count
