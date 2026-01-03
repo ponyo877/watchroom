@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
 /**
  * デバイスが横向き（ランドスケープ）モードかを検出するフック
@@ -77,16 +77,32 @@ export function useIsTouchDevice(): boolean {
 /**
  * モバイル横向きフルスクリーンモードかを判定
  * モバイル + 横向き + 高さが小さい（500px以下）の場合にtrue
+ * デバウンス付きで、orientation変更アニメーション中のフリッカーを防止
  */
 export function useMobileLandscapeFullscreen(): boolean {
-  const [isFullscreen, setIsFullscreen] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    const isLandscape = window.matchMedia('(orientation: landscape)').matches;
+    const isSmallHeight = window.innerHeight <= 500;
+    const isMobile = window.matchMedia('(max-width: 1024px)').matches;
+    return isLandscape && isSmallHeight && isMobile;
+  });
+  const debounceRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     const checkFullscreen = () => {
       const isLandscape = window.matchMedia('(orientation: landscape)').matches;
       const isSmallHeight = window.innerHeight <= 500;
       const isMobile = window.matchMedia('(max-width: 1024px)').matches;
-      setIsFullscreen(isLandscape && isSmallHeight && isMobile);
+      const newValue = isLandscape && isSmallHeight && isMobile;
+
+      // Debounce state changes to prevent flickering during orientation transition
+      if (debounceRef.current) {
+        clearTimeout(debounceRef.current);
+      }
+      debounceRef.current = setTimeout(() => {
+        setIsFullscreen(newValue);
+      }, 150); // 150ms debounce to let orientation animation complete
     };
 
     checkFullscreen();
@@ -94,6 +110,9 @@ export function useMobileLandscapeFullscreen(): boolean {
     window.addEventListener('orientationchange', checkFullscreen);
 
     return () => {
+      if (debounceRef.current) {
+        clearTimeout(debounceRef.current);
+      }
       window.removeEventListener('resize', checkFullscreen);
       window.removeEventListener('orientationchange', checkFullscreen);
     };

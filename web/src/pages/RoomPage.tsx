@@ -11,6 +11,7 @@ import {
   PanelRightOpen,
   Play,
   Pause,
+  X,
 } from 'lucide-react';
 import { useMobileLandscapeFullscreen, useIsMobile } from '@/hooks/useLandscape';
 import { useRoomStore } from '@/stores/roomStore';
@@ -517,7 +518,7 @@ export default function RoomPage() {
         {/* Main content */}
         <main className="flex-1 flex flex-col min-w-0 relative">
           {/* Header - 横向きフルスクリーン時は非表示 */}
-          <header className={`h-14 border-b border-border bg-card flex items-center justify-between px-2 md:px-4 relative z-20 pt-safe ${isLandscapeFullscreen && !showLandscapeControls ? 'hidden' : ''}`}>
+          <header className={`h-14 border-b border-border bg-card flex items-center justify-between px-2 md:px-4 relative z-20 pt-safe flex-shrink-0 ${isLandscapeFullscreen && !showLandscapeControls ? 'hidden' : ''}`}>
             <div className="flex items-center gap-2 md:gap-4 min-w-0">
               <button
                 onClick={handleLeaveRoom}
@@ -569,8 +570,20 @@ export default function RoomPage() {
             </div>
           </header>
 
-          {/* Video player */}
-          <div className="flex-1 relative bg-black overflow-hidden">
+          {/* Content area - flex-row when landscape chat is open */}
+          <div className={`flex-1 flex min-h-0 ${
+            isLandscapeFullscreen && showLandscapeChat ? 'flex-row' : 'flex-col'
+          }`}>
+          {/* Video area container - flex-1 to fill available space */}
+          <div className={`flex flex-col flex-1 ${
+            isLandscapeFullscreen ? 'min-w-0 min-h-0' : ''
+          }`}>
+          {/* Video player - shrinks to 16:9 aspect ratio when mobile chat is open */}
+          <div className={`relative bg-black overflow-hidden ${
+            showMobileChat && !isLandscapeFullscreen
+              ? 'aspect-video w-full flex-shrink-0'
+              : 'flex-1 min-h-0'
+          }`}>
             {/* YouTube Player Container */}
             <div
               id={playerElementId.current}
@@ -691,8 +704,8 @@ export default function RoomPage() {
             />
           </div>
 
-          {/* Landscape action bar - 横向きフルスクリーン時のコントロール表示中のみ */}
-          {isLandscapeFullscreen && showLandscapeControls && (
+          {/* Landscape action bar - 横向きフルスクリーン時のコントロール表示中のみ（チャット非表示時） */}
+          {isLandscapeFullscreen && showLandscapeControls && !showLandscapeChat && (
             <div className="h-12 bg-gradient-to-t from-black/80 to-transparent flex items-center justify-center gap-6 px-4 relative z-20">
               <button
                 onClick={() => {
@@ -726,31 +739,104 @@ export default function RoomPage() {
               <ReactionPicker onSelectReaction={handleSendReaction} compact />
             </div>
           )}
+          </div>{/* End of Video area container */}
+
+          {/* Landscape inline chat panel - shown when chat is open in landscape mode */}
+          {isLandscapeFullscreen && showLandscapeChat && (
+            <div className="w-[min(320px,40vw)] h-full flex flex-col border-l border-border bg-card">
+              {/* Chat header with close button */}
+              <div className="h-10 flex items-center justify-between px-3 border-b border-border bg-card/80 flex-shrink-0">
+                <span className="font-semibold text-sm">チャット</span>
+                <button
+                  onClick={() => {
+                    setShowLandscapeChat(false);
+                    resetLandscapeControlsTimer();
+                  }}
+                  className="p-1.5 rounded-md active:bg-accent hover:bg-accent"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+              <div className="flex-1 min-h-0">
+                <ChatPanel
+                  messages={roomStore.chatMessages}
+                  onSendMessage={handleSendChatMessage}
+                  roomId={actualRoomId || ''}
+                />
+              </div>
+            </div>
+          )}
+
+          {/* Mobile inline chat panel - shown when chat is open in portrait mode */}
+          {showMobileChat && !isLandscapeFullscreen && (
+            <div className="flex-1 min-h-0 md:hidden border-t border-border">
+              <ChatPanel
+                messages={roomStore.chatMessages}
+                onSendMessage={handleSendChatMessage}
+                roomId={actualRoomId || ''}
+              />
+            </div>
+          )}
+          </div>{/* End of Content area */}
 
           {/* Mobile bottom navigation - 横向きフルスクリーン時は非表示 */}
           <div className={`h-14 border-t border-border bg-card flex items-center justify-around md:hidden relative z-20 pb-safe ${isLandscapeFullscreen ? 'hidden' : ''}`}>
-            <button
-              onClick={() => setShowMobileChat(true)}
-              className="flex flex-col items-center gap-1 p-2"
-            >
-              <MessageCircle className="h-5 w-5" />
-              <span className="text-xs">チャット</span>
-            </button>
-            <button
-              onClick={() => setShowMobileMembers(true)}
-              className="flex flex-col items-center gap-1 p-2"
-            >
-              <Users className="h-5 w-5" />
-              <span className="text-xs">メンバー</span>
-            </button>
-            <button
-              onClick={() => setShowPlayHistory(true)}
-              className="flex flex-col items-center gap-1 p-2"
-            >
-              <History className="h-5 w-5" />
-              <span className="text-xs">履歴</span>
-            </button>
-            <ReactionPicker onSelectReaction={handleSendReaction} compact />
+            {showMobileChat ? (
+              /* Chat close button when chat is open */
+              <>
+                <button
+                  onClick={() => setShowMobileChat(false)}
+                  className="flex flex-col items-center gap-1 p-2 text-primary"
+                >
+                  <MessageCircle className="h-5 w-5" fill="currentColor" />
+                  <span className="text-xs">閉じる</span>
+                </button>
+                <button
+                  onClick={() => {
+                    setShowMobileChat(false);
+                    setShowMobileMembers(true);
+                  }}
+                  className="flex flex-col items-center gap-1 p-2"
+                >
+                  <Users className="h-5 w-5" />
+                  <span className="text-xs">メンバー</span>
+                </button>
+                <button
+                  onClick={() => setShowPlayHistory(true)}
+                  className="flex flex-col items-center gap-1 p-2"
+                >
+                  <History className="h-5 w-5" />
+                  <span className="text-xs">履歴</span>
+                </button>
+                <ReactionPicker onSelectReaction={handleSendReaction} compact />
+              </>
+            ) : (
+              /* Normal navigation when chat is closed */
+              <>
+                <button
+                  onClick={() => setShowMobileChat(true)}
+                  className="flex flex-col items-center gap-1 p-2"
+                >
+                  <MessageCircle className="h-5 w-5" />
+                  <span className="text-xs">チャット</span>
+                </button>
+                <button
+                  onClick={() => setShowMobileMembers(true)}
+                  className="flex flex-col items-center gap-1 p-2"
+                >
+                  <Users className="h-5 w-5" />
+                  <span className="text-xs">メンバー</span>
+                </button>
+                <button
+                  onClick={() => setShowPlayHistory(true)}
+                  className="flex flex-col items-center gap-1 p-2"
+                >
+                  <History className="h-5 w-5" />
+                  <span className="text-xs">履歴</span>
+                </button>
+                <ReactionPicker onSelectReaction={handleSendReaction} compact />
+              </>
+            )}
           </div>
 
           {/* Sidebar toggle button - desktop only */}
@@ -814,20 +900,8 @@ export default function RoomPage() {
         </aside>
       </div>
 
-      {/* Mobile Chat Bottom Sheet */}
-      <BottomSheet
-        open={showMobileChat}
-        onClose={() => setShowMobileChat(false)}
-        title="チャット"
-      >
-        <div className="h-[60vh]">
-          <ChatPanel
-            messages={roomStore.chatMessages}
-            onSendMessage={handleSendChatMessage}
-            roomId={actualRoomId || ''}
-          />
-        </div>
-      </BottomSheet>
+      {/* Mobile Chat Bottom Sheet - only used when NOT in inline mode */}
+      {/* Inline mode is used when showMobileChat is true in portrait */}
 
       {/* Mobile Members Bottom Sheet */}
       <BottomSheet
@@ -859,25 +933,9 @@ export default function RoomPage() {
         />
       </BottomSheet>
 
-      {/* Landscape Chat Side Panel */}
-      <LandscapeSidePanel
-        open={showLandscapeChat}
-        onClose={() => {
-          setShowLandscapeChat(false);
-          resetLandscapeControlsTimer();
-        }}
-        title="チャット"
-      >
-        <div className="h-full">
-          <ChatPanel
-            messages={roomStore.chatMessages}
-            onSendMessage={handleSendChatMessage}
-            roomId={actualRoomId || ''}
-          />
-        </div>
-      </LandscapeSidePanel>
+      {/* Landscape Chat is now inline (not overlay) - see above */}
 
-      {/* Landscape Members Side Panel */}
+      {/* Landscape Members Side Panel - still overlay for members */}
       <LandscapeSidePanel
         open={showLandscapeMembers}
         onClose={() => {

@@ -15,6 +15,7 @@ interface ChatPanelProps {
 export default function ChatPanel({ messages, onSendMessage, onSelectReaction, roomId }: ChatPanelProps) {
   const [input, setInput] = useState('');
   const [reportTarget, setReportTarget] = useState<ChatMessageItem | null>(null);
+  const [isComposing, setIsComposing] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { submitReport } = useReport({ roomId });
 
@@ -27,10 +28,21 @@ export default function ChatPanel({ messages, onSendMessage, onSelectReaction, r
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    // Skip if IME is composing (e.g., Japanese input conversion)
+    if (isComposing) return;
+
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       handleSubmit();
     }
+  };
+
+  const handleCompositionStart = () => {
+    setIsComposing(true);
+  };
+
+  const handleCompositionEnd = () => {
+    setIsComposing(false);
   };
 
   const handleReport = useCallback((message: ChatMessageItem) => {
@@ -84,6 +96,8 @@ export default function ChatPanel({ messages, onSendMessage, onSelectReaction, r
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
+            onCompositionStart={handleCompositionStart}
+            onCompositionEnd={handleCompositionEnd}
             placeholder="チャット..."
             className="flex-1 bg-transparent text-sm focus:outline-none"
           />
