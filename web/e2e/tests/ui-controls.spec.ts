@@ -130,4 +130,44 @@ test.describe('UI Controls', () => {
       }
     });
   });
+
+  test.describe('Sidebar Toggle', () => {
+    test('should toggle sidebar visibility', async ({ page, request }) => {
+      const roomId = generateRoomId();
+      const response = await request.post('http://localhost:8080/api/rooms', {
+        data: { room_id: roomId },
+      });
+      const { short_id: shortId } = await response.json();
+
+      await page.setViewportSize({ width: 1280, height: 720 });
+      await page.goto(`/r/${shortId}`);
+
+      // Wait for room to load
+      await page.waitForSelector('button[title="AddVideo"]', { timeout: ROOM_LOAD_TIMEOUT });
+
+      // Verify sidebar is visible
+      const sidebar = page.locator('aside');
+      await expect(sidebar).toBeVisible({ timeout: 3000 });
+
+      // Verify toggle button is visible
+      const toggleButton = page.locator('button[title="チャットを非表示"]');
+      await expect(toggleButton).toBeVisible({ timeout: 3000 });
+
+      // Click to hide sidebar
+      await toggleButton.click();
+
+      // Sidebar should be hidden
+      await expect(sidebar).not.toBeVisible();
+
+      // Toggle button title should change
+      const showButton = page.locator('button[title="チャットを表示"]');
+      await expect(showButton).toBeVisible();
+
+      // Click to show sidebar
+      await showButton.click();
+
+      // Sidebar should be visible again
+      await expect(sidebar).toBeVisible();
+    });
+  });
 });

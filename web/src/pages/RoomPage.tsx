@@ -7,6 +7,8 @@ import {
   LogOut,
   Film,
   MessageCircle,
+  PanelRightClose,
+  PanelRightOpen,
 } from 'lucide-react';
 import { useRoomStore } from '@/stores/roomStore';
 import { useUserStore } from '@/stores/userStore';
@@ -59,6 +61,7 @@ export default function RoomPage() {
   const [isPasswordVerified, setIsPasswordVerified] = useState(false);
   const [showMobileChat, setShowMobileChat] = useState(false);
   const [showMobileMembers, setShowMobileMembers] = useState(false);
+  const [isSidebarHidden, setIsSidebarHidden] = useState(false);
 
   // Derive password dialog visibility during rendering (not via Effect)
   const showPasswordDialog = roomInfo?.hasPassword === true && !isPasswordVerified;
@@ -613,45 +616,61 @@ export default function RoomPage() {
         </main>
 
         {/* Desktop Sidebar */}
-        <aside className="hidden md:flex w-80 border-l border-border bg-card flex-col">
-          {/* Compact member list - always visible */}
-          <MemberListCompact
-            members={roomStore.members}
-            currentUserId={userId}
-          />
-          {/* Chat or full member list */}
-          {showMemberList ? (
-            <MemberList
+        {!isSidebarHidden && (
+          <aside className="hidden md:flex w-80 border-l border-border bg-card flex-col rounded-l-xl overflow-hidden">
+            {/* Compact member list - always visible */}
+            <MemberListCompact
               members={roomStore.members}
               currentUserId={userId}
-              isCreator={roomStore.isCreator}
-              onKick={handleKickUser}
-              onBan={handleBanUser}
-              onGrantPermission={(id) => {
-                roomStore.addAllowedUserId(id);
-                if (isConnected) {
-                  const newAllowedUserIds = [...allowedUserIds.filter((i) => i !== id), id];
-                  updateRoomMetadata({ allowedUserIds: newAllowedUserIds });
-                }
-              }}
-              onRevokePermission={(id) => {
-                roomStore.removeAllowedUserId(id);
-                if (isConnected) {
-                  const newAllowedUserIds = allowedUserIds.filter((i) => i !== id);
-                  updateRoomMetadata({ allowedUserIds: newAllowedUserIds });
-                }
-              }}
-              allowedUserIds={allowedUserIds}
             />
+            {/* Chat or full member list */}
+            {showMemberList ? (
+              <MemberList
+                members={roomStore.members}
+                currentUserId={userId}
+                isCreator={roomStore.isCreator}
+                onKick={handleKickUser}
+                onBan={handleBanUser}
+                onGrantPermission={(id) => {
+                  roomStore.addAllowedUserId(id);
+                  if (isConnected) {
+                    const newAllowedUserIds = [...allowedUserIds.filter((i) => i !== id), id];
+                    updateRoomMetadata({ allowedUserIds: newAllowedUserIds });
+                  }
+                }}
+                onRevokePermission={(id) => {
+                  roomStore.removeAllowedUserId(id);
+                  if (isConnected) {
+                    const newAllowedUserIds = allowedUserIds.filter((i) => i !== id);
+                    updateRoomMetadata({ allowedUserIds: newAllowedUserIds });
+                  }
+                }}
+                allowedUserIds={allowedUserIds}
+              />
+            ) : (
+              <ChatPanel
+                messages={roomStore.chatMessages}
+                onSendMessage={handleSendChatMessage}
+                onSelectReaction={handleSendReaction}
+                roomId={actualRoomId || ''}
+              />
+            )}
+          </aside>
+        )}
+
+        {/* Sidebar toggle button - desktop only */}
+        <button
+          onClick={() => setIsSidebarHidden(!isSidebarHidden)}
+          className="hidden md:flex absolute right-0 top-1/2 -translate-y-1/2 z-20 p-2 bg-card border border-border rounded-l-lg shadow-lg hover:bg-accent transition-colors"
+          title={isSidebarHidden ? 'チャットを表示' : 'チャットを非表示'}
+          aria-expanded={!isSidebarHidden}
+        >
+          {isSidebarHidden ? (
+            <PanelRightOpen className="h-5 w-5" />
           ) : (
-            <ChatPanel
-              messages={roomStore.chatMessages}
-              onSendMessage={handleSendChatMessage}
-              onSelectReaction={handleSendReaction}
-              roomId={actualRoomId || ''}
-            />
+            <PanelRightClose className="h-5 w-5" />
           )}
-        </aside>
+        </button>
       </div>
 
       {/* Mobile Chat Bottom Sheet */}

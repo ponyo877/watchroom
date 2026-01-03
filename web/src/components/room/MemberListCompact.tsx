@@ -11,13 +11,13 @@ export default function MemberListCompact({
   currentUserId,
 }: MemberListCompactProps) {
   return (
-    <div className="px-3 py-2 border-b border-border/50">
-      <div className="flex items-center gap-2 mb-1">
+    <div className="h-14 px-3 flex flex-col justify-center border-b border-border/50">
+      <div className="flex items-center gap-2 mb-0.5">
         <span className="text-xs font-medium text-muted-foreground">
           Members ({members.length})
         </span>
       </div>
-      <div className="flex items-center gap-1.5 overflow-x-auto pt-1 pb-1 pl-0.5 scrollbar-thin">
+      <div className="flex items-center gap-1.5 overflow-x-auto pl-0.5 scrollbar-thin">
         {members.map((member) => {
           const isCurrentUser = member.id === currentUserId;
           return (
