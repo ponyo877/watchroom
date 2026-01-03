@@ -77,7 +77,7 @@ export default function ChatPanel({ messages, onSendMessage, onSelectReaction, r
       </div>
 
       {/* Footer - h-16 to match Player controls */}
-      <div className="h-16 border-t border-border/50 flex flex-col justify-center px-4">
+      <div className="h-16 border-t border-border/50 flex flex-col justify-center px-4 rounded-bl-xl">
         <div className="flex items-center gap-2 bg-muted/50 rounded-full px-4 py-2 focus-within:ring-2 focus-within:ring-primary/20 transition-shadow duration-200">
           <input
             type="text"
