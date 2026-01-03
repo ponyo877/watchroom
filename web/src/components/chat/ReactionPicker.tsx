@@ -60,7 +60,8 @@ export default function ReactionPicker({
           <div
             className={`absolute ${
               inline ? 'bottom-full right-0' : compact ? 'bottom-full right-0' : 'bottom-full left-0'
-            } mb-2 w-72 bg-card border border-border rounded-lg shadow-lg z-50`}
+            } mb-2 w-72 bg-card border border-border rounded-lg shadow-lg z-50 animate-fade-in-up`}
+            style={{ animationDuration: '200ms' }}
           >
             <div className="flex items-center justify-between p-2 border-b border-border">
               <span className="text-sm font-medium">リアクション</span>

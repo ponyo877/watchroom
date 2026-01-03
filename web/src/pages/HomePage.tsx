@@ -8,7 +8,7 @@ export default function HomePage() {
   const [searchQuery, setSearchQuery] = useState('');
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background animate-fade-in">
       <Header
         onCreateRoom={() => setIsCreateDialogOpen(true)}
         searchQuery={searchQuery}

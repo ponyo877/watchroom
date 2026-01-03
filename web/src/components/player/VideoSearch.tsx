@@ -143,8 +143,8 @@ export default function VideoSearch({ onSelectVideo, onClose }: VideoSearchProps
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
-      <div className="absolute inset-0 bg-black/50" onClick={onClose} />
-      <div className="relative bg-card border border-border rounded-lg w-full max-w-2xl mx-4 max-h-[80vh] flex flex-col">
+      <div className="absolute inset-0 bg-black/50 animate-fade-in" onClick={onClose} />
+      <div className="relative bg-card border border-border rounded-lg w-full max-w-2xl mx-4 max-h-[80vh] flex flex-col animate-scale-in">
         <div className="p-4 border-b border-border flex items-center justify-between">
           <h2 className="font-semibold">動画を検索</h2>
           <button onClick={onClose} className="p-1 hover:bg-accent rounded-md">

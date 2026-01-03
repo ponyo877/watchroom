@@ -53,8 +53,8 @@ export default function RoomSettings({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
-      <div className="absolute inset-0 bg-black/50" onClick={onClose} />
-      <div className="relative bg-card border border-border rounded-lg w-full max-w-md mx-4 max-h-[80vh] flex flex-col">
+      <div className="absolute inset-0 bg-black/50 animate-fade-in" onClick={onClose} />
+      <div className="relative bg-card border border-border rounded-lg w-full max-w-md mx-4 max-h-[80vh] flex flex-col animate-scale-in">
         <div className="p-4 border-b border-border flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Settings className="h-5 w-5" />

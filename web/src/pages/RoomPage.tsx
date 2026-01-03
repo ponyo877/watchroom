@@ -427,12 +427,12 @@ export default function RoomPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="flex h-screen">
+    <div className="min-h-screen bg-background animate-fade-in">
+      <div className="flex h-screen relative">
         {/* Main content */}
         <main className="flex-1 flex flex-col">
           {/* Header */}
-          <header className="h-14 border-b border-border bg-card flex items-center justify-between px-2 md:px-4 relative z-10">
+          <header className="h-14 border-b border-border bg-card flex items-center justify-between px-2 md:px-4 relative z-20">
             <div className="flex items-center gap-2 md:gap-4 min-w-0">
               <button
                 onClick={handleLeaveRoom}
@@ -524,7 +524,7 @@ export default function RoomPage() {
           </div>
 
           {/* Player controls */}
-          <div className="h-16 border-t border-border bg-card relative z-10">
+          <div className="h-16 border-t border-border bg-card relative z-20">
             <PlayerControls
               isPlaying={isPlaying}
               currentTime={currentTime}
@@ -589,7 +589,7 @@ export default function RoomPage() {
           </div>
 
           {/* Mobile bottom navigation */}
-          <div className="h-14 border-t border-border bg-card flex items-center justify-around md:hidden relative z-10">
+          <div className="h-14 border-t border-border bg-card flex items-center justify-around md:hidden relative z-20">
             <button
               onClick={() => setShowMobileChat(true)}
               className="flex flex-col items-center gap-1 p-2"
@@ -615,48 +615,51 @@ export default function RoomPage() {
           </div>
         </main>
 
-        {/* Desktop Sidebar */}
-        {!isSidebarHidden && (
-          <aside className="hidden md:flex w-80 border-l border-border bg-card flex-col rounded-l-xl overflow-hidden">
-            {/* Compact member list - always visible */}
-            <MemberListCompact
+        {/* Desktop Sidebar - always rendered for slide animation */}
+        <aside
+          className={`hidden md:flex w-80 border-l border-border bg-card flex-col rounded-l-xl overflow-hidden
+            absolute right-0 top-14 bottom-16 z-10
+            transition-transform duration-300 ease-out
+            ${isSidebarHidden ? 'translate-x-full' : 'translate-x-0'}`}
+        >
+          {/* Compact member list - always visible */}
+          <MemberListCompact
+            members={roomStore.members}
+            currentUserId={userId}
+          />
+          {/* Chat or full member list */}
+          {showMemberList ? (
+            <MemberList
               members={roomStore.members}
               currentUserId={userId}
+              isCreator={roomStore.isCreator}
+              onKick={handleKickUser}
+              onBan={handleBanUser}
+              onGrantPermission={(id) => {
+                roomStore.addAllowedUserId(id);
+                if (isConnected) {
+                  const newAllowedUserIds = [...allowedUserIds.filter((i) => i !== id), id];
+                  updateRoomMetadata({ allowedUserIds: newAllowedUserIds });
+                }
+              }}
+              onRevokePermission={(id) => {
+                roomStore.removeAllowedUserId(id);
+                if (isConnected) {
+                  const newAllowedUserIds = allowedUserIds.filter((i) => i !== id);
+                  updateRoomMetadata({ allowedUserIds: newAllowedUserIds });
+                }
+              }}
+              allowedUserIds={allowedUserIds}
             />
-            {/* Chat or full member list */}
-            {showMemberList ? (
-              <MemberList
-                members={roomStore.members}
-                currentUserId={userId}
-                isCreator={roomStore.isCreator}
-                onKick={handleKickUser}
-                onBan={handleBanUser}
-                onGrantPermission={(id) => {
-                  roomStore.addAllowedUserId(id);
-                  if (isConnected) {
-                    const newAllowedUserIds = [...allowedUserIds.filter((i) => i !== id), id];
-                    updateRoomMetadata({ allowedUserIds: newAllowedUserIds });
-                  }
-                }}
-                onRevokePermission={(id) => {
-                  roomStore.removeAllowedUserId(id);
-                  if (isConnected) {
-                    const newAllowedUserIds = allowedUserIds.filter((i) => i !== id);
-                    updateRoomMetadata({ allowedUserIds: newAllowedUserIds });
-                  }
-                }}
-                allowedUserIds={allowedUserIds}
-              />
-            ) : (
-              <ChatPanel
-                messages={roomStore.chatMessages}
-                onSendMessage={handleSendChatMessage}
-                onSelectReaction={handleSendReaction}
-                roomId={actualRoomId || ''}
-              />
-            )}
-          </aside>
-        )}
+          ) : (
+            <ChatPanel
+              messages={roomStore.chatMessages}
+              onSendMessage={handleSendChatMessage}
+              onSelectReaction={handleSendReaction}
+              roomId={actualRoomId || ''}
+            />
+          )}
+        </aside>
 
         {/* Sidebar toggle button - desktop only */}
         <button
