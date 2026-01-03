@@ -1,13 +1,20 @@
 import { useState } from 'react';
-import { Search, X, Link } from 'lucide-react';
+import { Search, Link } from 'lucide-react';
 import axiosInstance from '@/lib/api';
 import { formatDuration } from '@/lib/youtube';
 import { getFromCache, saveToCache } from '@/lib/searchCache';
 import type { YouTubeVideo } from '@/types/youtube';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/Dialog';
 
 interface VideoSearchProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
   onSelectVideo: (video: YouTubeVideo) => void;
-  onClose: () => void;
 }
 
 interface APIVideoResponse {
@@ -70,7 +77,7 @@ const fetchOEmbed = async (videoId: string): Promise<YouTubeVideo | null> => {
   }
 };
 
-export default function VideoSearch({ onSelectVideo, onClose }: VideoSearchProps) {
+export default function VideoSearch({ open, onOpenChange, onSelectVideo }: VideoSearchProps) {
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<YouTubeVideo[]>([]);
   const [isSearching, setIsSearching] = useState(false);
@@ -89,7 +96,7 @@ export default function VideoSearch({ onSelectVideo, onClose }: VideoSearchProps
       const video = await fetchOEmbed(videoId);
       if (video) {
         onSelectVideo(video);
-        onClose();
+        onOpenChange(false);
         return;
       } else {
         setError('動画が見つかりませんでした');
@@ -142,58 +149,57 @@ export default function VideoSearch({ onSelectVideo, onClose }: VideoSearchProps
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
-      <div className="absolute inset-0 bg-black/50 animate-fade-in" onClick={onClose} />
-      <div className="relative bg-card border border-border rounded-lg w-full max-w-2xl mx-4 max-h-[80vh] flex flex-col animate-scale-in">
-        <div className="p-4 border-b border-border flex items-center justify-between">
-          <h2 className="font-semibold">動画を検索</h2>
-          <button onClick={onClose} className="p-1 hover:bg-accent rounded-md">
-            <X className="h-5 w-5" />
-          </button>
-        </div>
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-2xl max-h-[80vh] flex flex-col">
+        <DialogHeader icon={<Search className="h-5 w-5 text-muted-foreground" />}>
+          <DialogTitle>動画を検索</DialogTitle>
+        </DialogHeader>
 
-        <form onSubmit={handleSearch} className="p-4 border-b border-border">
+        <form onSubmit={handleSearch} className="space-y-3">
           <div className="flex gap-2">
             <input
               type="text"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="キーワードで検索 または YouTubeのURLを貼り付け"
-              className="flex-1 px-3 py-2 border border-input rounded-md bg-background"
+              className="flex-1 px-4 py-2.5 border border-input rounded-xl bg-background/50 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary/50 hover:border-primary/30 transition-all duration-200"
             />
             <button
               type="submit"
               disabled={isSearching}
-              className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:opacity-90 disabled:opacity-50"
+              className="px-4 py-2.5 bg-primary text-primary-foreground rounded-xl shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/30 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:shadow-none disabled:scale-100 transition-all duration-200"
             >
               <Search className="h-4 w-4" />
             </button>
           </div>
-          <p className="text-xs text-muted-foreground mt-2 flex items-center gap-1">
+          <p className="text-xs text-muted-foreground flex items-center gap-1">
             <Link className="h-3 w-3" />
             YouTube URLを貼り付けると直接動画を追加できます
           </p>
         </form>
 
-        <div className="flex-1 overflow-y-auto p-4">
+        <div className="flex-1 overflow-y-auto -mx-6 px-6 mt-4">
           {error ? (
-            <p className="text-center text-destructive">{error}</p>
+            <p className="text-center text-destructive py-8">{error}</p>
           ) : results.length === 0 ? (
-            <p className="text-center text-muted-foreground">
+            <p className="text-center text-muted-foreground py-8">
               検索キーワードを入力してください
             </p>
           ) : (
-            <div className="space-y-3">
+            <div className="space-y-2">
               {results.map((video) => (
                 <button
                   key={video.videoId}
-                  onClick={() => onSelectVideo(video)}
-                  className="w-full flex gap-3 p-2 rounded-lg hover:bg-accent text-left"
+                  onClick={() => {
+                    onSelectVideo(video);
+                    onOpenChange(false);
+                  }}
+                  className="w-full flex gap-3 p-3 rounded-xl hover:bg-accent/50 text-left transition-all duration-200 hover:scale-[1.01]"
                 >
                   <img
                     src={video.thumbnail}
                     alt={video.title}
-                    className="w-32 h-20 object-cover rounded"
+                    className="w-32 h-20 object-cover rounded-lg"
                   />
                   <div className="flex-1 min-w-0">
                     <h3 className="font-medium truncate">{video.title}</h3>
@@ -209,7 +215,7 @@ export default function VideoSearch({ onSelectVideo, onClose }: VideoSearchProps
             </div>
           )}
         </div>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }

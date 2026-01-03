@@ -724,7 +724,7 @@ export default function RoomPage() {
       {/* Modals */}
       <RoomSettings
         open={showSettings}
-        onClose={() => setShowSettings(false)}
+        onOpenChange={setShowSettings}
         isCreator={roomStore.isCreator}
         hasPassword={hasPassword}
         permissionMode={permissionMode}
@@ -760,21 +760,20 @@ export default function RoomPage() {
       <PasswordSettingsDialog
         open={showPasswordSettings}
         hasPassword={hasPassword}
-        onClose={() => setShowPasswordSettings(false)}
+        onOpenChange={setShowPasswordSettings}
         onSetPassword={handleSetPassword}
         onRemovePassword={handleRemovePassword}
       />
 
-      {showVideoSearch && (
-        <VideoSearch
-          onSelectVideo={handleSelectVideo}
-          onClose={() => setShowVideoSearch(false)}
-        />
-      )}
+      <VideoSearch
+        open={showVideoSearch}
+        onOpenChange={setShowVideoSearch}
+        onSelectVideo={handleSelectVideo}
+      />
 
       <PlayHistory
         open={showPlayHistory}
-        onClose={() => setShowPlayHistory(false)}
+        onOpenChange={setShowPlayHistory}
         history={playHistory}
         onSelectVideo={(video) => {
           roomStore.setCurrentVideo(video);
@@ -789,7 +788,6 @@ export default function RoomPage() {
             roomStore.setPlaybackState(initialPlaybackState);
             updateRoomMetadata({ currentVideo: video, playbackState: initialPlaybackState });
           }
-          setShowPlayHistory(false);
         }}
         onRemoveVideo={(videoId) => {
           roomStore.removeFromPlayHistory(videoId);

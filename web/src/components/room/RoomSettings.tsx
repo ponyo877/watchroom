@@ -1,11 +1,18 @@
-import { Settings, X, Users, Crown, Lock, UserCheck, UserX } from 'lucide-react';
+import { Settings, Users, Crown, Lock, UserCheck, UserX } from 'lucide-react';
 import type { MemberMetadata } from '@/types/skyway';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from '@/components/ui/Dialog';
 
 type PermissionMode = 'creator' | 'specific' | 'all';
 
 interface RoomSettingsProps {
   open: boolean;
-  onClose: () => void;
+  onOpenChange: (open: boolean) => void;
   isCreator: boolean;
   hasPassword: boolean;
   permissionMode: PermissionMode;
@@ -35,7 +42,7 @@ const PERMISSION_MODE_LABELS: Record<PermissionMode, { label: string; descriptio
 
 export default function RoomSettings({
   open,
-  onClose,
+  onOpenChange,
   isCreator,
   hasPassword,
   permissionMode,
@@ -47,39 +54,30 @@ export default function RoomSettings({
   onRevokePermission,
   onOpenPasswordSettings,
 }: RoomSettingsProps) {
-  if (!open) return null;
-
   const nonCreatorMembers = members.filter((m) => !m.isCreator);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
-      <div className="absolute inset-0 bg-black/50 animate-fade-in" onClick={onClose} />
-      <div className="relative bg-card border border-border rounded-lg w-full max-w-md mx-4 max-h-[80vh] flex flex-col animate-scale-in">
-        <div className="p-4 border-b border-border flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Settings className="h-5 w-5" />
-            <h2 className="font-semibold">部屋設定</h2>
-          </div>
-          <button onClick={onClose} className="p-1 hover:bg-accent rounded-md">
-            <X className="h-5 w-5" />
-          </button>
-        </div>
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-h-[80vh] flex flex-col">
+        <DialogHeader icon={<Settings className="h-5 w-5 text-muted-foreground" />}>
+          <DialogTitle>部屋設定</DialogTitle>
+        </DialogHeader>
 
-        <div className="flex-1 overflow-y-auto p-4 space-y-6">
+        <div className="flex-1 overflow-y-auto space-y-6 -mx-6 px-6">
           {/* Password Section */}
           <section>
             <h3 className="font-medium mb-3 flex items-center gap-2">
               <Lock className="h-4 w-4" />
               パスワード
             </h3>
-            <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
+            <div className="flex items-center justify-between p-3 bg-muted/50 rounded-xl">
               <span className="text-sm">
                 {hasPassword ? 'パスワードが設定されています' : 'パスワードなし（公開）'}
               </span>
               {isCreator && (
                 <button
                   onClick={onOpenPasswordSettings}
-                  className="px-3 py-1 text-sm bg-primary text-primary-foreground rounded-md hover:opacity-90"
+                  className="px-3 py-1.5 text-sm bg-primary text-primary-foreground rounded-lg hover:opacity-90 transition-opacity"
                 >
                   {hasPassword ? '変更' : '設定'}
                 </button>
@@ -100,10 +98,10 @@ export default function RoomSettings({
                     key={mode}
                     onClick={() => isCreator && onPermissionModeChange(mode)}
                     disabled={!isCreator}
-                    className={`w-full p-3 rounded-lg text-left transition-colors ${
+                    className={`w-full p-3 rounded-xl text-left transition-all duration-200 ${
                       permissionMode === mode
                         ? 'bg-primary/10 border-2 border-primary'
-                        : 'bg-muted hover:bg-accent'
+                        : 'bg-muted/50 hover:bg-accent/50 border-2 border-transparent'
                     } ${!isCreator ? 'opacity-60 cursor-not-allowed' : ''}`}
                   >
                     <div className="font-medium text-sm">{label}</div>
@@ -132,7 +130,7 @@ export default function RoomSettings({
                     return (
                       <div
                         key={member.id}
-                        className="flex items-center justify-between p-3 bg-muted rounded-lg"
+                        className="flex items-center justify-between p-3 bg-muted/50 rounded-xl"
                       >
                         <div className="flex items-center gap-3">
                           <div className="w-8 h-8 rounded-full bg-background flex items-center justify-center">
@@ -164,7 +162,7 @@ export default function RoomSettings({
                                 ? onRevokePermission(member.id)
                                 : onGrantPermission(member.id)
                             }
-                            className={`p-2 rounded-md ${
+                            className={`p-2 rounded-lg transition-colors ${
                               hasPermission
                                 ? 'bg-green-100 text-green-700 hover:bg-green-200'
                                 : 'bg-muted-foreground/10 text-muted-foreground hover:bg-muted-foreground/20'
@@ -186,15 +184,15 @@ export default function RoomSettings({
           )}
         </div>
 
-        <div className="p-4 border-t border-border">
+        <DialogFooter className="mt-6">
           <button
-            onClick={onClose}
-            className="w-full px-4 py-2 bg-muted rounded-md hover:bg-accent"
+            onClick={() => onOpenChange(false)}
+            className="flex-1 px-4 py-2.5 border border-border rounded-xl hover:bg-accent/50 transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]"
           >
             閉じる
           </button>
-        </div>
-      </div>
-    </div>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }

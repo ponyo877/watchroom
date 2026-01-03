@@ -10,7 +10,7 @@ import {
 interface PasswordSettingsDialogProps {
   open: boolean;
   hasPassword: boolean;
-  onClose: () => void;
+  onOpenChange: (open: boolean) => void;
   onSetPassword: (oldPassword: string | null, newPassword: string) => Promise<boolean>;
   onRemovePassword: (password: string) => Promise<boolean>;
 }
@@ -18,7 +18,7 @@ interface PasswordSettingsDialogProps {
 export default function PasswordSettingsDialog({
   open,
   hasPassword,
-  onClose,
+  onOpenChange,
   onSetPassword,
   onRemovePassword,
 }: PasswordSettingsDialogProps) {
@@ -64,7 +64,7 @@ export default function PasswordSettingsDialog({
       );
       if (success) {
         resetForm();
-        onClose();
+        onOpenChange(false);
       } else {
         setError('パスワードの設定に失敗しました');
       }
@@ -89,7 +89,7 @@ export default function PasswordSettingsDialog({
       const success = await onRemovePassword(oldPassword);
       if (success) {
         resetForm();
-        onClose();
+        onOpenChange(false);
       } else {
         setError('パスワードが正しくありません');
       }
@@ -103,7 +103,7 @@ export default function PasswordSettingsDialog({
   const inputClassName = "w-full px-4 py-2.5 pr-10 border border-input rounded-xl bg-background/50 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary/50 hover:border-primary/30 transition-all duration-200";
 
   return (
-    <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose()}>
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader icon={<Lock className="h-5 w-5 text-muted-foreground" />}>
           <DialogTitle>パスワード設定</DialogTitle>

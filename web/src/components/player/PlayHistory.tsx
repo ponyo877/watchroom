@@ -1,10 +1,16 @@
-import { History, Play, Trash2, X } from 'lucide-react';
+import { History, Play, Trash2 } from 'lucide-react';
 import { formatRelativeTime } from '@/lib/utils';
 import type { VideoHistoryItem } from '@/types/skyway';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/Dialog';
 
 interface PlayHistoryProps {
   open: boolean;
-  onClose: () => void;
+  onOpenChange: (open: boolean) => void;
   history: VideoHistoryItem[];
   onSelectVideo: (video: VideoHistoryItem) => void;
   onRemoveVideo: (videoId: string) => void;
@@ -14,66 +20,62 @@ interface PlayHistoryProps {
 
 export default function PlayHistory({
   open,
-  onClose,
+  onOpenChange,
   history,
   onSelectVideo,
   onRemoveVideo,
   onClearHistory,
   hasControlPermission,
 }: PlayHistoryProps) {
-  if (!open) return null;
-
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
-      <div className="absolute inset-0 bg-black/50 animate-fade-in" onClick={onClose} />
-      <div className="relative bg-card border border-border rounded-lg w-full max-w-lg mx-4 max-h-[80vh] flex flex-col animate-scale-in">
-        <div className="p-4 border-b border-border flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <History className="h-5 w-5" />
-            <h2 className="font-semibold">再生履歴</h2>
-            <span className="text-sm text-muted-foreground">
-              ({history.length})
-            </span>
-          </div>
-          <div className="flex items-center gap-2">
-            {history.length > 0 && (
-              <button
-                onClick={onClearHistory}
-                className="p-2 text-sm text-destructive hover:bg-destructive/10 rounded-md"
-                title="履歴をクリア"
-              >
-                <Trash2 className="h-4 w-4" />
-              </button>
-            )}
-            <button onClick={onClose} className="p-1 hover:bg-accent rounded-md">
-              <X className="h-5 w-5" />
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-lg max-h-[80vh] flex flex-col">
+        <div className="flex items-center justify-between">
+          <DialogHeader icon={<History className="h-5 w-5 text-muted-foreground" />}>
+            <DialogTitle className="flex items-center gap-2">
+              再生履歴
+              <span className="text-sm font-normal text-muted-foreground">
+                ({history.length})
+              </span>
+            </DialogTitle>
+          </DialogHeader>
+          {history.length > 0 && (
+            <button
+              onClick={onClearHistory}
+              className="p-2 text-destructive hover:bg-destructive/10 rounded-lg transition-colors mr-8"
+              title="履歴をクリア"
+            >
+              <Trash2 className="h-4 w-4" />
             </button>
-          </div>
+          )}
         </div>
 
-        <div className="flex-1 overflow-y-auto">
+        <div className="flex-1 overflow-y-auto -mx-6 px-6">
           {history.length === 0 ? (
-            <div className="p-8 text-center">
+            <div className="py-12 text-center">
               <History className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
               <p className="text-muted-foreground">再生履歴がありません</p>
             </div>
           ) : (
-            <div className="divide-y divide-border">
+            <div className="space-y-2">
               {history.map((video) => (
                 <div
                   key={video.videoId}
-                  className="flex items-center gap-3 p-3 hover:bg-accent group"
+                  className="flex items-center gap-3 p-3 rounded-xl hover:bg-accent/50 group transition-all duration-200"
                 >
                   <div className="relative w-24 h-16 flex-shrink-0">
                     <img
                       src={video.thumbnail}
                       alt={video.title}
-                      className="w-full h-full object-cover rounded"
+                      className="w-full h-full object-cover rounded-lg"
                     />
                     {hasControlPermission && (
                       <button
-                        onClick={() => onSelectVideo(video)}
-                        className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity rounded"
+                        onClick={() => {
+                          onSelectVideo(video);
+                          onOpenChange(false);
+                        }}
+                        className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity rounded-lg"
                       >
                         <Play className="h-8 w-8 text-white" />
                       </button>
@@ -89,17 +91,17 @@ export default function PlayHistory({
 
                   <button
                     onClick={() => onRemoveVideo(video.videoId)}
-                    className="p-2 opacity-0 group-hover:opacity-100 hover:bg-destructive/10 rounded-md transition-opacity"
+                    className="p-2 opacity-0 group-hover:opacity-100 hover:bg-destructive/10 rounded-lg transition-all duration-200"
                     title="履歴から削除"
                   >
-                    <X className="h-4 w-4 text-muted-foreground hover:text-destructive" />
+                    <Trash2 className="h-4 w-4 text-muted-foreground hover:text-destructive transition-colors" />
                   </button>
                 </div>
               ))}
             </div>
           )}
         </div>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }
