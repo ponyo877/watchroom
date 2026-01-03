@@ -132,7 +132,7 @@ test.describe('UI Controls', () => {
   });
 
   test.describe('Sidebar Toggle', () => {
-    test('should toggle sidebar visibility with slide animation', async ({ page, request }) => {
+    test('should toggle sidebar visibility with width animation', async ({ page, request }) => {
       const roomId = generateRoomId();
       const response = await request.post('http://localhost:8080/api/rooms', {
         data: { room_id: roomId },
@@ -145,11 +145,11 @@ test.describe('UI Controls', () => {
       // Wait for room to load
       await page.waitForSelector('button[title="AddVideo"]', { timeout: ROOM_LOAD_TIMEOUT });
 
-      // Verify sidebar is visible (not translated off-screen)
+      // Verify sidebar is visible with full width (w-80 = 320px)
       const sidebar = page.locator('aside');
       await expect(sidebar).toBeVisible({ timeout: 3000 });
-      await expect(sidebar).toHaveClass(/translate-x-0/);
-      await expect(sidebar).not.toHaveClass(/translate-x-full/);
+      await expect(sidebar).toHaveClass(/w-80/);
+      await expect(sidebar).not.toHaveClass(/w-0/);
 
       // Verify toggle button is visible
       const toggleButton = page.locator('button[title="チャットを非表示"]');
@@ -158,8 +158,8 @@ test.describe('UI Controls', () => {
       // Click to hide sidebar
       await toggleButton.click();
 
-      // Sidebar should be translated off-screen (hidden via animation)
-      await expect(sidebar).toHaveClass(/translate-x-full/);
+      // Sidebar should collapse to zero width (w-0)
+      await expect(sidebar).toHaveClass(/w-0/);
 
       // Toggle button title should change
       const showButton = page.locator('button[title="チャットを表示"]');
@@ -168,9 +168,9 @@ test.describe('UI Controls', () => {
       // Click to show sidebar
       await showButton.click();
 
-      // Sidebar should slide back in
-      await expect(sidebar).toHaveClass(/translate-x-0/);
-      await expect(sidebar).not.toHaveClass(/translate-x-full/);
+      // Sidebar should expand back to full width
+      await expect(sidebar).toHaveClass(/w-80/);
+      await expect(sidebar).not.toHaveClass(/w-0/);
     });
   });
 });

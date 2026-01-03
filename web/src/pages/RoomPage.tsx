@@ -428,9 +428,9 @@ export default function RoomPage() {
 
   return (
     <div className="min-h-screen bg-background animate-fade-in">
-      <div className="flex h-screen relative">
+      <div className="flex h-screen">
         {/* Main content */}
-        <main className="flex-1 flex flex-col">
+        <main className="flex-1 flex flex-col min-w-0 relative">
           {/* Header */}
           <header className="h-14 border-b border-border bg-card flex items-center justify-between px-2 md:px-4 relative z-20">
             <div className="flex items-center gap-2 md:gap-4 min-w-0">
@@ -613,14 +613,27 @@ export default function RoomPage() {
             </button>
             <ReactionPicker onSelectReaction={handleSendReaction} compact />
           </div>
+
+          {/* Sidebar toggle button - desktop only */}
+          <button
+            onClick={() => setIsSidebarHidden(!isSidebarHidden)}
+            className="hidden md:flex absolute right-0 top-1/2 -translate-y-1/2 z-20 p-2 bg-card border border-border rounded-l-lg shadow-lg hover:bg-accent transition-colors"
+            title={isSidebarHidden ? 'チャットを表示' : 'チャットを非表示'}
+            aria-expanded={!isSidebarHidden}
+          >
+            {isSidebarHidden ? (
+              <PanelRightOpen className="h-5 w-5" />
+            ) : (
+              <PanelRightClose className="h-5 w-5" />
+            )}
+          </button>
         </main>
 
-        {/* Desktop Sidebar - always rendered for slide animation */}
+        {/* Desktop Sidebar - flex item that expands/collapses */}
         <aside
-          className={`hidden md:flex w-80 border-l border-border bg-card flex-col rounded-l-xl overflow-hidden
-            absolute right-0 top-14 bottom-16 z-10
-            transition-transform duration-300 ease-out
-            ${isSidebarHidden ? 'translate-x-full' : 'translate-x-0'}`}
+          className={`hidden md:flex flex-col border-l border-border bg-card overflow-hidden
+            transition-[width] duration-300 ease-out
+            ${isSidebarHidden ? 'w-0' : 'w-80'}`}
         >
           {/* Compact member list - always visible */}
           <MemberListCompact
@@ -660,20 +673,6 @@ export default function RoomPage() {
             />
           )}
         </aside>
-
-        {/* Sidebar toggle button - desktop only */}
-        <button
-          onClick={() => setIsSidebarHidden(!isSidebarHidden)}
-          className="hidden md:flex absolute right-0 top-1/2 -translate-y-1/2 z-20 p-2 bg-card border border-border rounded-l-lg shadow-lg hover:bg-accent transition-colors"
-          title={isSidebarHidden ? 'チャットを表示' : 'チャットを非表示'}
-          aria-expanded={!isSidebarHidden}
-        >
-          {isSidebarHidden ? (
-            <PanelRightOpen className="h-5 w-5" />
-          ) : (
-            <PanelRightClose className="h-5 w-5" />
-          )}
-        </button>
       </div>
 
       {/* Mobile Chat Bottom Sheet */}
