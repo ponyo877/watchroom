@@ -17,7 +17,7 @@ export default function MemberListCompact({
           Members ({members.length})
         </span>
       </div>
-      <div className="flex items-center gap-1.5 overflow-x-auto pb-0.5 scrollbar-thin">
+      <div className="flex items-center gap-1.5 overflow-x-auto pt-1 pb-1 pl-0.5 scrollbar-thin">
         {members.map((member) => {
           const isCurrentUser = member.id === currentUserId;
           return (
