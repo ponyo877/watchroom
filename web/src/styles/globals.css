@@ -54,6 +54,20 @@
   }
 }
 
+/* Logo switching for dark mode */
+.logo-light {
+  display: block;
+}
+.logo-dark {
+  display: none;
+}
+.dark .logo-light {
+  display: none;
+}
+.dark .logo-dark {
+  display: block;
+}
+
 .dark {
   /* === Dark Mode with Neon Accents === */
   --color-background: oklch(0.12 0.01 260);

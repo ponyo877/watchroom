@@ -23,7 +23,8 @@ export default function Header({ onCreateRoom, searchQuery, onSearchChange }: He
         <div className="flex h-16 items-center justify-between gap-4">
           <div className="flex items-center gap-4 flex-1 min-w-0">
             <Link to="/" className="hover:opacity-80 transition-opacity duration-200 flex-shrink-0">
-              <img src="/logo.svg" alt="WatchRoom" className="h-13" />
+              <img src="/logo.svg" alt="WatchRoom" className="h-13 logo-light" />
+              <img src="/logo-dark.svg" alt="WatchRoom" className="h-13 logo-dark" />
             </Link>
 
             {/* Search Bar - shown only when onSearchChange is provided */}
