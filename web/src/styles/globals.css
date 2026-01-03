@@ -21,9 +21,9 @@
   --color-muted: oklch(0.96 0.005 260);
   --color-muted-foreground: oklch(0.5 0 0);
 
-  /* Accent (Teal) */
-  --color-accent: oklch(0.65 0.15 165);
-  --color-accent-foreground: oklch(0.98 0 0);
+  /* Accent (Light Purple - matches Primary) */
+  --color-accent: oklch(0.92 0.03 280);
+  --color-accent-foreground: oklch(0.2 0 0);
 
   /* Destructive */
   --color-destructive: oklch(0.55 0.22 25);
@@ -75,9 +75,9 @@
   --color-muted: oklch(0.22 0.015 260);
   --color-muted-foreground: oklch(0.65 0.01 260);
 
-  /* Neon Accent (Cyan) */
-  --color-accent: oklch(0.75 0.2 165);
-  --color-accent-foreground: oklch(0.1 0 0);
+  /* Accent (Dark Purple - matches Primary) */
+  --color-accent: oklch(0.28 0.06 280);
+  --color-accent-foreground: oklch(0.95 0 0);
 
   /* Destructive */
   --color-destructive: oklch(0.6 0.25 25);

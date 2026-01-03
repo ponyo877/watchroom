@@ -70,7 +70,7 @@ export default function Header({ onCreateRoom, searchQuery, onSearchChange }: He
             {onCreateRoom && (
               <button
                 onClick={onCreateRoom}
-                className="flex items-center gap-2 px-3 md:px-4 py-2 bg-[#4A7C59] text-white rounded-md shadow-lg shadow-[#4A7C59]/25 hover:shadow-xl hover:shadow-[#4A7C59]/30 hover:scale-105 active:scale-95 transition-all duration-200"
+                className="flex items-center gap-2 px-3 md:px-4 py-2 bg-primary text-primary-foreground rounded-md shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/30 hover:scale-105 active:scale-95 transition-all duration-200"
               >
                 <Monitor className="h-4 w-4" />
                 <span className="hidden md:inline">NewRoom</span>

@@ -97,7 +97,7 @@ export default function ShareButton({ roomId, shortId, roomName }: ShareButtonPr
                 </button>
               </div>
               {copied && (
-                <p className="text-xs text-green-600 mt-1">
+                <p className="text-xs text-success mt-1">
                   コピーしました！
                 </p>
               )}
