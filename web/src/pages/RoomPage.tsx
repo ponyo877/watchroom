@@ -20,6 +20,7 @@ import { useShortUrl } from '@/hooks/useShortUrl';
 import { useModeration } from '@/hooks/useModeration';
 import { useVideoSync } from '@/hooks/useVideoSync';
 import { useRoom } from '@/hooks/useRoom';
+import { usePlayerKeyboard } from '@/hooks/usePlayerKeyboard';
 import axiosInstance from '@/lib/api';
 import ChatPanel from '@/components/chat/ChatPanel';
 import ReactionPicker from '@/components/chat/ReactionPicker';
@@ -36,6 +37,7 @@ import ShareButton from '@/components/room/ShareButton';
 import BottomSheet from '@/components/common/BottomSheet';
 import LandscapeSidePanel from '@/components/common/LandscapeSidePanel';
 import Loading from '@/components/common/Loading';
+import YouTubeAttribution from '@/components/common/YouTubeAttribution';
 import type { YouTubeVideo } from '@/types/youtube';
 import type {
   SyncMessage,
@@ -200,6 +202,61 @@ export default function RoomPage() {
 
   // Derive isPlaying from playback state
   const isPlaying = roomStore.playbackState.isPlaying;
+
+  // Keyboard controls
+  usePlayerKeyboard({
+    player,
+    isReady: isPlayerReady,
+    hasControlPermission: roomStore.hasControlPermission,
+    isPlaying,
+    currentTime,
+    duration,
+    volume,
+    onPlay: () => {
+      play();
+      const newState = { isPlaying: true, currentTime, lastUpdated: Date.now() };
+      roomStore.setPlaybackState(newState);
+      if (isConnected) {
+        updateRoomMetadata({ playbackState: { ...roomStore.playbackState, ...newState } });
+      }
+    },
+    onPause: () => {
+      pause();
+      const newState = { isPlaying: false, currentTime, lastUpdated: Date.now() };
+      roomStore.setPlaybackState(newState);
+      if (isConnected) {
+        updateRoomMetadata({ playbackState: { ...roomStore.playbackState, ...newState } });
+      }
+    },
+    onSeek: (time: number) => {
+      seek(time);
+      setCurrentTime(time);
+      const newState = { currentTime: time, lastUpdated: Date.now() };
+      roomStore.setPlaybackState(newState);
+      if (isConnected) {
+        updateRoomMetadata({ playbackState: { ...roomStore.playbackState, ...newState } });
+      }
+    },
+    onVolumeChange: (newVolume: number) => {
+      setVolume(newVolume);
+      setIsMuted(false);
+      if (player) {
+        player.setVolume(newVolume);
+        player.unMute();
+      }
+    },
+    onMuteToggle: () => {
+      const newMuted = !isMuted;
+      setIsMuted(newMuted);
+      if (player) {
+        if (newMuted) {
+          player.mute();
+        } else {
+          player.unMute();
+        }
+      }
+    },
+  });
 
   // Derive hasPassword: use local state if modified, otherwise from roomInfo
   const hasPassword = localHasPassword ?? roomInfo?.hasPassword ?? false;
@@ -633,6 +690,11 @@ export default function RoomPage() {
                   <span>AddVideo</span>
                 </button>
               </div>
+            )}
+
+            {/* YouTube Attribution - visible above blocker */}
+            {roomStore.currentVideo && (
+              <YouTubeAttribution className="absolute bottom-2 right-2 z-15" />
             )}
 
             {/* Reaction overlay - z-index higher than blocker */}

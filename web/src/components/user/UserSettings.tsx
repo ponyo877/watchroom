@@ -1,6 +1,7 @@
 import { useState } from 'react';
-import { Settings } from 'lucide-react';
+import { Settings, Trash2, AlertTriangle } from 'lucide-react';
 import { useUserStore } from '@/stores/userStore';
+import { clearAllUserData } from '@/lib/storage';
 import IconUploader from './IconUploader';
 import ThemeToggle from '@/components/common/ThemeToggle';
 import {
@@ -24,6 +25,7 @@ export default function UserSettings({ open, onClose }: UserSettingsProps) {
   const [name, setName] = useState(userStore.name);
   const [isSaving, setIsSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   const handleSave = async () => {
     setIsSaving(true);
@@ -38,6 +40,11 @@ export default function UserSettings({ open, onClose }: UserSettingsProps) {
 
   const handleIconUpload = (url: string) => {
     userStore.setIconUrl(url);
+  };
+
+  const handleDeleteData = () => {
+    clearAllUserData();
+    window.location.reload();
   };
 
   return (
@@ -97,6 +104,49 @@ export default function UserSettings({ open, onClose }: UserSettingsProps) {
             <p className="text-xs text-muted-foreground mt-1">
               このIDは変更できません
             </p>
+          </div>
+
+          {/* Data Management */}
+          <div className="border-t border-border pt-6">
+            <label className="block text-sm font-medium mb-2 flex items-center gap-2 text-destructive">
+              <AlertTriangle className="h-4 w-4" />
+              データ管理
+            </label>
+            <p className="text-xs text-muted-foreground mb-3">
+              ローカルに保存されているすべてのデータ（ユーザーID、表示名、アイコン、テーマ設定、検索キャッシュ）を削除します。この操作は取り消せません。
+            </p>
+            {!showDeleteConfirm ? (
+              <Button
+                variant="destructive"
+                onClick={() => setShowDeleteConfirm(true)}
+                className="w-full"
+              >
+                <Trash2 className="h-4 w-4 mr-2" />
+                すべてのデータを削除
+              </Button>
+            ) : (
+              <div className="space-y-2">
+                <p className="text-sm text-destructive font-medium">
+                  本当に削除しますか？
+                </p>
+                <div className="flex gap-2">
+                  <Button
+                    variant="destructive"
+                    onClick={handleDeleteData}
+                    className="flex-1"
+                  >
+                    削除する
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={() => setShowDeleteConfirm(false)}
+                    className="flex-1"
+                  >
+                    キャンセル
+                  </Button>
+                </div>
+              </div>
+            )}
           </div>
           </div>
         </div>

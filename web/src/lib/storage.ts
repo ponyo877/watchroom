@@ -1,10 +1,12 @@
 import { generateId } from './utils';
 
-const STORAGE_KEYS = {
+export const STORAGE_KEYS = {
   USER_ID: 'user_id',
   USER_NAME: 'user_name',
   USER_ICON_URL: 'user_icon_url',
   THEME: 'theme',
+  USER_STORAGE: 'user-storage',
+  SEARCH_CACHE: 'youtube-search-cache',
 } as const;
 
 export interface UserData {
@@ -56,4 +58,10 @@ export function getTheme(): 'light' | 'dark' | 'system' {
 
 export function setTheme(theme: 'light' | 'dark' | 'system'): void {
   localStorage.setItem(STORAGE_KEYS.THEME, theme);
+}
+
+export function clearAllUserData(): void {
+  Object.values(STORAGE_KEYS).forEach((key) => {
+    localStorage.removeItem(key);
+  });
 }
