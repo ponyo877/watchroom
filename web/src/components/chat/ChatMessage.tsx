@@ -34,7 +34,7 @@ export default function ChatMessage({ message, onReport }: ChatMessageProps) {
         <div className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-success rounded-full border-2 border-background" />
       </div>
 
-      <div className={`flex flex-col max-w-[70%] ${isOwnMessage ? 'items-end' : ''}`}>
+      <div className={`flex flex-col max-w-[85%] md:max-w-[70%] ${isOwnMessage ? 'items-end' : ''}`}>
         <div className="flex items-center gap-2 mb-1">
           <span className="text-xs font-medium text-muted-foreground">
             {message.senderName}
@@ -55,11 +55,12 @@ export default function ChatMessage({ message, onReport }: ChatMessageProps) {
             {message.text}
           </div>
 
+          {/* Report menu - モバイルでは常に薄く表示 */}
           {!isOwnMessage && onReport && (
             <div className="relative">
               <button
                 onClick={() => setShowMenu(!showMenu)}
-                className="p-1 rounded opacity-0 group-hover:opacity-100 hover:bg-accent transition-opacity"
+                className="p-1 rounded transition-opacity opacity-30 active:opacity-100 md:opacity-0 md:group-hover:opacity-100 active:bg-accent md:hover:bg-accent touch-feedback"
               >
                 <MoreVertical className="h-4 w-4 text-muted-foreground" />
               </button>
@@ -76,7 +77,7 @@ export default function ChatMessage({ message, onReport }: ChatMessageProps) {
                         onReport(message);
                         setShowMenu(false);
                       }}
-                      className="w-full flex items-center gap-2 px-3 py-2 text-sm text-destructive hover:bg-accent"
+                      className="w-full flex items-center gap-2 px-3 py-2 text-sm text-destructive active:bg-accent md:hover:bg-accent"
                     >
                       <Flag className="h-4 w-4" />
                       通報する

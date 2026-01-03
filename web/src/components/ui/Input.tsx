@@ -18,7 +18,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
            text-sm text-foreground
            placeholder:text-muted-foreground
            transition-all duration-200
-           hover:border-primary/30
+           md:hover:border-primary/30
            focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary/50
            disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:border-input`,
           error && 'border-destructive focus:ring-destructive/50 focus:border-destructive',

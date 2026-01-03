@@ -1,5 +1,99 @@
 @import "tailwindcss";
 
+/* === Mobile Viewport & Safe Area === */
+:root {
+  --vh: 1vh;
+  --safe-area-inset-top: env(safe-area-inset-top, 0px);
+  --safe-area-inset-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-area-inset-left: env(safe-area-inset-left, 0px);
+  --safe-area-inset-right: env(safe-area-inset-right, 0px);
+}
+
+/* === Touch Device Hover Disable === */
+@media (hover: none) {
+  .hover\:scale-105:hover,
+  .hover\:scale-110:hover,
+  .hover\:scale-\[1\.02\]:hover,
+  .group:hover .group-hover\:scale-100,
+  .group:hover .group-hover\:scale-110 {
+    transform: none !important;
+  }
+
+  .hover\:shadow-xl:hover {
+    box-shadow: inherit !important;
+  }
+
+  .hover\:bg-accent:hover,
+  .hover\:bg-accent\/50:hover {
+    background-color: inherit !important;
+  }
+
+  .group:hover .group-hover\:opacity-100 {
+    opacity: inherit !important;
+  }
+}
+
+/* === Touch Feedback === */
+.touch-feedback {
+  -webkit-tap-highlight-color: transparent;
+}
+
+.touch-feedback:active {
+  transform: scale(0.95);
+  opacity: 0.8;
+}
+
+/* === Mobile Viewport Utilities === */
+.h-screen-mobile {
+  height: 100vh;
+  height: calc(var(--vh, 1vh) * 100);
+}
+
+.min-h-screen-mobile {
+  min-height: 100vh;
+  min-height: calc(var(--vh, 1vh) * 100);
+}
+
+/* === Safe Area Utilities === */
+.pt-safe {
+  padding-top: var(--safe-area-inset-top);
+}
+
+.pb-safe {
+  padding-bottom: var(--safe-area-inset-bottom);
+}
+
+.pl-safe {
+  padding-left: var(--safe-area-inset-left);
+}
+
+.pr-safe {
+  padding-right: var(--safe-area-inset-right);
+}
+
+/* === Landscape Fullscreen Mode === */
+@media (orientation: landscape) and (max-height: 500px) {
+  .landscape-hide {
+    display: none !important;
+  }
+
+  .landscape-fullscreen {
+    position: fixed !important;
+    inset: 0 !important;
+    z-index: 50 !important;
+  }
+}
+
+/* === Scrollbar Hide (for mobile) === */
+.scrollbar-none {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+
 @theme {
   /* === Base Colors (Light Mode) === */
   --color-background: oklch(0.99 0 0);

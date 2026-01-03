@@ -9,7 +9,11 @@ import {
   MessageCircle,
   PanelRightClose,
   PanelRightOpen,
+  Play,
+  Pause,
 } from 'lucide-react';
+import { useViewportHeight } from '@/hooks/useViewportHeight';
+import { useMobileLandscapeFullscreen, useIsMobile } from '@/hooks/useLandscape';
 import { useRoomStore } from '@/stores/roomStore';
 import { useUserStore } from '@/stores/userStore';
 import { useShortUrl } from '@/hooks/useShortUrl';
@@ -43,6 +47,11 @@ export default function RoomPage() {
   const { roomId, shortId } = useParams();
   const navigate = useNavigate();
 
+  // モバイル対応フック
+  useViewportHeight();
+  const isLandscapeFullscreen = useMobileLandscapeFullscreen();
+  const isMobile = useIsMobile();
+
   const userId = useUserStore((state) => state.id);
   const roomStore = useRoomStore();
 
@@ -62,6 +71,13 @@ export default function RoomPage() {
   const [showMobileChat, setShowMobileChat] = useState(false);
   const [showMobileMembers, setShowMobileMembers] = useState(false);
   const [isSidebarHidden, setIsSidebarHidden] = useState(false);
+
+  // モバイル用: タップ時の再生/停止アイコン表示
+  const [showTapFeedback, setShowTapFeedback] = useState(false);
+  const [tapFeedbackIcon, setTapFeedbackIcon] = useState<'play' | 'pause'>('play');
+  // 横向きフルスクリーン時のコントロール表示
+  const [showLandscapeControls, setShowLandscapeControls] = useState(false);
+  const landscapeControlsTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Derive password dialog visibility during rendering (not via Effect)
   const showPasswordDialog = roomInfo?.hasPassword === true && !isPasswordVerified;
@@ -387,6 +403,61 @@ export default function RoomPage() {
     [banUser]
   );
 
+  // 動画エリアタップで再生/停止（モバイル用）
+  const handleVideoTap = useCallback(() => {
+    if (!roomStore.hasControlPermission || !roomStore.currentVideo) return;
+
+    // 横向きフルスクリーン時はコントロール表示をトグル
+    if (isLandscapeFullscreen) {
+      setShowLandscapeControls((prev) => !prev);
+      // 3秒後に自動的に非表示
+      if (landscapeControlsTimeoutRef.current) {
+        clearTimeout(landscapeControlsTimeoutRef.current);
+      }
+      landscapeControlsTimeoutRef.current = setTimeout(() => {
+        setShowLandscapeControls(false);
+      }, 3000);
+      return;
+    }
+
+    // 縦向き時は再生/停止をトグル
+    const newIsPlaying = !isPlaying;
+    if (newIsPlaying) {
+      play();
+    } else {
+      pause();
+    }
+
+    // フィードバックアイコンを表示
+    setTapFeedbackIcon(newIsPlaying ? 'play' : 'pause');
+    setShowTapFeedback(true);
+    setTimeout(() => setShowTapFeedback(false), 500);
+
+    // 状態を更新
+    const newState = { isPlaying: newIsPlaying, currentTime, lastUpdated: Date.now() };
+    roomStore.setPlaybackState(newState);
+    if (isConnected) {
+      updateRoomMetadata({ playbackState: { ...roomStore.playbackState, ...newState } });
+    }
+  }, [
+    roomStore,
+    isPlaying,
+    play,
+    pause,
+    currentTime,
+    isConnected,
+    updateRoomMetadata,
+    isLandscapeFullscreen,
+  ]);
+
+  // 横向きフルスクリーン解除時にコントロールタイマーをクリア
+  useEffect(() => {
+    if (!isLandscapeFullscreen && landscapeControlsTimeoutRef.current) {
+      clearTimeout(landscapeControlsTimeoutRef.current);
+      setShowLandscapeControls(false);
+    }
+  }, [isLandscapeFullscreen]);
+
   // Loading state
   if (isResolvingShortUrl || isRoomLoading) {
     return (
@@ -427,12 +498,12 @@ export default function RoomPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background animate-fade-in">
-      <div className="flex h-screen">
+    <div className="min-h-screen-mobile bg-background animate-fade-in">
+      <div className={`flex h-screen-mobile ${isLandscapeFullscreen ? 'landscape-fullscreen' : ''}`}>
         {/* Main content */}
         <main className="flex-1 flex flex-col min-w-0 relative">
-          {/* Header */}
-          <header className="h-14 border-b border-border bg-card flex items-center justify-between px-2 md:px-4 relative z-20">
+          {/* Header - 横向きフルスクリーン時は非表示 */}
+          <header className={`h-14 border-b border-border bg-card flex items-center justify-between px-2 md:px-4 relative z-20 pt-safe ${isLandscapeFullscreen && !showLandscapeControls ? 'hidden' : ''}`}>
             <div className="flex items-center gap-2 md:gap-4 min-w-0">
               <button
                 onClick={handleLeaveRoom}
@@ -493,15 +564,33 @@ export default function RoomPage() {
               style={{ display: roomStore.currentVideo ? 'block' : 'none' }}
             />
 
-            {/* Transparent overlay to block iframe clicks */}
+            {/* Transparent overlay - タップで再生/停止 */}
             {roomStore.currentVideo && (
               <div
-                className="absolute inset-0 z-10"
+                className="absolute inset-0 z-10 cursor-pointer"
                 data-testid="iframe-click-blocker"
-                onClick={(e) => e.stopPropagation()}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  if (isMobile) {
+                    handleVideoTap();
+                  }
+                }}
                 onMouseDown={(e) => e.stopPropagation()}
                 style={{ pointerEvents: 'auto' }}
               />
+            )}
+
+            {/* タップフィードバック（再生/停止アイコン） */}
+            {showTapFeedback && (
+              <div className="absolute inset-0 z-15 flex items-center justify-center pointer-events-none animate-fade-in">
+                <div className="w-20 h-20 rounded-full bg-black/50 backdrop-blur-sm flex items-center justify-center">
+                  {tapFeedbackIcon === 'play' ? (
+                    <Play className="h-10 w-10 text-white ml-1" fill="currentColor" />
+                  ) : (
+                    <Pause className="h-10 w-10 text-white" fill="currentColor" />
+                  )}
+                </div>
+              </div>
             )}
 
             {/* No video selected message */}
@@ -523,8 +612,8 @@ export default function RoomPage() {
             <ReactionOverlay reactions={roomStore.reactions} className="z-20" />
           </div>
 
-          {/* Player controls */}
-          <div className="h-16 border-t border-border bg-card relative z-20">
+          {/* Player controls - 横向きフルスクリーン時は非表示 */}
+          <div className={`h-16 border-t border-border bg-card relative z-20 ${isLandscapeFullscreen && !showLandscapeControls ? 'hidden' : ''}`}>
             <PlayerControls
               isPlaying={isPlaying}
               currentTime={currentTime}
@@ -588,8 +677,8 @@ export default function RoomPage() {
             />
           </div>
 
-          {/* Mobile bottom navigation */}
-          <div className="h-14 border-t border-border bg-card flex items-center justify-around md:hidden relative z-20">
+          {/* Mobile bottom navigation - 横向きフルスクリーン時は非表示 */}
+          <div className={`h-14 border-t border-border bg-card flex items-center justify-around md:hidden relative z-20 pb-safe ${isLandscapeFullscreen ? 'hidden' : ''}`}>
             <button
               onClick={() => setShowMobileChat(true)}
               className="flex flex-col items-center gap-1 p-2"

@@ -109,7 +109,7 @@ export default function RoomList({ searchQuery = '' }: RoomListProps) {
 
   return (
     <div className="space-y-6">
-      {/* Room Grid */}
+      {/* Room Grid - モバイルで1列、sm以上で2列、lg以上で3列 */}
       {filteredRooms.length === 0 ? (
         <div className="py-8 text-center">
           <p className="text-muted-foreground">
@@ -117,7 +117,7 @@ export default function RoomList({ searchQuery = '' }: RoomListProps) {
           </p>
         </div>
       ) : (
-        <div className="grid gap-x-4 gap-y-6 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-4 md:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
           {filteredRooms.map((room, index) => (
             <div
               key={room.roomId}

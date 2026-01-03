@@ -10,17 +10,18 @@ export default function RoomCard({ room }: RoomCardProps) {
   return (
     <Link
       to={`/r/${room.shortId}`}
-      className="block group transition-all duration-300 ease-out hover:scale-[1.02] hover:-translate-y-1"
+      className="block group transition-all duration-300 ease-out active:scale-[0.98] md:hover:scale-[1.02] md:hover:-translate-y-1 touch-feedback"
     >
-      <div className="aspect-video bg-gradient-to-br from-muted/80 to-muted/40 rounded-xl mb-3 overflow-hidden relative shadow-lg hover:shadow-xl hover:shadow-primary/10 transition-shadow duration-300">
+      <div className="aspect-video bg-gradient-to-br from-muted/80 to-muted/40 rounded-xl mb-3 overflow-hidden relative shadow-lg md:hover:shadow-xl md:hover:shadow-primary/10 transition-shadow duration-300">
         {room.currentVideo ? (
           <>
             <img
               src={room.currentVideo.thumbnail}
               alt={room.currentVideo.title}
-              className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+              className="w-full h-full object-cover transition-transform duration-500 md:group-hover:scale-110"
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+            {/* Play overlay - デスクトップのみ */}
+            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 md:group-hover:opacity-100 transition-opacity duration-300 hidden md:flex items-center justify-center">
               <div className="w-16 h-16 rounded-full bg-white/90 backdrop-blur-sm flex items-center justify-center transform scale-75 group-hover:scale-100 transition-transform duration-300 shadow-lg">
                 <Play className="h-8 w-8 text-primary ml-1" fill="currentColor" />
               </div>
@@ -37,7 +38,7 @@ export default function RoomCard({ room }: RoomCardProps) {
 
       <div className="space-y-1 px-1">
         <div className="flex items-start gap-2">
-          <h3 className="font-medium text-foreground text-sm leading-snug line-clamp-2 flex-1 group-hover:text-primary transition-colors">
+          <h3 className="font-medium text-foreground text-sm leading-snug line-clamp-2 flex-1 md:group-hover:text-primary transition-colors">
             {room.name}
           </h3>
           {room.hasPassword && <Lock className="h-4 w-4 text-muted-foreground flex-shrink-0 mt-0.5" />}

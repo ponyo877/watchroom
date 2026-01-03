@@ -30,12 +30,12 @@ export default function ReactionPicker({
   // Determine button styling and icon based on mode
   const getButtonClass = () => {
     if (inline) {
-      return 'p-1 hover:bg-accent/50 rounded-full transition-colors';
+      return 'p-1 rounded-full transition-colors touch-feedback active:scale-95 md:hover:bg-accent/50';
     }
     if (compact) {
-      return 'flex flex-col items-center gap-1 p-2';
+      return 'flex flex-col items-center gap-1 p-2 touch-feedback';
     }
-    return 'p-2 hover:bg-accent rounded-md';
+    return 'p-2 rounded-md touch-feedback active:scale-95 md:hover:bg-accent';
   };
 
   const IconComponent = inline ? Heart : Smile;
@@ -47,41 +47,53 @@ export default function ReactionPicker({
         className={getButtonClass()}
         aria-label="リアクションを追加"
       >
-        <IconComponent className={`${inline ? 'h-5 w-5' : 'h-5 w-5'} text-muted-foreground`} />
+        <IconComponent className="h-5 w-5 text-muted-foreground" />
         {compact && <span className="text-xs">リアクション</span>}
       </button>
 
       {isOpen && (
         <>
+          {/* Backdrop */}
           <div
             className="fixed inset-0 z-40"
             onClick={() => setIsOpen(false)}
           />
+
+          {/* Picker - モバイルでは画面幅に合わせる */}
           <div
-            className={`absolute ${
-              inline ? 'bottom-full right-0' : compact ? 'bottom-full right-0' : 'bottom-full left-0'
-            } mb-2 w-72 bg-card border border-border rounded-lg shadow-lg z-50 animate-fade-in-up`}
-            style={{ animationDuration: '200ms' }}
+            className={`absolute z-50 animate-fade-in-up
+              ${inline ? 'bottom-full right-0' : compact ? 'bottom-full right-0' : 'bottom-full left-0'}
+              mb-2 bg-card border border-border rounded-xl shadow-xl
+              w-[calc(100vw-2rem)] max-w-[288px] md:w-72
+            `}
+            style={{
+              animationDuration: '200ms',
+              // モバイルで右端に配置された時に画面外にはみ出さないよう調整
+              right: compact || inline ? 0 : 'auto',
+              left: compact || inline ? 'auto' : 0,
+            }}
           >
+            {/* Header */}
             <div className="flex items-center justify-between p-2 border-b border-border">
               <span className="text-sm font-medium">リアクション</span>
               <button
                 onClick={() => setIsOpen(false)}
-                className="p-1 hover:bg-accent rounded-md"
+                className="p-1 rounded-md touch-feedback active:scale-95 md:hover:bg-accent"
               >
                 <X className="h-4 w-4" />
               </button>
             </div>
 
-            <div className="flex border-b border-border overflow-x-auto">
+            {/* Category tabs - スクロール可能 */}
+            <div className="flex border-b border-border overflow-x-auto scrollbar-none">
               {Object.keys(EMOJI_CATEGORIES).map((category) => (
                 <button
                   key={category}
                   onClick={() => setActiveCategory(category)}
-                  className={`px-3 py-2 text-xs whitespace-nowrap ${
+                  className={`px-3 py-2 text-xs whitespace-nowrap flex-shrink-0 transition-colors ${
                     activeCategory === category
                       ? 'border-b-2 border-primary text-primary'
-                      : 'text-muted-foreground hover:text-foreground'
+                      : 'text-muted-foreground active:text-foreground md:hover:text-foreground'
                   }`}
                 >
                   {category}
@@ -89,13 +101,14 @@ export default function ReactionPicker({
               ))}
             </div>
 
-            <div className="p-2 grid grid-cols-8 gap-1">
+            {/* Emoji grid */}
+            <div className="p-2 grid grid-cols-8 gap-0.5 md:gap-1">
               {EMOJI_CATEGORIES[activeCategory as keyof typeof EMOJI_CATEGORIES].map(
                 (emoji) => (
                   <button
                     key={emoji}
                     onClick={() => handleSelect(emoji)}
-                    className="p-2 text-xl hover:bg-accent rounded-md transition-colors"
+                    className="p-1.5 md:p-2 text-lg md:text-xl rounded-md transition-colors touch-feedback active:bg-accent md:hover:bg-accent"
                   >
                     {emoji}
                   </button>

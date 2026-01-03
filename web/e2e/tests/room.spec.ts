@@ -8,7 +8,8 @@ test.describe('Room Creation & Entry', () => {
 
   test('should create a new room and navigate to it', async ({ page, homePage }) => {
     await homePage.goto();
-    await expect(page.locator('header img[alt="WatchRoom"]')).toBeVisible();
+    // ロゴが表示されていることを確認（ライト/ダークモード両方のロゴがあるので、リンクで確認）
+    await expect(page.locator('header a').first()).toBeVisible();
 
     const roomName = `Test Room ${Date.now()}`;
     await homePage.createRoom(roomName);

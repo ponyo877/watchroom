@@ -7,26 +7,27 @@ const buttonVariants = cva(
   `inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-xl text-sm font-medium
    transition-all duration-200 ease-out
    focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background
-   disabled:pointer-events-none disabled:opacity-50 disabled:shadow-none disabled:scale-100`,
+   disabled:pointer-events-none disabled:opacity-50 disabled:shadow-none disabled:scale-100
+   touch-feedback`,
   {
     variants: {
       variant: {
         default: `bg-primary text-primary-foreground
           shadow-lg shadow-primary/25
-          hover:shadow-xl hover:shadow-primary/30 hover:scale-105
+          md:hover:shadow-xl md:hover:shadow-primary/30 md:hover:scale-105
           active:scale-95`,
         destructive: `bg-destructive text-destructive-foreground
           shadow-lg shadow-destructive/25
-          hover:shadow-xl hover:shadow-destructive/30 hover:scale-105
+          md:hover:shadow-xl md:hover:shadow-destructive/30 md:hover:scale-105
           active:scale-95`,
         outline: `border border-border bg-transparent
-          hover:bg-accent/50 hover:border-primary/50 hover:scale-[1.02]
+          md:hover:bg-accent/50 md:hover:border-primary/50 md:hover:scale-[1.02]
           active:scale-[0.98]`,
         secondary: `bg-secondary text-secondary-foreground
-          hover:bg-secondary/80 hover:scale-[1.02]
+          md:hover:bg-secondary/80 md:hover:scale-[1.02]
           active:scale-[0.98]`,
-        ghost: `hover:bg-accent/50 hover:text-accent-foreground
-          hover:scale-[1.02] active:scale-[0.98]`,
+        ghost: `md:hover:bg-accent/50 md:hover:text-accent-foreground
+          md:hover:scale-[1.02] active:scale-[0.98]`,
         link: `text-primary underline-offset-4 hover:underline`,
       },
       size: {
