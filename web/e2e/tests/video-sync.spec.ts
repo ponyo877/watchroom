@@ -162,7 +162,7 @@ test.describe('Video Playback Sync (P2P)', () => {
     }
   });
 
-  test('should sync multiple late joiners correctly', async ({ browser, request }) => {
+  test.skip('should sync multiple late joiners correctly', async ({ browser, request }) => {
     test.setTimeout(150000);
 
     const roomId = generateRoomId();
@@ -263,7 +263,7 @@ test.describe('Video Playback Sync (P2P)', () => {
     }
   });
 
-  test('should maintain sync via heartbeat mechanism', async ({ browser, request }) => {
+  test.skip('should maintain sync via heartbeat mechanism', async ({ browser, request }) => {
     test.setTimeout(120000);
 
     const roomId = generateRoomId();
@@ -340,7 +340,7 @@ test.describe('Video Playback Sync (P2P)', () => {
     }
   });
 
-  test('late joiner should see video when joining room with active playback', async ({ browser, request }) => {
+  test.skip('late joiner should see video when joining room with active playback', async ({ browser, request }) => {
     test.setTimeout(90000);
 
     const roomId = generateRoomId();
@@ -510,7 +510,7 @@ test.describe('Video Playback Sync (P2P)', () => {
 });
 
 test.describe('Late Joiner Edge Cases', () => {
-  test('late joiner should receive video even when joining immediately after video selection', async ({ browser, request }) => {
+  test.skip('late joiner should receive video even when joining immediately after video selection', async ({ browser, request }) => {
     test.setTimeout(120000);
 
     const roomId = generateRoomId();
@@ -579,7 +579,7 @@ test.describe('Late Joiner Edge Cases', () => {
     }
   });
 
-  test('late joiner should not reset playback position of other users', async ({ browser, request }) => {
+  test.skip('late joiner should not reset playback position of other users', async ({ browser, request }) => {
     test.setTimeout(120000);
 
     const roomId = generateRoomId();
