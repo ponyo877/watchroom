@@ -22,6 +22,7 @@ import PlayerControls from '@/components/player/PlayerControls';
 import VideoSearch from '@/components/player/VideoSearch';
 import PlayHistory from '@/components/player/PlayHistory';
 import MemberList from '@/components/room/MemberList';
+import MemberListCompact from '@/components/room/MemberListCompact';
 import RoomSettings from '@/components/room/RoomSettings';
 import PasswordDialog from '@/components/room/PasswordDialog';
 import PasswordSettingsDialog from '@/components/room/PasswordSettingsDialog';
@@ -615,6 +616,12 @@ export default function RoomPage() {
 
         {/* Desktop Sidebar */}
         <aside className="hidden md:flex w-80 border-l border-border bg-card flex-col">
+          {/* Compact member list - always visible */}
+          <MemberListCompact
+            members={roomStore.members}
+            currentUserId={userId}
+          />
+          {/* Chat or full member list */}
           {showMemberList ? (
             <MemberList
               members={roomStore.members}
