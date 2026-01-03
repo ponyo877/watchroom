@@ -63,7 +63,7 @@ export default function PlayerControls({
   };
 
   return (
-    <div className="h-full flex items-center gap-4 px-4 bg-gradient-to-t from-black/10 to-transparent">
+    <div className="h-full flex items-center gap-4 px-4 bg-gradient-to-t to-transparent">
       {/* Play/Pause */}
       <button
         onClick={isPlaying ? onPause : onPlay}
