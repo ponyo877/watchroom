@@ -1,27 +1,35 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { Send } from 'lucide-react';
 import ChatMessage from './ChatMessage';
 import ReportDialog from './ReportDialog';
+import ReactionPicker from './ReactionPicker';
 import { useReport } from '@/hooks/useReport';
 import type { ChatMessageItem } from '@/types/room';
 
 interface ChatPanelProps {
   messages: ChatMessageItem[];
   onSendMessage: (text: string) => void;
+  onSelectReaction?: (emoji: string) => void;
   roomId: string;
 }
 
-export default function ChatPanel({ messages, onSendMessage, roomId }: ChatPanelProps) {
+export default function ChatPanel({ messages, onSendMessage, onSelectReaction, roomId }: ChatPanelProps) {
   const [input, setInput] = useState('');
   const [reportTarget, setReportTarget] = useState<ChatMessageItem | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { submitReport } = useReport({ roomId });
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = (e?: React.FormEvent) => {
+    e?.preventDefault();
     if (input.trim()) {
       onSendMessage(input);
       setInput('');
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleSubmit();
     }
   };
 
@@ -43,9 +51,6 @@ export default function ChatPanel({ messages, onSendMessage, roomId }: ChatPanel
 
   return (
     <div className="h-full flex flex-col bg-card/50 backdrop-blur-sm">
-      <div className="p-4 border-b border-border/50">
-        <h2 className="font-semibold">Chat</h2>
-      </div>
 
       <div className="flex-1 overflow-y-auto p-4 space-y-3 relative">
         {/* Top fade gradient */}
@@ -71,24 +76,21 @@ export default function ChatPanel({ messages, onSendMessage, roomId }: ChatPanel
         <div ref={messagesEndRef} />
       </div>
 
-      <form onSubmit={handleSubmit} className="p-4 border-t border-border/50">
-        <div className="flex gap-2 focus-within:ring-2 focus-within:ring-primary/20 rounded-xl transition-shadow duration-200">
+      <div className="p-4 border-t border-border/50">
+        <div className="flex items-center gap-2 bg-muted/50 rounded-full px-4 py-2 focus-within:ring-2 focus-within:ring-primary/20 transition-shadow duration-200">
           <input
             type="text"
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            placeholder="メッセージを入力..."
-            className="flex-1 px-4 py-2.5 border border-input rounded-xl bg-background/50 backdrop-blur-sm text-sm focus:outline-none focus:border-primary/50 hover:border-primary/30 transition-colors duration-200"
+            onKeyDown={handleKeyDown}
+            placeholder="チャット..."
+            className="flex-1 bg-transparent text-sm focus:outline-none"
           />
-          <button
-            type="submit"
-            disabled={!input.trim()}
-            className="p-2.5 bg-primary text-primary-foreground rounded-xl shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/30 hover:scale-105 active:scale-95 disabled:opacity-50 disabled:shadow-none disabled:scale-100 transition-all duration-200"
-          >
-            <Send className="h-4 w-4" />
-          </button>
+          {onSelectReaction && (
+            <ReactionPicker onSelectReaction={onSelectReaction} inline />
+          )}
         </div>
-      </form>
+      </div>
 
       <ReportDialog
         open={!!reportTarget}

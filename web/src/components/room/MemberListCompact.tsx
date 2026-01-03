@@ -27,9 +27,8 @@ export default function MemberListCompact({
               title={`${member.name}${isCurrentUser ? ' (you)' : ''}${member.isCreator ? ' - Creator' : ''}`}
             >
               <div
-                className={`w-8 h-8 rounded-full bg-muted flex items-center justify-center overflow-hidden ring-2 ${
-                  member.isCreator ? 'ring-yellow-500/50' : 'ring-border/50'
-                } transition-all duration-200 group-hover:ring-primary/50`}
+                className={`w-8 h-8 rounded-full bg-muted flex items-center justify-center overflow-hidden ring-2 ${member.isCreator ? 'ring-yellow-500/50' : 'ring-border/50'
+                  } transition-all duration-200 group-hover:ring-primary/50`}
               >
                 {member.iconUrl ? (
                   <img

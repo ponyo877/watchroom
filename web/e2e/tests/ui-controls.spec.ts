@@ -86,9 +86,10 @@ test.describe('UI Controls', () => {
       await page.setViewportSize({ width: 1280, height: 720 });
       await page.goto(`/r/${shortId}`);
 
-      const sidebarReactionButton = page.locator('aside button[aria-label="リアクションを追加"]');
-      await expect(sidebarReactionButton).toBeVisible({ timeout: ROOM_LOAD_TIMEOUT });
-      await sidebarReactionButton.click();
+      // Reaction button is now inline in the chat input area
+      const reactionButton = page.locator('aside button[aria-label="リアクションを追加"]');
+      await expect(reactionButton).toBeVisible({ timeout: ROOM_LOAD_TIMEOUT });
+      await reactionButton.click();
 
       const reactionPickerPopup = page.locator('.absolute.bottom-full:has-text("リアクション")');
       await expect(reactionPickerPopup).toBeVisible({ timeout: 3000 });

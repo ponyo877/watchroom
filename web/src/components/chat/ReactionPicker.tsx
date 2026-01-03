@@ -1,9 +1,10 @@
 import { useState } from 'react';
-import { Smile, X } from 'lucide-react';
+import { Smile, Heart, X } from 'lucide-react';
 
 interface ReactionPickerProps {
   onSelectReaction: (emoji: string) => void;
   compact?: boolean;
+  inline?: boolean;
 }
 
 const EMOJI_CATEGORIES = {
@@ -16,6 +17,7 @@ const EMOJI_CATEGORIES = {
 export default function ReactionPicker({
   onSelectReaction,
   compact = false,
+  inline = false,
 }: ReactionPickerProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [activeCategory, setActiveCategory] = useState<string>('よく使う');
@@ -25,14 +27,27 @@ export default function ReactionPicker({
     // Keep picker open for consecutive reactions - user can close by clicking outside
   };
 
+  // Determine button styling and icon based on mode
+  const getButtonClass = () => {
+    if (inline) {
+      return 'p-1 hover:bg-accent/50 rounded-full transition-colors';
+    }
+    if (compact) {
+      return 'flex flex-col items-center gap-1 p-2';
+    }
+    return 'p-2 hover:bg-accent rounded-md';
+  };
+
+  const IconComponent = inline ? Heart : Smile;
+
   return (
     <div className="relative">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className={compact ? 'flex flex-col items-center gap-1 p-2' : 'p-2 hover:bg-accent rounded-md'}
+        className={getButtonClass()}
         aria-label="リアクションを追加"
       >
-        <Smile className="h-5 w-5 text-muted-foreground" />
+        <IconComponent className={`${inline ? 'h-5 w-5' : 'h-5 w-5'} text-muted-foreground`} />
         {compact && <span className="text-xs">リアクション</span>}
       </button>
 
@@ -44,7 +59,7 @@ export default function ReactionPicker({
           />
           <div
             className={`absolute ${
-              compact ? 'bottom-full right-0' : 'bottom-full left-0'
+              inline ? 'bottom-full right-0' : compact ? 'bottom-full right-0' : 'bottom-full left-0'
             } mb-2 w-72 bg-card border border-border rounded-lg shadow-lg z-50`}
           >
             <div className="flex items-center justify-between p-2 border-b border-border">

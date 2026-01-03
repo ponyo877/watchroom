@@ -79,9 +79,9 @@ export default function RoomPage() {
   const playerElementId = useRef(`youtube-player-${Date.now()}`);
 
   // Refs for video sync handlers (to avoid circular dependency)
-  const stateRequestHandlerRef = useRef<(message: StateRequestMessage) => void>(() => {});
-  const stateResponseHandlerRef = useRef<(message: StateResponseMessage) => void>(() => {});
-  const heartbeatHandlerRef = useRef<(message: HeartbeatMessage) => void>(() => {});
+  const stateRequestHandlerRef = useRef<(message: StateRequestMessage) => void>(() => { });
+  const stateResponseHandlerRef = useRef<(message: StateResponseMessage) => void>(() => { });
+  const heartbeatHandlerRef = useRef<(message: HeartbeatMessage) => void>(() => { });
 
   // Stable callbacks that delegate to refs
   const handleIncomingStateRequest = useCallback((message: StateRequestMessage) => {
@@ -646,16 +646,12 @@ export default function RoomPage() {
               allowedUserIds={allowedUserIds}
             />
           ) : (
-            <>
-              <ChatPanel
-                messages={roomStore.chatMessages}
-                onSendMessage={handleSendChatMessage}
-                roomId={actualRoomId || ''}
-              />
-              <div className="p-2 border-t border-border flex items-center gap-2">
-                <ReactionPicker onSelectReaction={handleSendReaction} />
-              </div>
-            </>
+            <ChatPanel
+              messages={roomStore.chatMessages}
+              onSendMessage={handleSendChatMessage}
+              onSelectReaction={handleSendReaction}
+              roomId={actualRoomId || ''}
+            />
           )}
         </aside>
       </div>
