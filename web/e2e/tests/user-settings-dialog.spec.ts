@@ -15,8 +15,8 @@ test.describe('User Settings Dialog', () => {
     // Verify all sections are present
     await expect(page.locator('text=ユーザー設定')).toBeVisible();
     await expect(page.locator('text=プロフィールアイコン')).toBeVisible();
-    await expect(page.locator('text=表示名')).toBeVisible();
-    await expect(page.locator('text=ユーザーID')).toBeVisible();
+    await expect(page.locator('label:text-is("表示名")')).toBeVisible();
+    await expect(page.locator('label:text-is("ユーザーID")')).toBeVisible();
     await expect(dialog.locator('input[type="text"]')).toBeVisible();
   });
 

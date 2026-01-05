@@ -5,8 +5,8 @@ test.describe('Logo and Favicon', () => {
     await page.goto('/');
     await page.waitForSelector('button:has-text("NewRoom")', { timeout: 10000 });
 
-    // Check logo image is visible
-    const logo = page.locator('header img[alt="WatchRoom"]');
+    // Check logo image is visible (use .logo-light class for light theme logo)
+    const logo = page.locator('header img.logo-light[alt="WatchRoom"]');
     await expect(logo).toBeVisible();
     const src = await logo.getAttribute('src');
     expect(src).toBe('/logo.svg');
