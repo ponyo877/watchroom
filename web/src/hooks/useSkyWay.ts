@@ -34,6 +34,7 @@ export function useSkyWay({ roomName, token, onMessage }: UseSkyWayOptions) {
   const roomRef = useRef<P2PRoom | null>(null);
   const memberRef = useRef<LocalP2PRoomMember | null>(null);
   const dataStreamRef = useRef<LocalDataStream | null>(null);
+  const dataStreamPublicationIdRef = useRef<string | null>(null);
   const isConnectingRef = useRef(false);
   const subscribedPublicationsRef = useRef<Set<string>>(new Set());
   // Flag to prevent double-decrement of member count
@@ -44,12 +45,83 @@ export function useSkyWay({ roomName, token, onMessage }: UseSkyWayOptions) {
   const user = useUserStore();
   // Get store actions without subscribing to state changes
   const roomStoreActions = useRef(useRoomStore.getState()).current;
+  // Flag to prevent concurrent DataStream recreation
+  const isRecreatingDataStreamRef = useRef(false);
 
-  const sendMessage = useCallback((message: DataStreamMessage) => {
-    if (dataStreamRef.current) {
-      dataStreamRef.current.write(JSON.stringify(message));
+  // Recreate DataStream when it fails (as recommended by SkyWay SDK error message)
+  const recreateDataStream = useCallback(async (): Promise<boolean> => {
+    if (!memberRef.current || !roomRef.current) {
+      console.warn('[SkyWay] Cannot recreate DataStream: no member/room');
+      return false;
+    }
+
+    // Prevent concurrent recreation attempts
+    if (isRecreatingDataStreamRef.current) {
+      console.log('[SkyWay] DataStream recreation already in progress');
+      return false;
+    }
+    isRecreatingDataStreamRef.current = true;
+
+    console.log('[SkyWay] Recreating DataStream...');
+
+    try {
+      // Unpublish old stream if exists (use publication ID, not stream ID)
+      if (dataStreamPublicationIdRef.current) {
+        try {
+          await memberRef.current.unpublish(dataStreamPublicationIdRef.current);
+        } catch (e) {
+          console.warn('[SkyWay] Failed to unpublish old DataStream:', e);
+        }
+        dataStreamPublicationIdRef.current = null;
+      }
+      dataStreamRef.current = null;
+
+      // Create and publish new DataStream
+      const newDataStream = await SkyWayStreamFactory.createDataStream();
+      const publication = await memberRef.current.publish(newDataStream);
+      dataStreamRef.current = newDataStream;
+      dataStreamPublicationIdRef.current = publication.id;
+
+      console.log('[SkyWay] DataStream recreated successfully');
+      return true;
+    } catch (error) {
+      console.error('[SkyWay] Failed to recreate DataStream:', error);
+      return false;
+    } finally {
+      isRecreatingDataStreamRef.current = false;
     }
   }, []);
+
+  const sendMessage = useCallback(async (message: DataStreamMessage): Promise<boolean> => {
+    if (!dataStreamRef.current) {
+      console.warn('[SkyWay] DataStream not available');
+      return false;
+    }
+
+    try {
+      dataStreamRef.current.write(JSON.stringify(message));
+      return true;
+    } catch (error) {
+      console.error('[SkyWay] DataStream write failed:', error);
+
+      // Attempt to recreate DataStream as recommended by SkyWay SDK
+      const recreated = await recreateDataStream();
+      if (!recreated || !dataStreamRef.current) {
+        console.error('[SkyWay] Failed to recover DataStream');
+        return false;
+      }
+
+      // Retry after recreation
+      try {
+        dataStreamRef.current.write(JSON.stringify(message));
+        console.log('[SkyWay] Message sent successfully after DataStream recreation');
+        return true;
+      } catch (retryError) {
+        console.error('[SkyWay] DataStream write retry failed:', retryError);
+        return false;
+      }
+    }
+  }, [recreateDataStream]);
 
   const updateRoomMetadata = useCallback(
     async (metadata: Partial<RoomMetadata>) => {
@@ -150,7 +222,8 @@ export function useSkyWay({ roomName, token, onMessage }: UseSkyWayOptions) {
       // Create and publish data stream
       const dataStream = await SkyWayStreamFactory.createDataStream();
       dataStreamRef.current = dataStream;
-      await member.publish(dataStream);
+      const publication = await member.publish(dataStream);
+      dataStreamPublicationIdRef.current = publication.id;
 
       // Subscribe to existing members' data streams
       for (const pub of room.publications) {
@@ -328,6 +401,14 @@ export function useSkyWay({ roomName, token, onMessage }: UseSkyWayOptions) {
     // using synchronous sendBeacon for reliable delivery
 
     try {
+      // Unpublish DataStream before leaving (use publication ID, not stream ID)
+      if (dataStreamPublicationIdRef.current && memberRef.current) {
+        try {
+          await memberRef.current.unpublish(dataStreamPublicationIdRef.current);
+        } catch (e) {
+          console.warn('[SkyWay] Failed to unpublish DataStream on disconnect:', e);
+        }
+      }
       if (memberRef.current) {
         await memberRef.current.leave();
       }
@@ -341,7 +422,9 @@ export function useSkyWay({ roomName, token, onMessage }: UseSkyWayOptions) {
       roomRef.current = null;
       memberRef.current = null;
       dataStreamRef.current = null;
+      dataStreamPublicationIdRef.current = null;
       isConnectingRef.current = false;
+      isRecreatingDataStreamRef.current = false;
       subscribedPublicationsRef.current.clear();
       setIsConnected(false);
       roomStoreActions.setIsConnected(false);
