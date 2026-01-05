@@ -76,3 +76,5 @@ web/public/mockServiceWorker.js
 
 # for LLM
 web/src/content/learn/
+
+deploy.sh
