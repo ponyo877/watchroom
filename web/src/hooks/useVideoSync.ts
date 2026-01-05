@@ -16,12 +16,17 @@ interface UseVideoSyncOptions {
   onSendStateRequest: (message: StateRequestMessage) => void;
   onSendStateResponse: (message: StateResponseMessage) => void;
   onSendHeartbeat: (message: HeartbeatMessage) => void;
+  onMutedChange?: (isMuted: boolean) => void; // Callback when mute state changes
 }
 
-const SYNC_THRESHOLD = 2; // seconds - only sync if difference > 2 seconds
+// Mobile detection for adjusted timeouts
+const isMobile = typeof navigator !== 'undefined' && /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+
+// Adjusted constants for mobile compatibility
+const SYNC_THRESHOLD = isMobile ? 1 : 2; // seconds - tighter threshold on mobile
 const HEARTBEAT_INTERVAL = 5000; // 5 seconds between heartbeats
-const STATE_RESPONSE_TIMEOUT = 1000; // Wait 1 second for state responses
-const MAX_VIDEO_READY_RETRIES = 50; // 5 seconds (100ms × 50)
+const STATE_RESPONSE_TIMEOUT = isMobile ? 2000 : 1000; // Longer timeout on mobile networks
+const MAX_VIDEO_READY_RETRIES = isMobile ? 100 : 50; // 10 seconds on mobile (100ms × 100)
 
 export function useVideoSync({
   elementId,
@@ -29,6 +34,7 @@ export function useVideoSync({
   onSendStateRequest,
   onSendStateResponse,
   onSendHeartbeat,
+  onMutedChange,
 }: UseVideoSyncOptions) {
   const [player, setPlayer] = useState<YouTubePlayer | null>(null);
   const [isReady, setIsReady] = useState(false);
@@ -49,22 +55,34 @@ export function useVideoSync({
 
   // Track user interaction for autoplay policy
   const hasUserInteractionRef = useRef(false);
+  // Track if we muted for autoplay policy (to auto-unmute on user interaction)
+  const wasMutedForAutoplayRef = useRef(false);
+  // Track if playing before page was hidden (for visibility API)
+  const wasPlayingBeforeHiddenRef = useRef(false);
 
   const userId = useUserStore((state) => state.id);
   const { currentVideo, playbackState, hasControlPermission } = useRoomStore();
 
-  // Track user interaction (click/touch anywhere on page)
+  // Track user interaction (click/touch anywhere on page) and auto-unmute if needed
   useEffect(() => {
     const handleInteraction = () => {
       hasUserInteractionRef.current = true;
+      // Auto-unmute if we muted for autoplay policy
+      if (wasMutedForAutoplayRef.current && player) {
+        console.log('[useVideoSync] Auto-unmuting after user interaction');
+        player.unMute();
+        wasMutedForAutoplayRef.current = false;
+        onMutedChange?.(false); // Notify RoomPage of unmute
+      }
     };
-    window.addEventListener('click', handleInteraction, { once: true });
-    window.addEventListener('touchstart', handleInteraction, { once: true });
+    // Don't use { once: true } - we need to keep listening for unmute
+    window.addEventListener('click', handleInteraction);
+    window.addEventListener('touchstart', handleInteraction);
     return () => {
       window.removeEventListener('click', handleInteraction);
       window.removeEventListener('touchstart', handleInteraction);
     };
-  }, []);
+  }, [player, onMutedChange]);
 
   const sendSyncMessage = useCallback(
     (action: SyncMessage['action'], payload: SyncMessage['payload']) => {
@@ -277,6 +295,38 @@ export function useVideoSync({
     };
   }, [hasControlPermission, isReady, player, sendHeartbeat]);
 
+  // Handle page visibility changes (tab switch, app background on mobile)
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (!player || !isReady) return;
+
+      if (document.hidden) {
+        // Page going to background
+        wasPlayingBeforeHiddenRef.current = isPlaying(player);
+        console.log('[useVideoSync] Page hidden, was playing:', wasPlayingBeforeHiddenRef.current);
+        // Note: Don't pause on hide - let the browser handle it
+        // This prevents sync issues when user quickly switches back
+      } else {
+        // Page coming to foreground
+        console.log('[useVideoSync] Page visible, was playing:', wasPlayingBeforeHiddenRef.current);
+        if (wasPlayingBeforeHiddenRef.current) {
+          // Resume playback if it was playing before
+          // Use a small delay to let the player recover
+          setTimeout(() => {
+            if (player && wasPlayingBeforeHiddenRef.current) {
+              player.playVideo();
+            }
+          }, 100);
+        }
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [player, isReady]);
+
   const handleStateChange = useCallback(
     (event: YouTubePlayerEvent) => {
       // Don't send sync messages until initial sync is complete
@@ -317,6 +367,7 @@ export function useVideoSync({
             onReady: () => {
               setPlayer(ytPlayer);
               setIsReady(true);
+              isInitializingRef.current = false; // Reset flag on success
             },
             onStateChange: handleStateChange,
           },
@@ -352,7 +403,10 @@ export function useVideoSync({
             player.playVideo();
           } else {
             // Fall back to muted play for autoplay policy
+            console.log('[useVideoSync] Muting for autoplay policy (late joiner)');
             player.mute();
+            wasMutedForAutoplayRef.current = true; // Track that we muted for auto-unmute
+            onMutedChange?.(true); // Notify RoomPage of mute
             player.playVideo();
           }
         } else {
@@ -373,7 +427,7 @@ export function useVideoSync({
         isSyncingRef.current = false;
       }, 100);
     },
-    [player, isReady]
+    [player, isReady, onMutedChange]
   );
 
   // Keep refs updated to avoid stale closures in setTimeout callbacks

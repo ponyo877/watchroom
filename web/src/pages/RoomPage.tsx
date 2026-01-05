@@ -177,6 +177,7 @@ export default function RoomPage() {
     onSendStateRequest: handleSendStateRequest,
     onSendStateResponse: handleSendStateResponse,
     onSendHeartbeat: handleSendHeartbeat,
+    onMutedChange: setIsMuted, // Sync mute state with player
   });
 
   // Wire up video sync handlers to refs
