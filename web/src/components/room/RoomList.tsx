@@ -1,6 +1,8 @@
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState, useMemo, useCallback } from 'react';
+import { RefreshCw } from 'lucide-react';
 import RoomCard from './RoomCard';
 import Loading from '@/components/common/Loading';
+import PullToRefresh from '@/components/common/PullToRefresh';
 import axiosInstance from '@/lib/api';
 import type { Room } from '@/types/room';
 
@@ -33,7 +35,9 @@ interface RoomListProps {
 export default function RoomList({ searchQuery = '' }: RoomListProps) {
   const [rooms, setRooms] = useState<Room[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
 
   const filteredRooms = useMemo(() => {
     if (!searchQuery.trim()) {
@@ -48,38 +52,103 @@ export default function RoomList({ searchQuery = '' }: RoomListProps) {
     });
   }, [rooms, searchQuery]);
 
+  const fetchRooms = useCallback(async (isRefresh = false) => {
+    if (isRefresh) {
+      setIsRefreshing(true);
+    }
+    try {
+      const response = await axiosInstance.get<APIRoomListResponse>('/api/rooms');
+      const apiRooms = response.data.rooms || [];
+      const mappedRooms: Room[] = apiRooms.map((r) => ({
+        roomId: r.room_id,
+        name: r.name,
+        creatorId: r.creator_id,
+        creatorName: r.creator_name,
+        hasPassword: r.has_password,
+        shortId: r.short_id,
+        memberCount: r.member_count,
+        maxMembers: r.max_members,
+        currentVideo: r.current_video
+          ? {
+              videoId: r.current_video.video_id,
+              title: r.current_video.title,
+              thumbnail: r.current_video.thumbnail,
+            }
+          : undefined,
+      }));
+      setRooms(mappedRooms);
+      setLastUpdated(new Date());
+      setError(null);
+    } catch (err) {
+      console.error('Failed to fetch rooms:', err);
+      setError('部屋の読み込みに失敗しました');
+    } finally {
+      setIsLoading(false);
+      setIsRefreshing(false);
+    }
+  }, []);
+
+  // Initial fetch
   useEffect(() => {
-    const fetchRooms = async () => {
-      try {
-        const response = await axiosInstance.get<APIRoomListResponse>('/api/rooms');
-        const apiRooms = response.data.rooms || [];
-        const mappedRooms: Room[] = apiRooms.map((r) => ({
-          roomId: r.room_id,
-          name: r.name,
-          creatorId: r.creator_id,
-          creatorName: r.creator_name,
-          hasPassword: r.has_password,
-          shortId: r.short_id,
-          memberCount: r.member_count,
-          maxMembers: r.max_members,
-          currentVideo: r.current_video
-            ? {
-                videoId: r.current_video.video_id,
-                title: r.current_video.title,
-                thumbnail: r.current_video.thumbnail,
-              }
-            : undefined,
-        }));
-        setRooms(mappedRooms);
-      } catch (err) {
-        console.error('Failed to fetch rooms:', err);
-        setError('部屋の読み込みに失敗しました');
-      } finally {
-        setIsLoading(false);
+    fetchRooms();
+  }, [fetchRooms]);
+
+  // Keyboard shortcut for desktop (R key)
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Only trigger if not in an input field
+      if (
+        e.key.toLowerCase() === 'r' &&
+        !e.ctrlKey &&
+        !e.metaKey &&
+        !e.altKey &&
+        !(e.target instanceof HTMLInputElement) &&
+        !(e.target instanceof HTMLTextAreaElement)
+      ) {
+        fetchRooms(true);
       }
     };
-    fetchRooms();
-  }, []);
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [fetchRooms]);
+
+  const handleRefresh = useCallback(async () => {
+    await fetchRooms(true);
+  }, [fetchRooms]);
+
+  // Format relative time
+  const getRelativeTime = (date: Date) => {
+    const seconds = Math.floor((Date.now() - date.getTime()) / 1000);
+    if (seconds < 60) return 'たった今';
+    const minutes = Math.floor(seconds / 60);
+    if (minutes < 60) return `${minutes}分前`;
+    const hours = Math.floor(minutes / 60);
+    if (hours < 24) return `${hours}時間前`;
+    return `${Math.floor(hours / 24)}日前`;
+  };
+
+  // Desktop refresh button component
+  const RefreshButton = () => (
+    <button
+      onClick={handleRefresh}
+      disabled={isRefreshing}
+      className="hidden sm:flex items-center gap-2 px-3 py-1.5 text-sm text-muted-foreground hover:text-foreground hover:bg-accent rounded-lg transition-all duration-200 group"
+      title="更新 (R)"
+    >
+      <RefreshCw
+        className={`h-4 w-4 transition-transform duration-500 ${
+          isRefreshing ? 'animate-spin' : 'group-hover:rotate-180'
+        }`}
+      />
+      <span className="text-xs">
+        {isRefreshing ? '更新中...' : lastUpdated ? getRelativeTime(lastUpdated) : '更新'}
+      </span>
+      <kbd className="hidden lg:inline-flex h-5 items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground">
+        R
+      </kbd>
+    </button>
+  );
 
   if (isLoading) {
     return (
@@ -93,24 +162,30 @@ export default function RoomList({ searchQuery = '' }: RoomListProps) {
     return (
       <div className="py-12 text-center">
         <p className="text-destructive">{error}</p>
+        <button
+          onClick={handleRefresh}
+          className="mt-4 px-4 py-2 text-sm bg-primary text-primary-foreground rounded-lg hover:opacity-90 transition-opacity"
+        >
+          再試行
+        </button>
       </div>
     );
   }
 
-  if (rooms.length === 0) {
-    return (
-      <div className="py-12 text-center">
-        <p className="text-muted-foreground">
-          まだ部屋がありません。最初の部屋を作成してみましょう！
-        </p>
+  const content = (
+    <div className="space-y-4">
+      {/* Refresh indicator for desktop */}
+      <div className="flex justify-end">
+        <RefreshButton />
       </div>
-    );
-  }
 
-  return (
-    <div className="space-y-6">
-      {/* Room Grid - モバイルで1列、sm以上で2列、lg以上で3列 */}
-      {filteredRooms.length === 0 ? (
+      {rooms.length === 0 ? (
+        <div className="py-12 text-center">
+          <p className="text-muted-foreground">
+            まだ部屋がありません。最初の部屋を作成してみましょう！
+          </p>
+        </div>
+      ) : filteredRooms.length === 0 ? (
         <div className="py-8 text-center">
           <p className="text-muted-foreground">
             「{searchQuery}」に一致する部屋が見つかりませんでした
@@ -130,5 +205,12 @@ export default function RoomList({ searchQuery = '' }: RoomListProps) {
         </div>
       )}
     </div>
+  );
+
+  // Wrap with PullToRefresh for mobile
+  return (
+    <PullToRefresh onRefresh={handleRefresh} disabled={isRefreshing}>
+      {content}
+    </PullToRefresh>
   );
 }
