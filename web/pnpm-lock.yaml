@@ -30,8 +30,8 @@ importers:
         specifier: ^1.1.6
         version: 1.2.8(@types/react-dom@19.2.3(@types/react@19.2.7))(@types/react@19.2.7)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
       '@skyway-sdk/room':
-        specifier: ^1.10.4
-        version: 1.15.2(ws@8.18.3)
+        specifier: ^2.2.1
+        version: 2.2.1(ws@8.18.3)
       '@tanstack/react-query':
         specifier: ^5.62.11
         version: 5.90.12(react@19.2.3)
@@ -1288,42 +1288,38 @@ packages:
   '@shikijs/vscode-textmate@10.0.2':
     resolution: {integrity: sha512-83yeghZ2xxin3Nj8z1NMd/NCuca+gsYXswywDy5bHvwlWL8tpTQmzGeUuHd9FC3E/SBEMvzJRwWEOz5gGes9Qg==}
 
-  '@skyway-sdk/analytics-client@1.1.1':
-    resolution: {integrity: sha512-kwoI1BebCM5b+09pLODjqO2jyBc2QKu8fcuLdzhQkla7ySBnDJGEVNxVMua0gzza4aH2Wn0bnGZU26zO0AQG2w==}
+  '@skyway-sdk/analytics-client@2.0.0':
+    resolution: {integrity: sha512-AATfH8dOhX5pcKPaYZfq/fmkjkWnK7l2QCVnXfFJRDyAymqu1iZx6deh/qMNjiNAM5BcOoxEkRljA1Mt4ATO1w==}
 
-  '@skyway-sdk/common@1.5.0':
-    resolution: {integrity: sha512-oYHtWcBLVh098UkldKU87wZf6sdPqO+3ge+glpJMyVs2ZIuQF4b5uz50F/Lugv3G1Sc8UHNo5h5Vs9w6J4uQaQ==}
+  '@skyway-sdk/common@2.0.2':
+    resolution: {integrity: sha512-eeqnYEZU1UEY1Ntx8tWDEwTRFcE3k68h0PZfVIkbViizDRbmjc0sE8JYPOAR/3R927NoY5S9K5eBVKaWeghh0w==}
 
-  '@skyway-sdk/core@1.15.2':
-    resolution: {integrity: sha512-outcQBvbt8rJJF8xPSTao5Cz/qdioA0ncWeZXMsp4AyOKsu68b9TvFIZ7wR5oencPwRVJdL1uj46fTO0jU4h0w==}
+  '@skyway-sdk/core@2.2.1':
+    resolution: {integrity: sha512-3KE25t5CkTNyPPryUJC3CjOdGYSwyzxDLqa3zOgBH4h/4FuG5m00YKoCHzJUoSf6paiC9tUDJQNXkmiUYji66w==}
 
-  '@skyway-sdk/mediasoup-client@3.15.2':
-    resolution: {integrity: sha512-0nNB6OPSU3aTKaoElJ0jI76gLYzkO96n8oExs94hd+b2bCBIpKznvzRxlmdZQH8T4fzLfeIU7AK3WROGr+iMQA==}
-    engines: {node: '>=18'}
+  '@skyway-sdk/model@2.0.0':
+    resolution: {integrity: sha512-Ddhffe4Gq5+CL4UlnmI5+0YVcfQuGMh8v5wk8G/ai88WJfCUw5Uw2IgnSnf8YBaLLMoqKGe1nRntX3Gj20b39g==}
 
-  '@skyway-sdk/model@1.0.3':
-    resolution: {integrity: sha512-1sFnOY9phuO+v6f9HVeMCSRxHSkPRi2JdQVwUhqW0ArGwmBqUK+jIfU7qXGbRiuE0vxosBu+gDlMK0pw40ehSQ==}
+  '@skyway-sdk/room@2.2.1':
+    resolution: {integrity: sha512-MeMepYvgKtR47/HIxPwdX1HaIpQ+SnhQ4SXcAK7aB9wnWcjmz4poNrGZWbfDU5hRaT9MMFBtg/LOhvCMP2eH0Q==}
 
-  '@skyway-sdk/room@1.15.2':
-    resolution: {integrity: sha512-u1RKzQr46NLkS4FxWauw+W8XO2nXxBPTQ7jdtxGqN5vHVh3uNcC0y3TJiHFVW44H7LVC+rr8cl4lzgvdez17EQ==}
+  '@skyway-sdk/rtc-api-client@2.0.3':
+    resolution: {integrity: sha512-hSYs1hYIAUMV9lR0dPvuxdjqR51lNOtVsZQuc5L8oVkSGS6qyml1HJadZhS/FXhWraI+YJMKIwOh4KgAK6x4yg==}
 
-  '@skyway-sdk/rtc-api-client@1.8.4':
-    resolution: {integrity: sha512-TMdpUvE7L9AAAVQV1mzl3Jp+NDF/rSnqGIghnk0G0G7R0YTXN3xRXywOecdUHVYmZiM17djtn9LhpDe1wWAyrA==}
+  '@skyway-sdk/rtc-rpc-api-client@2.0.2':
+    resolution: {integrity: sha512-EKAytAb/KKfzjjHc7EA/bNX4dhBJj0aNnUkllaMRIrzkrlllQWv80KRNllmtuDY/IDQoYKbk2+q5yB71wFTJeQ==}
 
-  '@skyway-sdk/rtc-rpc-api-client@1.8.3':
-    resolution: {integrity: sha512-LdZGk1G8YK8BzEicl+nPUdGStULXxTRQF2s3VUPYrxRKJuWePLOAbnpO5bwvkEwQLpu5o8PNVyOA7N05/0O2gQ==}
+  '@skyway-sdk/sfu-api-client@2.0.2':
+    resolution: {integrity: sha512-xc4V+juTZHtmKS32Pjwdgzq4Qyk9pelPXvgLIghH4iCehEv/CLgkt3Rwh0mbFnhbr8FsR07gN8LLXCLz83nINw==}
 
-  '@skyway-sdk/sfu-api-client@1.5.4':
-    resolution: {integrity: sha512-o1wRIBu+GvSXKA7HOT2GVGPW6G6AALy0wvNEqG/Atb/cyibFwp7pAzmh7aYC6LZMKiJtobm/6nVx/Pt6JfZ0/A==}
+  '@skyway-sdk/sfu-bot@2.0.3':
+    resolution: {integrity: sha512-tmJ97JvjKaTBdPd4QLS0x6mQGo0qT6EfgfZUQ9nmzwIKxZeAWzdVLh8YNYiDqgegWvNMBKP6hhEaZCfvbn8CKg==}
 
-  '@skyway-sdk/sfu-bot@1.14.3':
-    resolution: {integrity: sha512-YJby+s7jNig7RAR+reCV2RGWnZVoHfKyGXLgjvZyqTzX8jya5j/nRMo8n1bT9BkzbACwMgpx1NSDvt5xqDkb+w==}
+  '@skyway-sdk/signaling-client@2.0.0':
+    resolution: {integrity: sha512-jh6+sldw/5BvmMYA5Mj+vn9fYRib8ijCB9iJs0bJHPG3W6sFsOrcoEsU4ZPzIkizyGj72/AdPR0KBq7501wUUA==}
 
-  '@skyway-sdk/signaling-client@1.0.9':
-    resolution: {integrity: sha512-8MZRgXOtsP9qDLthgPf6ugL2cAQLf3eWi3DIKy6dVFmWt+RtHQmRMtf2RdFK+t8XhSnOPeL+zqlnoISFG+FWTw==}
-
-  '@skyway-sdk/token@1.7.4':
-    resolution: {integrity: sha512-hFExP7hmtPsitKUg8Lm+PRlEeNKO6/XiM1jtFQIZkjH+UWBHr98mwIG1CanvMdI31IpUWej+V6zYPRrpRnEbYA==}
+  '@skyway-sdk/token@2.0.2':
+    resolution: {integrity: sha512-fbw3PrFDPHlttkEhxXJHGrDqlJ/QtbtqQjX4Fi5M9GgHbCMQjwN+YAX9sozNu0DqDcjjO+lrEGGN2bSWC1NCOQ==}
 
   '@stoplight/better-ajv-errors@1.0.3':
     resolution: {integrity: sha512-0p9uXkuB22qGdNfy3VeEhxkU5uwvp/KrBTAbrLBURv6ilxIVwanKwjMc41lQfIVgPGcOkmLbTolfFrSsueu7zA==}
@@ -2738,6 +2734,10 @@ packages:
   mdurl@2.0.0:
     resolution: {integrity: sha512-Lf+9+2r+Tdp5wXDXC4PcIBjTDtq4UKjCPMQhKIuzpJNW0b96kVqSwW0bT7FhRSfmAiFYgP+SCRvdrDozfh0U5w==}
 
+  mediasoup-client@3.18.3:
+    resolution: {integrity: sha512-ULypBvw4/2n6sEzhocZue61qtfQ2wvsIsppAikI65E7nh7V7eHajJaYtw432HdYnhryF9eO65rlDSqBmPh26CA==}
+    engines: {node: '>=20'}
+
   merge-stream@2.0.0:
     resolution: {integrity: sha512-abv/qOcuPfk3URPfDzmZU1LKmuw8kT+0nIHvKrKgFrwifol/doWcdA4ZqsWQ8ENrFKkd67Mfpo/LovbIUsbt3w==}
 
@@ -3119,6 +3119,10 @@ packages:
 
   sdp-transform@2.15.0:
     resolution: {integrity: sha512-KrOH82c/W+GYQ0LHqtr3caRpM3ITglq3ljGUIb8LTki7ByacJZ9z+piSGiwZDsRyhQbYBOBJgr2k6X4BZXi3Kw==}
+    hasBin: true
+
+  sdp-transform@3.0.0:
+    resolution: {integrity: sha512-gfYVRGxjHkGF2NPeUWHw5u6T/KGFtS5/drPms73gaSuMaVHKCY3lpLnGDfswVQO0kddeePoti09AwhYP4zA8dQ==}
     hasBin: true
 
   semver@6.3.1:
@@ -4822,7 +4826,7 @@ snapshots:
 
   '@shikijs/vscode-textmate@10.0.2': {}
 
-  '@skyway-sdk/analytics-client@1.1.1':
+  '@skyway-sdk/analytics-client@2.0.0':
     dependencies:
       isomorphic-ws: 4.0.1(ws@8.18.3)
       uuid: 9.0.1
@@ -4831,19 +4835,19 @@ snapshots:
       - bufferutil
       - utf-8-validate
 
-  '@skyway-sdk/common@1.5.0':
+  '@skyway-sdk/common@2.0.2':
     dependencies:
       axios: 1.13.2
     transitivePeerDependencies:
       - debug
 
-  '@skyway-sdk/core@1.15.2(ws@8.18.3)':
+  '@skyway-sdk/core@2.2.1(ws@8.18.3)':
     dependencies:
-      '@skyway-sdk/analytics-client': 1.1.1
-      '@skyway-sdk/common': 1.5.0
-      '@skyway-sdk/rtc-api-client': 1.8.4(ws@8.18.3)
-      '@skyway-sdk/signaling-client': 1.0.9
-      '@skyway-sdk/token': 1.7.4
+      '@skyway-sdk/analytics-client': 2.0.0
+      '@skyway-sdk/common': 2.0.2
+      '@skyway-sdk/rtc-api-client': 2.0.3(ws@8.18.3)
+      '@skyway-sdk/signaling-client': 2.0.0
+      '@skyway-sdk/token': 2.0.2
       bowser: 2.13.1
       deepmerge: 4.3.1
       lodash: 4.17.21
@@ -4857,27 +4861,14 @@ snapshots:
       - utf-8-validate
       - ws
 
-  '@skyway-sdk/mediasoup-client@3.15.2':
-    dependencies:
-      '@types/debug': 4.1.12
-      '@types/events-alias': '@types/events@3.0.3'
-      awaitqueue: 3.3.0(supports-color@10.2.2)
-      debug: 4.4.3(supports-color@10.2.2)
-      events-alias: events@3.3.0
-      fake-mediastreamtrack: 2.2.1
-      h264-profile-level-id: 2.3.2(supports-color@10.2.2)
-      sdp-transform: 2.15.0
-      supports-color: 10.2.2
-      ua-parser-js: 1.0.41
+  '@skyway-sdk/model@2.0.0': {}
 
-  '@skyway-sdk/model@1.0.3': {}
-
-  '@skyway-sdk/room@1.15.2(ws@8.18.3)':
+  '@skyway-sdk/room@2.2.1(ws@8.18.3)':
     dependencies:
-      '@skyway-sdk/common': 1.5.0
-      '@skyway-sdk/core': 1.15.2(ws@8.18.3)
-      '@skyway-sdk/sfu-bot': 1.14.3(ws@8.18.3)
-      '@skyway-sdk/token': 1.7.4
+      '@skyway-sdk/common': 2.0.2
+      '@skyway-sdk/core': 2.2.1(ws@8.18.3)
+      '@skyway-sdk/sfu-bot': 2.0.3(ws@8.18.3)
+      '@skyway-sdk/token': 2.0.2
       uuid: 9.0.1
     transitivePeerDependencies:
       - bufferutil
@@ -4886,41 +4877,41 @@ snapshots:
       - utf-8-validate
       - ws
 
-  '@skyway-sdk/rtc-api-client@1.8.4(ws@8.18.3)':
+  '@skyway-sdk/rtc-api-client@2.0.3(ws@8.18.3)':
     dependencies:
-      '@skyway-sdk/common': 1.5.0
-      '@skyway-sdk/rtc-rpc-api-client': 1.8.3(ws@8.18.3)
-      '@skyway-sdk/token': 1.7.4
+      '@skyway-sdk/common': 2.0.2
+      '@skyway-sdk/rtc-rpc-api-client': 2.0.2(ws@8.18.3)
+      '@skyway-sdk/token': 2.0.2
       deepmerge: 4.3.1
       uuid: 9.0.1
     transitivePeerDependencies:
       - debug
       - ws
 
-  '@skyway-sdk/rtc-rpc-api-client@1.8.3(ws@8.18.3)':
+  '@skyway-sdk/rtc-rpc-api-client@2.0.2(ws@8.18.3)':
     dependencies:
-      '@skyway-sdk/common': 1.5.0
-      '@skyway-sdk/model': 1.0.3
+      '@skyway-sdk/common': 2.0.2
+      '@skyway-sdk/model': 2.0.0
       isomorphic-ws: 4.0.1(ws@8.18.3)
       uuid: 9.0.1
     transitivePeerDependencies:
       - debug
       - ws
 
-  '@skyway-sdk/sfu-api-client@1.5.4':
+  '@skyway-sdk/sfu-api-client@2.0.2':
     dependencies:
-      '@skyway-sdk/common': 1.5.0
-      '@skyway-sdk/mediasoup-client': 3.15.2
+      '@skyway-sdk/common': 2.0.2
+      mediasoup-client: 3.18.3
     transitivePeerDependencies:
       - debug
 
-  '@skyway-sdk/sfu-bot@1.14.3(ws@8.18.3)':
+  '@skyway-sdk/sfu-bot@2.0.3(ws@8.18.3)':
     dependencies:
-      '@skyway-sdk/common': 1.5.0
-      '@skyway-sdk/core': 1.15.2(ws@8.18.3)
-      '@skyway-sdk/mediasoup-client': 3.15.2
-      '@skyway-sdk/sfu-api-client': 1.5.4
+      '@skyway-sdk/common': 2.0.2
+      '@skyway-sdk/core': 2.2.1(ws@8.18.3)
+      '@skyway-sdk/sfu-api-client': 2.0.2
       lodash: 4.17.21
+      mediasoup-client: 3.18.3
     transitivePeerDependencies:
       - bufferutil
       - debug
@@ -4928,7 +4919,7 @@ snapshots:
       - utf-8-validate
       - ws
 
-  '@skyway-sdk/signaling-client@1.0.9':
+  '@skyway-sdk/signaling-client@2.0.0':
     dependencies:
       isomorphic-fetch: 3.0.0
       isomorphic-ws: 4.0.1(ws@8.18.3)
@@ -4939,9 +4930,9 @@ snapshots:
       - encoding
       - utf-8-validate
 
-  '@skyway-sdk/token@1.7.4':
+  '@skyway-sdk/token@2.0.2':
     dependencies:
-      '@skyway-sdk/common': 1.5.0
+      '@skyway-sdk/common': 2.0.2
       jsrsasign: 11.1.0
       jwt-decode: 3.1.2
       uuid: 9.0.1
@@ -6547,6 +6538,18 @@ snapshots:
 
   mdurl@2.0.0: {}
 
+  mediasoup-client@3.18.3:
+    dependencies:
+      '@types/debug': 4.1.12
+      '@types/events-alias': '@types/events@3.0.3'
+      awaitqueue: 3.3.0(supports-color@10.2.2)
+      debug: 4.4.3(supports-color@10.2.2)
+      events-alias: events@3.3.0
+      fake-mediastreamtrack: 2.2.1
+      h264-profile-level-id: 2.3.2(supports-color@10.2.2)
+      sdp-transform: 3.0.0
+      supports-color: 10.2.2
+
   merge-stream@2.0.0: {}
 
   merge2@1.4.1: {}
@@ -6973,6 +6976,8 @@ snapshots:
   scheduler@0.27.0: {}
 
   sdp-transform@2.15.0: {}
+
+  sdp-transform@3.0.0: {}
 
   semver@6.3.1: {}
 
