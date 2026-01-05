@@ -35,6 +35,8 @@ export function useSkyWay({ roomName, token, onMessage }: UseSkyWayOptions) {
   const memberRef = useRef<LocalP2PRoomMember | null>(null);
   const dataStreamRef = useRef<LocalDataStream | null>(null);
   const dataStreamPublicationIdRef = useRef<string | null>(null);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const dataStreamPublicationRef = useRef<any>(null);
   const isConnectingRef = useRef(false);
   const subscribedPublicationsRef = useRef<Set<string>>(new Set());
   // Flag to prevent double-decrement of member count
@@ -47,6 +49,25 @@ export function useSkyWay({ roomName, token, onMessage }: UseSkyWayOptions) {
   const roomStoreActions = useRef(useRoomStore.getState()).current;
   // Flag to prevent concurrent DataStream recreation
   const isRecreatingDataStreamRef = useRef(false);
+  // Ref to hold the latest recreateDataStream function (to avoid stale closure in event handlers)
+  const recreateDataStreamRef = useRef<() => Promise<boolean>>(() => Promise.resolve(false));
+
+  // Set up connection state monitoring for a publication
+  const setupConnectionStateMonitoring = useCallback((publication: RoomPublication) => {
+    // Monitor connection state changes to detect DataChannel failures
+    publication.onConnectionStateChanged.add(({ state, remoteMember }) => {
+      const stateStr = state as string;
+      console.log(`[SkyWay] Publication connection state changed: ${stateStr}`, remoteMember?.id);
+
+      // When connection fails or disconnects, recreate DataStream
+      // Note: state type may not include these values in TS definition, but they occur at runtime
+      if (stateStr === 'failed' || stateStr === 'disconnected') {
+        console.warn(`[SkyWay] DataChannel connection ${stateStr}, triggering recreation...`);
+        // Use ref to get the latest version of recreateDataStream
+        recreateDataStreamRef.current();
+      }
+    });
+  }, []);
 
   // Recreate DataStream when it fails (as recommended by SkyWay SDK error message)
   const recreateDataStream = useCallback(async (): Promise<boolean> => {
@@ -73,6 +94,7 @@ export function useSkyWay({ roomName, token, onMessage }: UseSkyWayOptions) {
           console.warn('[SkyWay] Failed to unpublish old DataStream:', e);
         }
         dataStreamPublicationIdRef.current = null;
+        dataStreamPublicationRef.current = null;
       }
       dataStreamRef.current = null;
 
@@ -81,6 +103,10 @@ export function useSkyWay({ roomName, token, onMessage }: UseSkyWayOptions) {
       const publication = await memberRef.current.publish(newDataStream);
       dataStreamRef.current = newDataStream;
       dataStreamPublicationIdRef.current = publication.id;
+      dataStreamPublicationRef.current = publication;
+
+      // Set up monitoring for the new publication
+      setupConnectionStateMonitoring(publication);
 
       console.log('[SkyWay] DataStream recreated successfully');
       return true;
@@ -90,7 +116,12 @@ export function useSkyWay({ roomName, token, onMessage }: UseSkyWayOptions) {
     } finally {
       isRecreatingDataStreamRef.current = false;
     }
-  }, []);
+  }, [setupConnectionStateMonitoring]);
+
+  // Keep the ref updated with the latest recreateDataStream function
+  useEffect(() => {
+    recreateDataStreamRef.current = recreateDataStream;
+  }, [recreateDataStream]);
 
   const sendMessage = useCallback(async (message: DataStreamMessage): Promise<boolean> => {
     if (!dataStreamRef.current) {
@@ -224,6 +255,10 @@ export function useSkyWay({ roomName, token, onMessage }: UseSkyWayOptions) {
       dataStreamRef.current = dataStream;
       const publication = await member.publish(dataStream);
       dataStreamPublicationIdRef.current = publication.id;
+      dataStreamPublicationRef.current = publication;
+
+      // Set up connection state monitoring for auto-recovery
+      setupConnectionStateMonitoring(publication);
 
       // Subscribe to existing members' data streams
       for (const pub of room.publications) {
@@ -394,7 +429,7 @@ export function useSkyWay({ roomName, token, onMessage }: UseSkyWayOptions) {
     } finally {
       isConnectingRef.current = false;
     }
-  }, [token, roomName, user.id, user.name, user.iconUrl, subscribeToMember, roomStoreActions]);
+  }, [token, roomName, user.id, user.name, user.iconUrl, subscribeToMember, roomStoreActions, setupConnectionStateMonitoring]);
 
   const disconnect = useCallback(async () => {
     // Note: Member count decrement is handled by useEffect cleanup
@@ -423,6 +458,7 @@ export function useSkyWay({ roomName, token, onMessage }: UseSkyWayOptions) {
       memberRef.current = null;
       dataStreamRef.current = null;
       dataStreamPublicationIdRef.current = null;
+      dataStreamPublicationRef.current = null;
       isConnectingRef.current = false;
       isRecreatingDataStreamRef.current = false;
       subscribedPublicationsRef.current.clear();
