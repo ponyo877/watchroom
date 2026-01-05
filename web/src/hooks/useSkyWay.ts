@@ -43,6 +43,8 @@ export function useSkyWay({ roomName, token, onMessage }: UseSkyWayOptions) {
   const hasDecrementedRef = useRef(false);
   // Store origin for sendBeacon (needs absolute URL when navigating away)
   const apiOriginRef = useRef(window.location.origin);
+  // Flag to indicate disconnect is in progress (prevents recreation attempts during teardown)
+  const isDisconnectingRef = useRef(false);
 
   const user = useUserStore();
   // Get store actions without subscribing to state changes
@@ -59,9 +61,15 @@ export function useSkyWay({ roomName, token, onMessage }: UseSkyWayOptions) {
       const stateStr = state as string;
       console.log(`[SkyWay] Publication connection state changed: ${stateStr}`, remoteMember?.id);
 
-      // When connection fails or disconnects, recreate DataStream
-      // Note: state type may not include these values in TS definition, but they occur at runtime
-      if (stateStr === 'failed' || stateStr === 'disconnected') {
+      // Skip recreation if we're intentionally disconnecting
+      if (isDisconnectingRef.current) {
+        console.log('[SkyWay] Skipping recreation - disconnect in progress');
+        return;
+      }
+
+      // Only recreate on "failed" state - "disconnected" might be intentional (e.g., user leaving)
+      // This prevents unnecessary recreation attempts during normal teardown
+      if (stateStr === 'failed') {
         console.warn(`[SkyWay] DataChannel connection ${stateStr}, triggering recreation...`);
         // Use ref to get the latest version of recreateDataStream
         recreateDataStreamRef.current();
@@ -71,6 +79,12 @@ export function useSkyWay({ roomName, token, onMessage }: UseSkyWayOptions) {
 
   // Recreate DataStream when it fails (as recommended by SkyWay SDK error message)
   const recreateDataStream = useCallback(async (): Promise<boolean> => {
+    // Skip recreation if we're disconnecting
+    if (isDisconnectingRef.current) {
+      console.log('[SkyWay] Skipping DataStream recreation - disconnect in progress');
+      return false;
+    }
+
     if (!memberRef.current || !roomRef.current) {
       console.warn('[SkyWay] Cannot recreate DataStream: no member/room');
       return false;
@@ -432,18 +446,16 @@ export function useSkyWay({ roomName, token, onMessage }: UseSkyWayOptions) {
   }, [token, roomName, user.id, user.name, user.iconUrl, subscribeToMember, roomStoreActions, setupConnectionStateMonitoring]);
 
   const disconnect = useCallback(async () => {
+    // Set disconnecting flag FIRST to prevent any recreation attempts during teardown
+    isDisconnectingRef.current = true;
+
     // Note: Member count decrement is handled by useEffect cleanup
     // using synchronous sendBeacon for reliable delivery
 
     try {
-      // Unpublish DataStream before leaving (use publication ID, not stream ID)
-      if (dataStreamPublicationIdRef.current && memberRef.current) {
-        try {
-          await memberRef.current.unpublish(dataStreamPublicationIdRef.current);
-        } catch (e) {
-          console.warn('[SkyWay] Failed to unpublish DataStream on disconnect:', e);
-        }
-      }
+      // Skip explicit unpublish - member.leave() will handle cleanup
+      // Trying to unpublish during disconnect causes "publicationNotExist" errors
+      // because the publication may already be removed from the channel
       if (memberRef.current) {
         await memberRef.current.leave();
       }
@@ -461,6 +473,7 @@ export function useSkyWay({ roomName, token, onMessage }: UseSkyWayOptions) {
       dataStreamPublicationRef.current = null;
       isConnectingRef.current = false;
       isRecreatingDataStreamRef.current = false;
+      isDisconnectingRef.current = false;
       subscribedPublicationsRef.current.clear();
       setIsConnected(false);
       roomStoreActions.setIsConnected(false);
