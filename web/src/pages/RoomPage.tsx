@@ -84,6 +84,9 @@ export default function RoomPage() {
   const [showLandscapeChat, setShowLandscapeChat] = useState(false);
   const [showLandscapeMembers, setShowLandscapeMembers] = useState(false);
 
+  // モバイルキーボード表示状態
+  const [isKeyboardOpen, setIsKeyboardOpen] = useState(false);
+
   // Derive password dialog visibility during rendering (not via Effect)
   const showPasswordDialog = roomInfo?.hasPassword === true && !isPasswordVerified;
 
@@ -636,10 +639,12 @@ export default function RoomPage() {
           <div className={`flex flex-col flex-1 ${
             isLandscapeFullscreen ? 'min-w-0 min-h-0' : ''
           }`}>
-          {/* Video player - shrinks to 16:9 aspect ratio when mobile chat is open */}
+          {/* Video player - shrinks to 16:9 aspect ratio when mobile chat is open, or 40vh when keyboard is open */}
           <div className={`relative bg-black overflow-hidden ${
             showMobileChat && !isLandscapeFullscreen
-              ? 'aspect-video w-full flex-shrink-0'
+              ? isKeyboardOpen
+                ? 'h-[40vh] w-full flex-shrink-0'  // キーボード表示時は固定40vh
+                : 'aspect-video w-full flex-shrink-0'  // チャット表示時は16:9
               : 'flex-1 min-h-0'
           }`}>
             {/* YouTube Player Container */}
@@ -837,13 +842,14 @@ export default function RoomPage() {
                 messages={roomStore.chatMessages}
                 onSendMessage={handleSendChatMessage}
                 roomId={actualRoomId || ''}
+                onKeyboardStateChange={setIsKeyboardOpen}
               />
             </div>
           )}
           </div>{/* End of Content area */}
 
-          {/* Mobile bottom navigation - 横向きフルスクリーン時は非表示 */}
-          <div className={`h-14 border-t border-border bg-card flex items-center justify-around md:hidden relative z-20 pb-safe ${isLandscapeFullscreen ? 'hidden' : ''}`}>
+          {/* Mobile bottom navigation - 横向きフルスクリーン時またはキーボード表示時は非表示 */}
+          <div className={`h-14 border-t border-border bg-card flex items-center justify-around md:hidden relative z-20 pb-safe ${isLandscapeFullscreen || isKeyboardOpen ? 'hidden' : ''}`}>
             {showMobileChat ? (
               /* Chat close button when chat is open */
               <>

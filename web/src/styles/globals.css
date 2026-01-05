@@ -104,6 +104,25 @@
   display: none;
 }
 
+/* === Keyboard-aware Layout === */
+/* チャットコンテナのバウンススクロール防止 */
+.chat-container {
+  overscroll-behavior: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* キーボード表示時の固定入力 */
+.chat-input-fixed {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 50;
+  background: var(--color-card);
+  border-top: 1px solid var(--color-border);
+  padding-bottom: var(--safe-area-inset-bottom);
+}
+
 @theme {
   /* === Base Colors (Light Mode) === */
   --color-background: oklch(0.99 0 0);
