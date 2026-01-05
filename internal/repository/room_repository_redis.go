@@ -79,13 +79,9 @@ func strPtr(s string) *string {
 }
 
 // calculateScore creates a score for sorted set ordering
-// is_permanent rooms have higher scores (10^15 added), then sorted by created_at DESC
-func (r *RoomRepositoryRedis) calculateScore(isPermanent bool, createdAt time.Time) float64 {
-	score := float64(createdAt.Unix())
-	if isPermanent {
-		score += 1e15
-	}
-	return score
+// All rooms are sorted by created_at DESC (newest first)
+func (r *RoomRepositoryRedis) calculateScore(_ bool, createdAt time.Time) float64 {
+	return float64(createdAt.Unix())
 }
 
 func (r *RoomRepositoryRedis) Create(ctx context.Context, room *model.Room) error {
@@ -139,11 +135,8 @@ func (r *RoomRepositoryRedis) List(ctx context.Context) ([]*model.Room, error) {
 		}
 	}
 
-	// Sort by is_permanent DESC, created_at DESC
+	// Sort by created_at DESC (newest first)
 	sort.Slice(rooms, func(i, j int) bool {
-		if rooms[i].IsPermanent != rooms[j].IsPermanent {
-			return rooms[i].IsPermanent
-		}
 		return rooms[i].CreatedAt.After(rooms[j].CreatedAt)
 	})
 
