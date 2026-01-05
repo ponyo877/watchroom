@@ -405,19 +405,3 @@ export function createBaseMessageFields(
   };
 }
 
-/**
- * Create backward-compatible base message fields for gradual migration
- * This allows old code to work while new features are being implemented
- */
-export function createLegacyCompatibleFields(
-  senderId: string
-): BaseMessageFields {
-  return {
-    senderId,
-    timestamp: Date.now(),
-    logicalClock: 0,
-    vectorClock: {},
-    sequenceNumber: 0,
-    viewNumber: 0,
-  };
-}

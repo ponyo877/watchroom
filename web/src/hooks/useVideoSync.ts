@@ -8,7 +8,8 @@ import type {
   StateResponseMessage,
   HeartbeatMessage,
 } from '@/types/message';
-import { createLegacyCompatibleFields, RTTEstimator } from '@/types/message';
+import { RTTEstimator } from '@/types/message';
+import { useMessageFieldsStore } from '@/stores/messageFieldsStore';
 import { createPlayer, isPlaying } from '@/lib/youtube';
 
 interface UseVideoSyncOptions {
@@ -75,6 +76,7 @@ export function useVideoSync({
 
   const userId = useUserStore((state) => state.id);
   const { currentVideo, playbackState, hasControlPermission } = useRoomStore();
+  const createMessageFields = useMessageFieldsStore((state) => state.createMessageFields);
 
   // Track user interaction (click/touch anywhere on page) and auto-unmute if needed
   useEffect(() => {
@@ -105,11 +107,11 @@ export function useVideoSync({
         type: 'sync',
         action,
         payload,
-        ...createLegacyCompatibleFields(userId),
+        ...createMessageFields(userId),
       };
       onSendSync(message);
     },
-    [userId, hasControlPermission, onSendSync]
+    [userId, hasControlPermission, onSendSync, createMessageFields]
   );
 
   // Generate unique request ID
@@ -139,7 +141,7 @@ export function useVideoSync({
           lastKnownEpoch: epochRef.current,
         },
       },
-      ...createLegacyCompatibleFields(userId),
+      ...createMessageFields(userId),
     };
     onSendStateRequest(message);
 
@@ -269,7 +271,7 @@ export function useVideoSync({
             isController: hasControlPermission,
             epoch: epochRef.current,
           },
-          ...createLegacyCompatibleFields(userId),
+          ...createMessageFields(userId),
         };
 
         onSendStateResponse(response);
@@ -368,7 +370,7 @@ export function useVideoSync({
         memberCount: 0, // Will be filled by room store
         heartbeatSequence: heartbeatSequenceRef.current,
       },
-      ...createLegacyCompatibleFields(userId),
+      ...createMessageFields(userId),
     };
 
     onSendHeartbeat(message);

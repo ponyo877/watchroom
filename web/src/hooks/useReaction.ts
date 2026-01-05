@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useRef } from 'react';
 import { useRoomStore } from '@/stores/roomStore';
 import { useUserStore } from '@/stores/userStore';
+import { useMessageFieldsStore } from '@/stores/messageFieldsStore';
 import type { ReactionMessage } from '@/types/message';
-import { createLegacyCompatibleFields } from '@/types/message';
 import type { ReactionItem } from '@/types/room';
 import { generateId } from '@/lib/utils';
 
@@ -15,6 +15,8 @@ interface UseReactionOptions {
 export function useReaction({ onSendReaction }: UseReactionOptions) {
   const userId = useUserStore((state) => state.id);
   const { reactions, addReaction, removeReaction } = useRoomStore();
+  const createMessageFields = useMessageFieldsStore((state) => state.createMessageFields);
+  const updateOnReceive = useMessageFieldsStore((state) => state.updateOnReceive);
 
   // Use ref to avoid interval reset on every reaction change
   const reactionsRef = useRef(reactions);
@@ -25,7 +27,7 @@ export function useReaction({ onSendReaction }: UseReactionOptions) {
       const message: ReactionMessage = {
         type: 'reaction',
         payload: { emoji },
-        ...createLegacyCompatibleFields(userId),
+        ...createMessageFields(userId),
       };
 
       // Add to local state
@@ -45,12 +47,15 @@ export function useReaction({ onSendReaction }: UseReactionOptions) {
         removeReaction(reactionItem.id);
       }, REACTION_DURATION);
     },
-    [userId, addReaction, removeReaction, onSendReaction]
+    [userId, addReaction, removeReaction, onSendReaction, createMessageFields]
   );
 
   const handleIncomingReaction = useCallback(
     (message: ReactionMessage) => {
       if (message.senderId === userId) return;
+
+      // Update distributed system clocks
+      updateOnReceive(message.logicalClock, message.vectorClock);
 
       const reactionItem: ReactionItem = {
         id: generateId(),
@@ -65,7 +70,7 @@ export function useReaction({ onSendReaction }: UseReactionOptions) {
         removeReaction(reactionItem.id);
       }, REACTION_DURATION);
     },
-    [userId, addReaction, removeReaction]
+    [userId, addReaction, removeReaction, updateOnReceive]
   );
 
   // Cleanup old reactions (use ref to avoid interval reset on every change)

@@ -45,7 +45,7 @@ import type {
   StateResponseMessage,
   HeartbeatMessage,
 } from '@/types/message';
-import { createLegacyCompatibleFields } from '@/types/message';
+import { useMessageFieldsStore } from '@/stores/messageFieldsStore';
 
 export default function RoomPage() {
   const { roomId, shortId } = useParams();
@@ -57,6 +57,7 @@ export default function RoomPage() {
 
   const userId = useUserStore((state) => state.id);
   const roomStore = useRoomStore();
+  const createMessageFields = useMessageFieldsStore((state) => state.createMessageFields);
 
   // Short URL resolution
   const { isLoading: isResolvingShortUrl, error: shortUrlError, roomInfo } = useShortUrl(shortId);
@@ -412,7 +413,7 @@ export default function RoomPage() {
           title: video.title,
           thumbnail: video.thumbnail,
         },
-        ...createLegacyCompatibleFields(userId),
+        ...createMessageFields(userId),
       };
       skySendMessage(syncMessage);
 
@@ -450,7 +451,7 @@ export default function RoomPage() {
     }
 
     setShowVideoSearch(false);
-  }, [roomStore, isConnected, userId, skySendMessage, updateRoomMetadata, playHistory, actualRoomId]);
+  }, [roomStore, isConnected, userId, skySendMessage, updateRoomMetadata, playHistory, actualRoomId, createMessageFields]);
 
   const handleSendChatMessage = useCallback((text: string) => {
     if (isConnected) {

@@ -1,8 +1,8 @@
 import { useCallback } from 'react';
 import { useRoomStore } from '@/stores/roomStore';
 import { useUserStore } from '@/stores/userStore';
+import { useMessageFieldsStore } from '@/stores/messageFieldsStore';
 import type { ChatMessage } from '@/types/message';
-import { createLegacyCompatibleFields } from '@/types/message';
 import type { ChatMessageItem } from '@/types/room';
 import { generateId } from '@/lib/utils';
 import axiosInstance from '@/lib/api';
@@ -15,6 +15,7 @@ interface UseChatOptions {
 export function useChat({ roomId, onSendMessage }: UseChatOptions) {
   const user = useUserStore();
   const { chatMessages, addChatMessage } = useRoomStore();
+  const createMessageFields = useMessageFieldsStore((state) => state.createMessageFields);
 
   const sendMessage = useCallback(
     (text: string) => {
@@ -28,7 +29,7 @@ export function useChat({ roomId, onSendMessage }: UseChatOptions) {
           senderName: user.name,
           senderIconUrl: user.iconUrl,
         },
-        ...createLegacyCompatibleFields(user.id),
+        ...createMessageFields(user.id),
       };
 
       // Add to local state immediately
@@ -56,13 +57,18 @@ export function useChat({ roomId, onSendMessage }: UseChatOptions) {
         console.error('Failed to save message:', err);
       });
     },
-    [user, addChatMessage, onSendMessage, roomId]
+    [user, addChatMessage, onSendMessage, roomId, createMessageFields]
   );
+
+  const updateOnReceive = useMessageFieldsStore((state) => state.updateOnReceive);
 
   const handleIncomingMessage = useCallback(
     (message: ChatMessage) => {
       // Don't add our own messages again
       if (message.senderId === user.id) return;
+
+      // Update distributed system clocks
+      updateOnReceive(message.logicalClock, message.vectorClock);
 
       const chatItem: ChatMessageItem = {
         id: message.payload.messageId,
@@ -74,7 +80,7 @@ export function useChat({ roomId, onSendMessage }: UseChatOptions) {
       };
       addChatMessage(chatItem);
     },
-    [user.id, addChatMessage]
+    [user.id, addChatMessage, updateOnReceive]
   );
 
   return {

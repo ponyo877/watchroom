@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useRoomStore } from '@/stores/roomStore';
 import { useUserStore } from '@/stores/userStore';
+import { useMessageFieldsStore } from '@/stores/messageFieldsStore';
 import type { PermissionMessage } from '@/types/message';
-import { createLegacyCompatibleFields } from '@/types/message';
 
 type PermissionMode = 'creator' | 'specific' | 'all';
 
@@ -18,6 +18,8 @@ export function usePermission({ onSendPermission }: UsePermissionOptions) {
     setHasControlPermission,
     members,
   } = useRoomStore();
+  const createMessageFields = useMessageFieldsStore((state) => state.createMessageFields);
+  const updateOnReceive = useMessageFieldsStore((state) => state.updateOnReceive);
 
   const [permissionMode, setPermissionMode] = useState<PermissionMode>('creator');
   const [allowedUserIds, setAllowedUserIds] = useState<string[]>([]);
@@ -54,11 +56,11 @@ export function usePermission({ onSendPermission }: UsePermissionOptions) {
           mode,
           allowedUserIds: mode === 'specific' ? allowedUserIds : undefined,
         },
-        ...createLegacyCompatibleFields(userId),
+        ...createMessageFields(userId),
       };
       onSendPermission(message);
     },
-    [isCreator, userId, allowedUserIds, onSendPermission]
+    [isCreator, userId, allowedUserIds, onSendPermission, createMessageFields]
   );
 
   const grantPermission = useCallback(
@@ -76,11 +78,11 @@ export function usePermission({ onSendPermission }: UsePermissionOptions) {
           granted: true,
           allowedUserIds: newAllowedIds,
         },
-        ...createLegacyCompatibleFields(userId),
+        ...createMessageFields(userId),
       };
       onSendPermission(message);
     },
-    [isCreator, userId, allowedUserIds, onSendPermission]
+    [isCreator, userId, allowedUserIds, onSendPermission, createMessageFields]
   );
 
   const revokePermission = useCallback(
@@ -98,16 +100,19 @@ export function usePermission({ onSendPermission }: UsePermissionOptions) {
           granted: false,
           allowedUserIds: newAllowedIds,
         },
-        ...createLegacyCompatibleFields(userId),
+        ...createMessageFields(userId),
       };
       onSendPermission(message);
     },
-    [isCreator, userId, allowedUserIds, onSendPermission]
+    [isCreator, userId, allowedUserIds, onSendPermission, createMessageFields]
   );
 
   const handleIncomingPermission = useCallback(
     (message: PermissionMessage) => {
       const { payload } = message;
+
+      // Update distributed system clocks
+      updateOnReceive(message.logicalClock, message.vectorClock);
 
       if (payload.mode) {
         setPermissionMode(payload.mode);
@@ -122,7 +127,7 @@ export function usePermission({ onSendPermission }: UsePermissionOptions) {
         setHasControlPermission(payload.granted);
       }
     },
-    [userId, setHasControlPermission]
+    [userId, setHasControlPermission, updateOnReceive]
   );
 
   const getMemberPermission = useCallback(
