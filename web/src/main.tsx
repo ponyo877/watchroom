@@ -13,6 +13,9 @@ if (typeof navigator !== 'undefined' && !navigator.mediaDevices) {
   } as MediaDevices;
 }
 
+// Import CSS synchronously (no longer deferred after JS execution)
+import './styles/globals.css';
+
 // Dynamic imports to ensure polyfill is applied first
 async function bootstrap() {
   const [
@@ -26,8 +29,6 @@ async function bootstrap() {
     import('@tanstack/react-query'),
     import('./App'),
   ]);
-
-  await import('./styles/globals.css');
 
   const queryClient = new QueryClient({
     defaultOptions: {
