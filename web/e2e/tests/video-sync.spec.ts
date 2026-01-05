@@ -1,5 +1,6 @@
 import { test, expect } from '../fixtures/test-fixtures';
 import { generateRoomId, safeCloseContext } from '../helpers/api';
+import { waitForP2PReady, waitForVideoSync, waitForPlayerReady } from '../helpers/p2p-helpers';
 
 const ROOM_LOAD_TIMEOUT = 10000;
 const SYNC_TIMEOUT = 8000;
@@ -162,7 +163,7 @@ test.describe('Video Playback Sync (P2P)', () => {
     }
   });
 
-  test.skip('should sync multiple late joiners correctly', async ({ browser, request }) => {
+  test('should sync multiple late joiners correctly', async ({ browser, request }) => {
     test.setTimeout(150000);
 
     const roomId = generateRoomId();
@@ -201,9 +202,10 @@ test.describe('Video Playback Sync (P2P)', () => {
     const pageC = await contextC.newPage();
 
     try {
-      // Creator enters and sets up video
+      // Creator enters and waits for P2P ready
       await pageA.goto(`/r/${shortId}`);
       await pageA.waitForSelector('button[title="AddVideo"]', { timeout: ROOM_LOAD_TIMEOUT });
+      await waitForP2PReady(pageA);
 
       await pageA.click('button[title="AddVideo"]');
       await pageA.waitForSelector('input[placeholder*="検索"]', { timeout: 5000 });
@@ -220,41 +222,25 @@ test.describe('Video Playback Sync (P2P)', () => {
       }
 
       await videoResult.click();
-      const creatorFrame = await pageA.waitForSelector('iframe[src*="youtube"]', { timeout: VIDEO_READY_TIMEOUT }).catch(() => null);
-      if (!creatorFrame) {
-        test.skip(true, 'YouTube iframe not loaded for creator');
-        return;
-      }
-      await pageA.waitForTimeout(2000);
+      await waitForPlayerReady(pageA);
 
-      // First late joiner joins
+      // First late joiner joins and waits for sync
       await pageB.goto(`/r/${shortId}`);
-      const videoFrameB = await pageB.waitForSelector('iframe[src*="youtube"]', {
-        timeout: VIDEO_READY_TIMEOUT
-      }).catch(() => null);
-      if (!videoFrameB) {
-        test.skip(true, 'Video sync to first late joiner failed - P2P timing issue');
-        return;
-      }
+      await waitForP2PReady(pageB);
+      await waitForVideoSync(pageB);
+      await expect(pageB.locator('iframe[src*="youtube"]')).toBeVisible();
 
-      // Wait a moment
-      await pageB.waitForTimeout(1500);
-
-      // Second late joiner joins
+      // Second late joiner joins and waits for sync
       await pageC.goto(`/r/${shortId}`);
-      const videoFrameC = await pageC.waitForSelector('iframe[src*="youtube"]', {
-        timeout: VIDEO_READY_TIMEOUT
-      }).catch(() => null);
-      if (!videoFrameC) {
-        test.skip(true, 'Video sync to second late joiner failed - P2P timing issue');
-        return;
-      }
+      await waitForP2PReady(pageC);
+      await waitForVideoSync(pageC);
+      await expect(pageC.locator('iframe[src*="youtube"]')).toBeVisible();
 
       // All three should have the video playing
       await Promise.all([
-        pageA.waitForSelector('iframe[src*="youtube"]', { timeout: 3000 }),
-        pageB.waitForSelector('iframe[src*="youtube"]', { timeout: 3000 }),
-        pageC.waitForSelector('iframe[src*="youtube"]', { timeout: 3000 }),
+        expect(pageA.locator('iframe[src*="youtube"]')).toBeVisible(),
+        expect(pageB.locator('iframe[src*="youtube"]')).toBeVisible(),
+        expect(pageC.locator('iframe[src*="youtube"]')).toBeVisible(),
       ]);
     } finally {
       await safeCloseContext(contextA, pageA);
@@ -263,7 +249,7 @@ test.describe('Video Playback Sync (P2P)', () => {
     }
   });
 
-  test.skip('should maintain sync via heartbeat mechanism', async ({ browser, request }) => {
+  test('should maintain sync via heartbeat mechanism', async ({ browser, request }) => {
     test.setTimeout(120000);
 
     const roomId = generateRoomId();
@@ -296,15 +282,16 @@ test.describe('Video Playback Sync (P2P)', () => {
 
     // Listen for heartbeat logs on viewer page
     pageB.on('console', (msg) => {
-      if (msg.text().includes('Heartbeat sync')) {
+      if (msg.text().includes('Heartbeat sync') || msg.text().includes('heartbeat')) {
         heartbeatDetected = true;
       }
     });
 
     try {
-      // Controller enters and sets up video
+      // Controller enters and waits for P2P ready
       await pageA.goto(`/r/${shortId}`);
       await pageA.waitForSelector('button[title="AddVideo"]', { timeout: ROOM_LOAD_TIMEOUT });
+      await waitForP2PReady(pageA);
 
       await pageA.click('button[title="AddVideo"]');
       await pageA.waitForSelector('input[placeholder*="検索"]', { timeout: 5000 });
@@ -317,11 +304,12 @@ test.describe('Video Playback Sync (P2P)', () => {
 
       if (isVideoVisible) {
         await videoResult.click();
-        await pageA.waitForSelector('iframe[src*="youtube"]', { timeout: VIDEO_READY_TIMEOUT });
+        await waitForPlayerReady(pageA);
 
-        // Viewer joins
+        // Viewer joins and waits for sync
         await pageB.goto(`/r/${shortId}`);
-        await pageB.waitForSelector('iframe[src*="youtube"]', { timeout: VIDEO_READY_TIMEOUT });
+        await waitForP2PReady(pageB);
+        await waitForVideoSync(pageB);
 
         // Wait for heartbeat interval (5 seconds) + some buffer
         await pageB.waitForTimeout(8000);
@@ -510,7 +498,7 @@ test.describe('Video Playback Sync (P2P)', () => {
 });
 
 test.describe('Late Joiner Edge Cases', () => {
-  test.skip('late joiner should receive video even when joining immediately after video selection', async ({ browser, request }) => {
+  test('late joiner should receive video even when joining immediately after video selection', async ({ browser, request }) => {
     test.setTimeout(120000);
 
     const roomId = generateRoomId();
@@ -540,9 +528,10 @@ test.describe('Late Joiner Edge Cases', () => {
     const pageB = await contextB.newPage();
 
     try {
-      // Creator enters
+      // Creator enters and waits for P2P ready
       await pageA.goto(`/r/${shortId}`);
       await pageA.waitForSelector('button[title="AddVideo"]', { timeout: ROOM_LOAD_TIMEOUT });
+      await waitForP2PReady(pageA);
 
       await pageA.click('button[title="AddVideo"]');
       await pageA.waitForSelector('input[placeholder*="検索"]', { timeout: 5000 });
@@ -561,17 +550,17 @@ test.describe('Late Joiner Edge Cases', () => {
         const lateJoinerPromise = pageB.goto(`/r/${shortId}`);
 
         // Wait for creator's video to load
-        await pageA.waitForSelector('iframe[src*="youtube"]', { timeout: VIDEO_READY_TIMEOUT });
+        await waitForPlayerReady(pageA);
 
         // Complete late joiner navigation
         await lateJoinerPromise;
 
-        // Late joiner should also see video
-        const videoFrameB = await pageB.waitForSelector('iframe[src*="youtube"]', {
-          timeout: VIDEO_READY_TIMEOUT
-        }).catch(() => null);
+        // Wait for P2P ready and video sync on late joiner
+        await waitForP2PReady(pageB);
+        await waitForVideoSync(pageB);
 
-        expect(videoFrameB).toBeTruthy();
+        // Late joiner should also see video
+        await expect(pageB.locator('iframe[src*="youtube"]')).toBeVisible();
       }
     } finally {
       await safeCloseContext(contextA, pageA);
@@ -579,7 +568,7 @@ test.describe('Late Joiner Edge Cases', () => {
     }
   });
 
-  test.skip('late joiner should not reset playback position of other users', async ({ browser, request }) => {
+  test('late joiner should not reset playback position of other users', async ({ browser, request }) => {
     test.setTimeout(120000);
 
     const roomId = generateRoomId();
@@ -609,9 +598,10 @@ test.describe('Late Joiner Edge Cases', () => {
     const pageB = await contextB.newPage();
 
     try {
-      // Creator enters and starts video
+      // Creator enters and waits for P2P ready
       await pageA.goto(`/r/${shortId}`);
       await pageA.waitForSelector('button[title="AddVideo"]', { timeout: ROOM_LOAD_TIMEOUT });
+      await waitForP2PReady(pageA);
 
       await pageA.click('button[title="AddVideo"]');
       await pageA.waitForSelector('input[placeholder*="検索"]', { timeout: 5000 });
@@ -624,14 +614,15 @@ test.describe('Late Joiner Edge Cases', () => {
 
       if (isVideoVisible) {
         await videoResult.click();
-        await pageA.waitForSelector('iframe[src*="youtube"]', { timeout: VIDEO_READY_TIMEOUT });
+        await waitForPlayerReady(pageA);
 
         // Let video play for a while to establish position
         await pageA.waitForTimeout(8000);
 
-        // Late joiner enters
+        // Late joiner enters and waits for sync
         await pageB.goto(`/r/${shortId}`);
-        await pageB.waitForSelector('iframe[src*="youtube"]', { timeout: VIDEO_READY_TIMEOUT });
+        await waitForP2PReady(pageB);
+        await waitForVideoSync(pageB);
 
         // Wait a bit for any sync messages
         await pageB.waitForTimeout(3000);

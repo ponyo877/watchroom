@@ -28,6 +28,7 @@ interface UseSkyWayOptions {
 
 export function useSkyWay({ roomName, token, onMessage }: UseSkyWayOptions) {
   const [isConnected, setIsConnected] = useState(false);
+  const [isDataStreamReady, setIsDataStreamReady] = useState(false);
   const [error, setError] = useState<Error | null>(null);
 
   const contextRef = useRef<SkyWayContext | null>(null);
@@ -271,6 +272,9 @@ export function useSkyWay({ roomName, token, onMessage }: UseSkyWayOptions) {
       dataStreamPublicationIdRef.current = publication.id;
       dataStreamPublicationRef.current = publication;
 
+      // Signal that DataStream is ready for E2E test observability
+      setIsDataStreamReady(true);
+
       // Set up connection state monitoring for auto-recovery
       setupConnectionStateMonitoring(publication);
 
@@ -476,6 +480,7 @@ export function useSkyWay({ roomName, token, onMessage }: UseSkyWayOptions) {
       isDisconnectingRef.current = false;
       subscribedPublicationsRef.current.clear();
       setIsConnected(false);
+      setIsDataStreamReady(false);
       roomStoreActions.setIsConnected(false);
     }
   }, [roomStoreActions]);
@@ -516,6 +521,7 @@ export function useSkyWay({ roomName, token, onMessage }: UseSkyWayOptions) {
 
   return {
     isConnected,
+    isDataStreamReady,
     error,
     sendMessage,
     updateRoomMetadata,

@@ -2,6 +2,7 @@ import { useCallback } from 'react';
 import { useRoomStore } from '@/stores/roomStore';
 import { useUserStore } from '@/stores/userStore';
 import type { ChatMessage } from '@/types/message';
+import { createLegacyCompatibleFields } from '@/types/message';
 import type { ChatMessageItem } from '@/types/room';
 import { generateId } from '@/lib/utils';
 import axiosInstance from '@/lib/api';
@@ -27,8 +28,7 @@ export function useChat({ roomId, onSendMessage }: UseChatOptions) {
           senderName: user.name,
           senderIconUrl: user.iconUrl,
         },
-        senderId: user.id,
-        timestamp: Date.now(),
+        ...createLegacyCompatibleFields(user.id),
       };
 
       // Add to local state immediately

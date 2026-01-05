@@ -71,6 +71,7 @@ export function useRoom({
 
   const {
     isConnected,
+    isDataStreamReady,
     error: skyWayError,
     sendMessage,
     updateRoomMetadata,
@@ -250,6 +251,7 @@ export function useRoom({
   return {
     isLoading,
     isConnected,
+    isDataStreamReady,
     error,
     messages,
     reactions,

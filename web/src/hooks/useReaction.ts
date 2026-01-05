@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef } from 'react';
 import { useRoomStore } from '@/stores/roomStore';
 import { useUserStore } from '@/stores/userStore';
 import type { ReactionMessage } from '@/types/message';
+import { createLegacyCompatibleFields } from '@/types/message';
 import type { ReactionItem } from '@/types/room';
 import { generateId } from '@/lib/utils';
 
@@ -24,8 +25,7 @@ export function useReaction({ onSendReaction }: UseReactionOptions) {
       const message: ReactionMessage = {
         type: 'reaction',
         payload: { emoji },
-        senderId: userId,
-        timestamp: Date.now(),
+        ...createLegacyCompatibleFields(userId),
       };
 
       // Add to local state

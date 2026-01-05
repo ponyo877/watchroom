@@ -45,6 +45,7 @@ import type {
   StateResponseMessage,
   HeartbeatMessage,
 } from '@/types/message';
+import { createLegacyCompatibleFields } from '@/types/message';
 
 export default function RoomPage() {
   const { roomId, shortId } = useParams();
@@ -126,6 +127,7 @@ export default function RoomPage() {
   // SkyWay room connection
   const {
     isConnected,
+    isDataStreamReady,
     isLoading: isRoomLoading,
     error: roomError,
     sendChatMessage: skySendChat,
@@ -167,6 +169,7 @@ export default function RoomPage() {
   const {
     player,
     isReady: isPlayerReady,
+    isInitialSyncComplete,
     play,
     pause,
     seek,
@@ -290,6 +293,29 @@ export default function RoomPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Expose test state for E2E tests
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      (window as unknown as { __WATCHROOM_TEST__?: object }).__WATCHROOM_TEST__ = {
+        p2p: {
+          isConnected,
+          isDataStreamReady,
+          memberCount: roomStore.members.length,
+        },
+        sync: {
+          isPlayerReady,
+          hasInitialSync: isInitialSyncComplete,
+          currentVideoId: roomStore.currentVideo?.videoId ?? null,
+        },
+      };
+    }
+    return () => {
+      if (typeof window !== 'undefined') {
+        delete (window as unknown as { __WATCHROOM_TEST__?: object }).__WATCHROOM_TEST__;
+      }
+    };
+  }, [isConnected, isDataStreamReady, isPlayerReady, isInitialSyncComplete, roomStore.members.length, roomStore.currentVideo]);
+
   const handleVerifyPassword = async (password: string): Promise<boolean> => {
     if (!actualRoomId) return false;
 
@@ -386,8 +412,7 @@ export default function RoomPage() {
           title: video.title,
           thumbnail: video.thumbnail,
         },
-        senderId: userId,
-        timestamp: Date.now(),
+        ...createLegacyCompatibleFields(userId),
       };
       skySendMessage(syncMessage);
 

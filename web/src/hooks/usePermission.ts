@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useRoomStore } from '@/stores/roomStore';
 import { useUserStore } from '@/stores/userStore';
 import type { PermissionMessage } from '@/types/message';
+import { createLegacyCompatibleFields } from '@/types/message';
 
 type PermissionMode = 'creator' | 'specific' | 'all';
 
@@ -53,8 +54,7 @@ export function usePermission({ onSendPermission }: UsePermissionOptions) {
           mode,
           allowedUserIds: mode === 'specific' ? allowedUserIds : undefined,
         },
-        senderId: userId,
-        timestamp: Date.now(),
+        ...createLegacyCompatibleFields(userId),
       };
       onSendPermission(message);
     },
@@ -76,8 +76,7 @@ export function usePermission({ onSendPermission }: UsePermissionOptions) {
           granted: true,
           allowedUserIds: newAllowedIds,
         },
-        senderId: userId,
-        timestamp: Date.now(),
+        ...createLegacyCompatibleFields(userId),
       };
       onSendPermission(message);
     },
@@ -99,8 +98,7 @@ export function usePermission({ onSendPermission }: UsePermissionOptions) {
           granted: false,
           allowedUserIds: newAllowedIds,
         },
-        senderId: userId,
-        timestamp: Date.now(),
+        ...createLegacyCompatibleFields(userId),
       };
       onSendPermission(message);
     },

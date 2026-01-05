@@ -8,6 +8,7 @@ import type {
   StateResponseMessage,
   HeartbeatMessage,
 } from '@/types/message';
+import { createLegacyCompatibleFields, RTTEstimator } from '@/types/message';
 import { createPlayer, isPlaying } from '@/lib/youtube';
 
 interface UseVideoSyncOptions {
@@ -23,10 +24,12 @@ interface UseVideoSyncOptions {
 const isMobile = typeof navigator !== 'undefined' && /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
 
 // Adjusted constants for mobile compatibility
-const SYNC_THRESHOLD = isMobile ? 1 : 2; // seconds - tighter threshold on mobile
+// Based on WatchRoom P2P Video Sync Protocol v2.0 timing constraints
+const SYNC_THRESHOLD = 2; // seconds - max drift before hard sync
 const HEARTBEAT_INTERVAL = 5000; // 5 seconds between heartbeats
-const STATE_RESPONSE_TIMEOUT = isMobile ? 2000 : 1000; // Longer timeout on mobile networks
+const STATE_RESPONSE_TIMEOUT = isMobile ? 5000 : 3000; // Extended timeout for reliable state collection
 const MAX_VIDEO_READY_RETRIES = isMobile ? 100 : 50; // 10 seconds on mobile (100ms × 100)
+const CONTROLLER_RESPONSE_DELAY = 500; // Non-controller delay to prioritize controller responses
 
 export function useVideoSync({
   elementId,
@@ -38,6 +41,7 @@ export function useVideoSync({
 }: UseVideoSyncOptions) {
   const [player, setPlayer] = useState<YouTubePlayer | null>(null);
   const [isReady, setIsReady] = useState(false);
+  const [isInitialSyncComplete, setIsInitialSyncComplete] = useState(false);
   const lastSyncRef = useRef<number>(0);
   const isSyncingRef = useRef(false);
   const hasInitialSyncRef = useRef(false);
@@ -48,6 +52,15 @@ export function useVideoSync({
   const pendingStateRequestRef = useRef<string | null>(null);
   const stateResponsesRef = useRef<StateResponseMessage[]>([]);
   const stateResponseTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // Store t1 for NTP-style RTT calculation
+  const stateRequestT1Ref = useRef<number>(0);
+
+  // RTT Estimator for accurate network latency measurement (NTP RFC 5905)
+  const rttEstimatorRef = useRef(new RTTEstimator());
+  // Epoch counter for state versioning
+  const epochRef = useRef<number>(0);
+  // Heartbeat sequence for loss detection
+  const heartbeatSequenceRef = useRef<number>(0);
 
   // Refs to hold latest callback versions (to avoid stale closures in setTimeout)
   const processBestStateResponseRef = useRef<() => void>(() => {});
@@ -92,8 +105,7 @@ export function useVideoSync({
         type: 'sync',
         action,
         payload,
-        senderId: userId,
-        timestamp: Date.now(),
+        ...createLegacyCompatibleFields(userId),
       };
       onSendSync(message);
     },
@@ -106,16 +118,28 @@ export function useVideoSync({
   }, [userId]);
 
   // Send state request for late joiner sync
+  // Uses NTP-style timestamps for accurate RTT measurement
   const sendStateRequest = useCallback(() => {
     const requestId = generateRequestId();
     pendingStateRequestRef.current = requestId;
     stateResponsesRef.current = [];
 
+    // Store t1 for NTP-style RTT calculation
+    const t1 = Date.now();
+    stateRequestT1Ref.current = t1;
+
     const message: StateRequestMessage = {
       type: 'state_request',
-      payload: { requestId },
-      senderId: userId,
-      timestamp: Date.now(),
+      payload: {
+        requestId,
+        t1,
+        requesterState: {
+          hasVideo: !!currentVideo?.videoId,
+          videoId: currentVideo?.videoId,
+          lastKnownEpoch: epochRef.current,
+        },
+      },
+      ...createLegacyCompatibleFields(userId),
     };
     onSendStateRequest(message);
 
@@ -127,9 +151,10 @@ export function useVideoSync({
       // Use ref to get the latest version of the callback (avoids stale closure)
       processBestStateResponseRef.current();
     }, STATE_RESPONSE_TIMEOUT);
-  }, [userId, onSendStateRequest, generateRequestId]);
+  }, [userId, currentVideo, onSendStateRequest, generateRequestId]);
 
-  // Process the best state response (most recent responderTime)
+  // Process the best state response
+  // Prioritizes controller responses and uses NTP-style RTT calculation
   const processBestStateResponse = useCallback(() => {
     const responses = stateResponsesRef.current;
     if (responses.length === 0) {
@@ -140,22 +165,52 @@ export function useVideoSync({
         syncToStateRef.current(playbackState, true);
       }
       hasInitialSyncRef.current = true;
+      setIsInitialSyncComplete(true);
       pendingStateRequestRef.current = null;
       return;
     }
 
-    // Find the response with the most recent responderTime
-    const bestResponse = responses.reduce((best, current) =>
+    // Prioritize controller responses (Primary-Backup replication)
+    const controllerResponses = responses.filter(r => r.payload.isController);
+    const candidates = controllerResponses.length > 0 ? controllerResponses : responses;
+
+    // Find the response with the most recent responderTime among candidates
+    const bestResponse = candidates.reduce((best, current) =>
       current.payload.responderTime > best.payload.responderTime ? current : best
     );
 
-    console.log('[useVideoSync] Processing best state response:', bestResponse);
+    console.log('[useVideoSync] Processing best state response:', {
+      isController: bestResponse.payload.isController,
+      epoch: bestResponse.payload.epoch,
+      totalResponses: responses.length,
+      controllerResponses: controllerResponses.length,
+    });
 
-    // Calculate adjusted time based on network latency
-    const networkLatency = (Date.now() - bestResponse.timestamp) / 1000;
+    // NTP-style RTT calculation for accurate time adjustment
+    const t4 = Date.now();
+    const t1 = bestResponse.payload.t1 || stateRequestT1Ref.current;
+    const t2 = bestResponse.payload.t2 || bestResponse.timestamp;
+    const t3 = bestResponse.payload.t3 || bestResponse.payload.responderTime;
+
+    // Add RTT sample for future estimations
+    rttEstimatorRef.current.addSample(t1, t2, t3, t4);
+
+    // Calculate clock offset using NTP algorithm
+    const clockOffset = rttEstimatorRef.current.calculateClockOffset(t1, t2, t3, t4);
+
+    // Calculate adjusted time with NTP-style compensation
+    const wallClockAtTime = bestResponse.payload.wallClockAtTime || bestResponse.payload.responderTime;
+    const elapsedMs = (t4 - wallClockAtTime) - clockOffset;
+    const elapsedSeconds = Math.max(0, elapsedMs / 1000);
+
     let adjustedTime = bestResponse.payload.currentTime;
     if (bestResponse.payload.isPlaying) {
-      adjustedTime += networkLatency * bestResponse.payload.playbackRate;
+      adjustedTime += elapsedSeconds * bestResponse.payload.playbackRate;
+    }
+
+    // Update epoch from response
+    if (bestResponse.payload.epoch) {
+      epochRef.current = Math.max(epochRef.current, bestResponse.payload.epoch);
     }
 
     // Apply the state
@@ -171,11 +226,13 @@ export function useVideoSync({
     }
 
     hasInitialSyncRef.current = true;
+    setIsInitialSyncComplete(true);
     pendingStateRequestRef.current = null;
     stateResponsesRef.current = [];
   }, [player, isReady, playbackState]);
 
   // Handle incoming state request - respond with current player state
+  // Uses NTP-style timestamps and controller prioritization
   const handleStateRequest = useCallback(
     (message: StateRequestMessage) => {
       // Only respond if we have a player and video
@@ -183,30 +240,50 @@ export function useVideoSync({
       // Don't respond to our own requests
       if (message.senderId === userId) return;
 
-      const currentTime = player.getCurrentTime();
-      const currentIsPlaying = isPlaying(player);
-      const currentRate = player.getPlaybackRate();
+      const sendResponse = () => {
+        // Re-check conditions in case state changed during delay
+        if (!player || !isReady || !currentVideo?.videoId) return;
 
-      const response: StateResponseMessage = {
-        type: 'state_response',
-        payload: {
-          requestId: message.payload.requestId,
-          videoId: currentVideo.videoId,
-          title: currentVideo.title,
-          thumbnail: currentVideo.thumbnail,
-          currentTime,
-          isPlaying: currentIsPlaying,
-          playbackRate: currentRate,
-          responderId: userId,
-          responderTime: Date.now(),
-        },
-        senderId: userId,
-        timestamp: Date.now(),
+        const t2 = Date.now(); // Server receive time
+        const currentTime = player.getCurrentTime();
+        const currentIsPlaying = isPlaying(player);
+        const currentRate = player.getPlaybackRate();
+        const t3 = Date.now(); // Server send time
+
+        const response: StateResponseMessage = {
+          type: 'state_response',
+          payload: {
+            requestId: message.payload.requestId,
+            t1: message.payload.t1 || message.timestamp,
+            t2,
+            t3,
+            videoId: currentVideo.videoId,
+            title: currentVideo.title,
+            thumbnail: currentVideo.thumbnail,
+            currentTime,
+            isPlaying: currentIsPlaying,
+            playbackRate: currentRate,
+            wallClockAtTime: t3,
+            responderId: userId,
+            responderTime: t3,
+            isController: hasControlPermission,
+            epoch: epochRef.current,
+          },
+          ...createLegacyCompatibleFields(userId),
+        };
+
+        onSendStateResponse(response);
       };
 
-      onSendStateResponse(response);
+      // Controller responds immediately, non-controller delays to give controller priority
+      if (hasControlPermission) {
+        sendResponse();
+      } else {
+        // Non-controller delay allows controller response to arrive first
+        setTimeout(sendResponse, CONTROLLER_RESPONSE_DELAY);
+      }
     },
-    [player, isReady, currentVideo, userId, onSendStateResponse]
+    [player, isReady, currentVideo, userId, hasControlPermission, onSendStateResponse]
   );
 
   // Handle incoming state response
@@ -225,6 +302,7 @@ export function useVideoSync({
   }, []);
 
   // Handle heartbeat messages
+  // Uses wallClockAtTime for more accurate time adjustment
   const handleHeartbeat = useCallback(
     (message: HeartbeatMessage) => {
       // Ignore our own heartbeats
@@ -234,10 +312,21 @@ export function useVideoSync({
       // Don't process if we have control permission (we're the authority)
       if (hasControlPermission) return;
 
-      const networkLatency = (Date.now() - message.timestamp) / 1000;
+      const now = Date.now();
+      const wallClockAtTime = message.payload.wallClockAtTime || message.timestamp;
+
+      // Calculate elapsed time since heartbeat was sent
+      const elapsedMs = now - wallClockAtTime;
+      const elapsedSeconds = Math.max(0, elapsedMs / 1000);
+
       let adjustedTime = message.payload.currentTime;
       if (message.payload.isPlaying) {
-        adjustedTime += networkLatency * message.payload.playbackRate;
+        adjustedTime += elapsedSeconds * message.payload.playbackRate;
+      }
+
+      // Update epoch from heartbeat
+      if (message.payload.epoch) {
+        epochRef.current = Math.max(epochRef.current, message.payload.epoch);
       }
 
       // Only sync if difference is significant
@@ -245,7 +334,7 @@ export function useVideoSync({
         const currentTime = player.getCurrentTime();
         const diff = Math.abs(currentTime - adjustedTime);
         if (diff > SYNC_THRESHOLD) {
-          console.log(`[useVideoSync] Heartbeat sync: diff=${diff.toFixed(2)}s`);
+          console.log(`[useVideoSync] Heartbeat sync: diff=${diff.toFixed(2)}s, epoch=${message.payload.epoch}`);
           // Use ref to get latest syncToState (avoids stale closure)
           syncToStateRef.current({
             currentTime: adjustedTime,
@@ -260,8 +349,12 @@ export function useVideoSync({
   );
 
   // Send heartbeat if we have control permission
+  // Includes epoch and sequence number for loss detection
   const sendHeartbeat = useCallback(() => {
     if (!player || !isReady || !hasControlPermission || !currentVideo?.videoId) return;
+
+    const now = Date.now();
+    heartbeatSequenceRef.current++;
 
     const message: HeartbeatMessage = {
       type: 'heartbeat',
@@ -270,9 +363,12 @@ export function useVideoSync({
         currentTime: player.getCurrentTime(),
         isPlaying: isPlaying(player),
         playbackRate: player.getPlaybackRate(),
+        wallClockAtTime: now,
+        epoch: epochRef.current,
+        memberCount: 0, // Will be filled by room store
+        heartbeatSequence: heartbeatSequenceRef.current,
       },
-      senderId: userId,
-      timestamp: Date.now(),
+      ...createLegacyCompatibleFields(userId),
     };
 
     onSendHeartbeat(message);
@@ -534,6 +630,7 @@ export function useVideoSync({
       } else {
         // First user (creator): no state to sync
         hasInitialSyncRef.current = true;
+        setIsInitialSyncComplete(true);
       }
     }
   }, [isReady, player, playbackState.lastUpdated, sendStateRequest]);
@@ -548,6 +645,8 @@ export function useVideoSync({
   return {
     player,
     isReady,
+    isInitialSyncComplete,
+    epoch: epochRef.current,
     play,
     pause,
     seek,
