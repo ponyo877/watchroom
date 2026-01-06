@@ -167,6 +167,7 @@ export default function RoomPage() {
     handleStateResponse,
     handleHeartbeat,
     setUserInteraction,
+    performDeferredSync,
   } = useVideoSync({
     elementId: playerElementId.current,
     videoId: roomStore.currentVideo?.videoId ?? null,
@@ -743,10 +744,10 @@ export default function RoomPage() {
                   setUserInteraction();
                   // 視聴開始済みフラグを設定
                   setHasJoined(true);
-                  // 再生開始（ユーザー操作として認識される）
-                  if (player && roomStore.playbackState.isPlaying) {
-                    player.playVideo();
-                  }
+                  // 最新の再生位置に同期して再生開始
+                  // 【重要】State Response受信からユーザークリックまでの経過時間を補正して、
+                  // 他のユーザーと同じ位置から再生を開始する
+                  performDeferredSync();
                 }}
               />
             )}

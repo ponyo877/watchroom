@@ -52,6 +52,7 @@ import {
   DEFAULT_SYNC_SNAPSHOT,
   TIMING_CONSTANTS,
 } from '../types';
+import { useRoomStore } from '@/stores/roomStore';
 
 /**
  * SyncEngineのイベントデータ
@@ -479,6 +480,75 @@ export class SyncEngine extends EventEmitter<SyncEngineEventType, SyncEngineEven
     this.playerController.syncToState(state);
   }
 
+  /**
+   * 遅延同期を実行
+   *
+   * 【用途】
+   * JoinOverlay表示中にユーザー操作を待っていた場合、
+   * ユーザー操作後に最新の再生状態に同期する。
+   *
+   * 【処理フロー】
+   * 1. 現在のplaybackStateをZustandストアから取得
+   * 2. lastUpdatedからの経過時間を計算
+   * 3. 再生中の場合、経過時間×再生速度を加算
+   * 4. PlayerControllerでシーク＆再生
+   *
+   * 【タイムライン例】
+   * ```
+   * T1: State Response受信、playbackState更新 (currentTime=10秒)
+   * T1〜T2: Heartbeat受信で playbackState が更新される
+   * T2: ユーザーが「視聴開始」をクリック
+   *     └─ このメソッドが呼ばれる
+   *     └─ lastUpdated からの経過時間を計算
+   *     └─ currentTime + elapsed * playbackRate でシーク先を算出
+   *     └─ プレイヤーを最新位置に同期
+   * ```
+   */
+  performDeferredSync(): void {
+    const { playbackState } = useRoomStore.getState();
+
+    // playbackStateが一度も更新されていない場合はスキップ
+    if (playbackState.lastUpdated === 0) {
+      console.log('[SyncEngine] performDeferredSync: No playback state yet');
+      return;
+    }
+
+    const now = Date.now();
+    const elapsedMs = now - playbackState.lastUpdated;
+    const elapsedSeconds = Math.max(0, elapsedMs / 1000);
+
+    // 再生中の場合は経過時間を加算、一時停止中はそのまま
+    const targetTime = playbackState.isPlaying
+      ? playbackState.currentTime + elapsedSeconds * playbackState.playbackRate
+      : playbackState.currentTime;
+
+    console.log('[SyncEngine] performDeferredSync:', {
+      originalTime: playbackState.currentTime,
+      elapsedSeconds,
+      playbackRate: playbackState.playbackRate,
+      isPlaying: playbackState.isPlaying,
+      targetTime,
+    });
+
+    // プレイヤーを最新位置に同期（isInitialSync=falseで呼ぶことで再生も行う）
+    this.playerController.syncToState({
+      currentTime: targetTime,
+      isPlaying: playbackState.isPlaying,
+      playbackRate: playbackState.playbackRate,
+      lastUpdated: now,
+    }, false);
+
+    // 初期同期が完了していなければ完了とする
+    if (!this.hasInitialSync) {
+      this.hasInitialSync = true;
+      this.heartbeatProtocol.setInitialSyncComplete();
+      this.updateSnapshot({
+        status: this.hasControlPermission ? 'authority' : 'synced',
+        hasInitialSync: true,
+      });
+    }
+  }
+
   // ============================================================
   // メッセージ受信
   // ============================================================
@@ -496,13 +566,20 @@ export class SyncEngine extends EventEmitter<SyncEngineEventType, SyncEngineEven
 
   /**
    * Syncメッセージを処理
+   *
+   * 【全員操作可能モード対応】
+   * hasControlPermissionではなくheartbeatProtocol.isRunning()でチェック。
+   * - ハートビート送信中の人: 他者のSyncメッセージを無視
+   * - それ以外の人: 他者のSyncメッセージで同期
+   * これにより「全員操作可能」モードでも正しく同期される。
    */
   private handleSyncMessage(message: SyncMessage): void {
     // 自分のメッセージは無視
     if (message.senderId === this.config.userId) return;
 
-    // 権限者は他者のSyncメッセージを無視
-    if (this.hasControlPermission) return;
+    // ハートビート送信中（Authority役割中）は他者のSyncメッセージを無視
+    // 【重要】hasControlPermissionではなくisRunning()でチェック
+    if (this.heartbeatProtocol.isRunning()) return;
 
     // 論理時刻を更新
     this.clockManager.updateLogicalClock(message.logicalClock);

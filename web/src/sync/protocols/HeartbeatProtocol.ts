@@ -50,6 +50,7 @@ import type { NetworkManager } from '../core/NetworkManager';
 import type { PlayerController } from '../core/PlayerController';
 import type { HeartbeatMessage } from '@/types/message';
 import { TIMING_CONSTANTS, type PlaybackState } from '../types';
+import { useRoomStore } from '@/stores/roomStore';
 
 /**
  * HeartbeatProtocolの設定
@@ -212,21 +213,25 @@ export class HeartbeatProtocol {
    *
    * 【処理フロー】
    * 1. 自分のハートビートは無視
-   * 2. 初期同期未完了なら無視
-   * 3. 権限者なら無視（自分がAuthority）
-   * 4. パケットロス検出
-   * 5. 時刻補正計算
-   * 6. ドリフトが閾値を超えたらシーク
+   * 2. 自分がハートビート送信中なら無視（Authority役割中）
+   * 3. 時刻補正を計算
+   * 4. roomStoreのplaybackStateを更新（JoinOverlay用）
+   * 5. 初期同期完了済みならドリフト判定＆シーク
+   *
+   * 【全員操作可能モード対応】
+   * hasControlPermissionではなくisRunning()でチェックすることで、
+   * 「全員操作可能」モードでも正しく同期される。
+   * - ハートビート送信中の人: 他者のハートビートを無視
+   * - それ以外の人: 他者のハートビートで同期
    */
   private handleHeartbeat(message: HeartbeatMessage): void {
     // 自分のハートビートは無視
     if (message.senderId === this.config.userId) return;
 
-    // 初期同期未完了なら無視
-    if (!this.hasInitialSync) return;
-
-    // 権限者なら無視（自分がAuthority）
-    if (this.config.hasControlPermission()) return;
+    // 自分がハートビート送信中なら無視（Authority役割中）
+    // 【重要】hasControlPermissionではなくisRunning()でチェック
+    // これにより「全員操作可能」モードでも、実際にハートビートを送信している人以外は同期を受ける
+    if (this.isRunning()) return;
 
     // パケットロス検出
     this.detectPacketLoss(message.payload.heartbeatSequence);
@@ -247,6 +252,26 @@ export class HeartbeatProtocol {
       adjustedTime += elapsedSeconds * message.payload.playbackRate;
     }
 
+    // roomStoreのplaybackStateを更新
+    // 【重要】JoinOverlay表示中でもplaybackStateを最新に保つことで、
+    // performDeferredSyncが正確な時刻を取得できる
+    const playbackState: PlaybackState = {
+      currentTime: adjustedTime,
+      isPlaying: message.payload.isPlaying,
+      playbackRate: message.payload.playbackRate,
+      lastUpdated: now,
+    };
+    useRoomStore.getState().setPlaybackState(playbackState);
+
+    // 初期同期未完了ならプレイヤー同期はスキップ（JoinOverlay表示中）
+    if (!this.hasInitialSync) {
+      console.log('[HeartbeatProtocol] Received heartbeat (pre-join), playbackState updated:', {
+        adjustedTime: adjustedTime.toFixed(2),
+        isPlaying: message.payload.isPlaying,
+      });
+      return;
+    }
+
     // ドリフト判定
     if (this.playerController.isPlayerReady()) {
       const localTime = this.playerController.getCurrentTime();
@@ -254,17 +279,13 @@ export class HeartbeatProtocol {
 
       // 閾値を超えたらシーク
       if (drift > TIMING_CONSTANTS.SYNC_THRESHOLD) {
-        console.log(`[HeartbeatProtocol] Drift detected: ${drift.toFixed(2)}s, syncing`);
-
-        const state: PlaybackState = {
-          currentTime: adjustedTime,
-          isPlaying: message.payload.isPlaying,
-          playbackRate: message.payload.playbackRate,
-          lastUpdated: Date.now(),
-        };
+        console.log(`[HeartbeatProtocol] Drift detected: ${drift.toFixed(2)}s > ${TIMING_CONSTANTS.SYNC_THRESHOLD}s, syncing to ${adjustedTime.toFixed(2)}s`);
 
         // コールバックで同期を通知
-        this.config.onSyncNeeded?.(state);
+        this.config.onSyncNeeded?.(playbackState);
+      } else {
+        // ドリフトが小さい場合もログ（デバッグ用）
+        console.log(`[HeartbeatProtocol] In sync: drift=${drift.toFixed(2)}s, local=${localTime.toFixed(2)}s, remote=${adjustedTime.toFixed(2)}s`);
       }
     }
   }

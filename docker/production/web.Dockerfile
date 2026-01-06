@@ -15,6 +15,9 @@ RUN pnpm install --frozen-lockfile
 # Copy source code
 COPY web/ ./
 
+# Remove test artifacts that might have been copied
+RUN rm -rf playwright-report test-results .playwright node_modules/.vite
+
 # Build arguments for environment variables
 ARG VITE_API_URL
 ARG VITE_SKYWAY_APP_ID

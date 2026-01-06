@@ -353,6 +353,19 @@ export interface UseVideoSyncReturn {
    * クリックイベントハンドラ内から同期的に呼び出すこと。
    */
   setUserInteraction: () => void;
+
+  /**
+   * 遅延同期を実行
+   *
+   * JoinOverlay表示中にState Response/Heartbeatで状態を受信したが、
+   * ユーザー操作待ちで再生を開始していなかった場合に、
+   * ユーザー操作後に最新の再生位置に同期する。
+   *
+   * 【用途】
+   * JoinOverlayの「視聴開始」ボタンクリック時に、
+   * setUserInteraction() の後に呼び出す。
+   */
+  performDeferredSync: () => void;
 }
 
 // ============================================================

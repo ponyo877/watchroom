@@ -245,6 +245,22 @@ export function useVideoSync({
     engineRef.current?.setUserInteraction();
   }, []);
 
+  /**
+   * 遅延同期を実行
+   *
+   * 【用途】
+   * JoinOverlay表示中にState Response/Heartbeatで状態を受信したが、
+   * ユーザー操作待ちで再生を開始していなかった場合に、
+   * ユーザー操作後に最新の再生位置に同期する。
+   *
+   * 【呼び出しタイミング】
+   * JoinOverlayの「視聴開始」ボタンクリック時に、
+   * setUserInteraction() の後に呼び出す。
+   */
+  const performDeferredSync = useCallback(() => {
+    engineRef.current?.performDeferredSync();
+  }, []);
+
   // ============================================================
   // メッセージハンドラ（既存コードとの互換性）
   // ============================================================
@@ -317,5 +333,6 @@ export function useVideoSync({
     handleStateResponse,
     handleHeartbeat,
     setUserInteraction,
+    performDeferredSync,
   };
 }

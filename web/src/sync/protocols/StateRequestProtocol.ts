@@ -53,6 +53,7 @@ import type {
   StateResponseMessage,
 } from '@/types/message';
 import { TIMING_CONSTANTS, PLAYER_STATE, type PlaybackState } from '../types';
+import { useRoomStore } from '@/stores/roomStore';
 
 /**
  * StateRequestProtocolの設定
@@ -364,6 +365,15 @@ export class StateRequestProtocol {
     if (bestResponse.payload.epoch) {
       this.clockManager.updateEpoch(bestResponse.payload.epoch);
     }
+
+    // roomStoreのplaybackStateを更新
+    // 【重要】JoinOverlay表示中でもplaybackStateを最新に保つことで、
+    // performDeferredSyncが正確な時刻を取得できる
+    useRoomStore.getState().setPlaybackState(adjustedState);
+    console.log('[StateRequestProtocol] Updated roomStore playbackState:', {
+      currentTime: adjustedState.currentTime.toFixed(2),
+      isPlaying: adjustedState.isPlaying,
+    });
 
     // リセット
     this.pendingRequestId = null;
