@@ -156,12 +156,13 @@ export function useVideoSync({
     console.log('[useVideoSync] useEffect 2: hasControlPermission changed:', {
       hasControlPermission,
       hasEngine: !!engine,
+      engineVersion,
     });
     if (!engine) return;
 
     // 権限変更をエンジンに通知
     engine.setControlPermission(hasControlPermission);
-  }, [hasControlPermission]);
+  }, [hasControlPermission, engineVersion]); // engineVersion追加: エンジン作成後に再実行
 
   // ============================================================
   // useEffect 3: playbackState変更時の外部状態同期
