@@ -172,17 +172,32 @@ export class HeartbeatProtocol {
    */
   private sendHeartbeat(): void {
     // プレイヤー未準備なら送信しない
-    if (!this.playerController.isPlayerReady()) return;
+    if (!this.playerController.isPlayerReady()) {
+      console.log('[HeartbeatProtocol] sendHeartbeat skipped: player not ready');
+      return;
+    }
 
     // ビデオなしなら送信しない
     const videoId = this.config.getCurrentVideoId();
-    if (!videoId) return;
+    if (!videoId) {
+      console.log('[HeartbeatProtocol] sendHeartbeat skipped: no videoId');
+      return;
+    }
 
     // 権限がなければ送信しない
-    if (!this.config.hasControlPermission()) return;
+    if (!this.config.hasControlPermission()) {
+      console.log('[HeartbeatProtocol] sendHeartbeat skipped: no control permission');
+      return;
+    }
 
     const now = Date.now();
     this.heartbeatSequence++;
+
+    console.log('[HeartbeatProtocol] Sending heartbeat:', {
+      videoId,
+      currentTime: this.playerController.getCurrentTime().toFixed(2),
+      sequence: this.heartbeatSequence,
+    });
 
     const message: HeartbeatMessage = {
       type: 'heartbeat',
