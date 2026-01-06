@@ -47,6 +47,7 @@ export function useRoom({
 
   // Main message handler that uses refs
   const handleMessage = useCallback((message: DataStreamMessage) => {
+    console.log('[useRoom] handleMessage:', message.type, message.senderId);
     switch (message.type) {
       case 'sync':
         handleSyncMessageRef.current(message as SyncMessage);

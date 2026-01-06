@@ -240,13 +240,26 @@ export class HeartbeatProtocol {
    * - それ以外の人: 他者のハートビートで同期
    */
   private handleHeartbeat(message: HeartbeatMessage): void {
+    console.log('[HeartbeatProtocol] handleHeartbeat called:', {
+      senderId: message.senderId,
+      myUserId: this.config.userId,
+      isRunning: this.isRunning(),
+      sequence: message.payload.heartbeatSequence,
+    });
+
     // 自分のハートビートは無視
-    if (message.senderId === this.config.userId) return;
+    if (message.senderId === this.config.userId) {
+      console.log('[HeartbeatProtocol] handleHeartbeat: ignoring own heartbeat');
+      return;
+    }
 
     // 自分がハートビート送信中なら無視（Authority役割中）
     // 【重要】hasControlPermissionではなくisRunning()でチェック
     // これにより「全員操作可能」モードでも、実際にハートビートを送信している人以外は同期を受ける
-    if (this.isRunning()) return;
+    if (this.isRunning()) {
+      console.log('[HeartbeatProtocol] handleHeartbeat: ignoring because I am running heartbeat');
+      return;
+    }
 
     // パケットロス検出
     this.detectPacketLoss(message.payload.heartbeatSequence);

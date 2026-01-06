@@ -195,6 +195,7 @@ export function useSkyWay({ roomName, token, onMessage }: UseSkyWayOptions) {
     (data: string) => {
       try {
         const message = JSON.parse(data) as DataStreamMessage;
+        console.log('[useSkyWay] Received message:', message.type, message.senderId);
         onMessage?.(message);
       } catch (e) {
         console.error('Failed to parse message:', e);
@@ -205,6 +206,13 @@ export function useSkyWay({ roomName, token, onMessage }: UseSkyWayOptions) {
 
   const subscribeToMember = useCallback(
     async (publication: RoomPublication) => {
+      console.log('[useSkyWay] subscribeToMember called:', {
+        contentType: publication.contentType,
+        publisherId: publication.publisher.id,
+        myMemberId: memberRef.current?.id,
+        alreadySubscribed: subscribedPublicationsRef.current.has(publication.id),
+      });
+
       // Skip non-data streams
       if (publication.contentType !== 'data') return;
       // Skip own publications
@@ -215,8 +223,12 @@ export function useSkyWay({ roomName, token, onMessage }: UseSkyWayOptions) {
       try {
         subscribedPublicationsRef.current.add(publication.id);
         const subscription = await memberRef.current?.subscribe(publication.id);
-        if (!subscription) return;
+        if (!subscription) {
+          console.log('[useSkyWay] subscribeToMember: subscription failed (null)');
+          return;
+        }
 
+        console.log('[useSkyWay] subscribeToMember: subscribed successfully to', publication.publisher.id);
         const stream = subscription.stream as RemoteDataStream;
         stream.onData.add((data) => {
           if (typeof data === 'string') {
