@@ -108,18 +108,64 @@ export function useRoom({
   }, [onStateRequest]);
 
   // Update state response handler ref
+  // Also extract video info and playback state from state response for late joiners
   useEffect(() => {
-    if (onStateResponse) {
-      handleStateResponseRef.current = onStateResponse;
-    }
-  }, [onStateResponse]);
+    handleStateResponseRef.current = (message: StateResponseMessage) => {
+      // Extract video info for late joiners who don't have current video set
+      const currentVideo = useRoomStore.getState().currentVideo;
+      if (!currentVideo && message.payload.videoId) {
+        roomStoreActions.setCurrentVideo({
+          videoId: message.payload.videoId,
+          title: message.payload.title ?? '',
+          thumbnail: message.payload.thumbnail ?? '',
+        });
+      }
+
+      // Also extract playback state for late joiners
+      const playbackState = useRoomStore.getState().playbackState;
+      if (playbackState.lastUpdated === 0 && message.payload.videoId) {
+        roomStoreActions.setPlaybackState({
+          currentTime: message.payload.currentTime,
+          isPlaying: message.payload.isPlaying,
+          playbackRate: message.payload.playbackRate,
+          lastUpdated: message.timestamp,
+        });
+      }
+
+      // Also call the external handler if provided
+      onStateResponse?.(message);
+    };
+  }, [onStateResponse, roomStoreActions]);
 
   // Update heartbeat handler ref
+  // Also extract video info and playback state from heartbeat for late joiners
   useEffect(() => {
-    if (onHeartbeat) {
-      handleHeartbeatRef.current = onHeartbeat;
-    }
-  }, [onHeartbeat]);
+    handleHeartbeatRef.current = (message: HeartbeatMessage) => {
+      // Extract video info for late joiners who don't have current video set
+      const currentVideo = useRoomStore.getState().currentVideo;
+      if (!currentVideo && message.payload.videoId) {
+        roomStoreActions.setCurrentVideo({
+          videoId: message.payload.videoId,
+          title: '', // Heartbeat doesn't include title/thumbnail
+          thumbnail: '',
+        });
+      }
+
+      // Also extract playback state for late joiners
+      const playbackState = useRoomStore.getState().playbackState;
+      if (playbackState.lastUpdated === 0 && message.payload.videoId) {
+        roomStoreActions.setPlaybackState({
+          currentTime: message.payload.currentTime,
+          isPlaying: message.payload.isPlaying,
+          playbackRate: message.payload.playbackRate,
+          lastUpdated: message.timestamp,
+        });
+      }
+
+      // Also call the external handler if provided
+      onHeartbeat?.(message);
+    };
+  }, [onHeartbeat, roomStoreActions]);
 
   // Sync message handler
   const handleSyncMessage = useCallback(

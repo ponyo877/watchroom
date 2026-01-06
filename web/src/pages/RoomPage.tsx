@@ -18,7 +18,7 @@ import { useRoomStore } from '@/stores/roomStore';
 import { useUserStore } from '@/stores/userStore';
 import { useShortUrl } from '@/hooks/useShortUrl';
 import { useModeration } from '@/hooks/useModeration';
-import { useVideoSync } from '@/hooks/useVideoSync';
+import { useVideoSync } from '@/sync';
 import { useRoom } from '@/hooks/useRoom';
 import { usePlayerKeyboard } from '@/hooks/usePlayerKeyboard';
 import axiosInstance from '@/lib/api';
@@ -34,6 +34,7 @@ import RoomSettings from '@/components/room/RoomSettings';
 import PasswordDialog from '@/components/room/PasswordDialog';
 import PasswordSettingsDialog from '@/components/room/PasswordSettingsDialog';
 import ShareButton from '@/components/room/ShareButton';
+import JoinOverlay from '@/components/room/JoinOverlay';
 import BottomSheet from '@/components/common/BottomSheet';
 import LandscapeSidePanel from '@/components/common/LandscapeSidePanel';
 import Loading from '@/components/common/Loading';
@@ -44,6 +45,7 @@ import type {
   StateRequestMessage,
   StateResponseMessage,
   HeartbeatMessage,
+  DataStreamMessage,
 } from '@/types/message';
 import { useMessageFieldsStore } from '@/stores/messageFieldsStore';
 
@@ -142,30 +144,16 @@ export default function RoomPage() {
     onHeartbeat: handleIncomingHeartbeat,
   });
 
-  // Video sync hook
-  const handleSendSync = useCallback((message: SyncMessage) => {
+  // Video sync hook - sendMessage wrapper
+  const sendMessageWrapper = useCallback(async (message: DataStreamMessage) => {
     if (isConnected) {
-      skySendMessage(message);
+      return skySendMessage(message);
     }
+    return false;
   }, [isConnected, skySendMessage]);
 
-  const handleSendStateRequest = useCallback((message: StateRequestMessage) => {
-    if (isConnected) {
-      skySendMessage(message);
-    }
-  }, [isConnected, skySendMessage]);
-
-  const handleSendStateResponse = useCallback((message: StateResponseMessage) => {
-    if (isConnected) {
-      skySendMessage(message);
-    }
-  }, [isConnected, skySendMessage]);
-
-  const handleSendHeartbeat = useCallback((message: HeartbeatMessage) => {
-    if (isConnected) {
-      skySendMessage(message);
-    }
-  }, [isConnected, skySendMessage]);
+  // 視聴開始済みフラグ（JoinOverlayでクリック済み）
+  const [hasJoined, setHasJoined] = useState(false);
 
   const {
     player,
@@ -178,13 +166,15 @@ export default function RoomPage() {
     handleStateRequest,
     handleStateResponse,
     handleHeartbeat,
+    setUserInteraction,
   } = useVideoSync({
     elementId: playerElementId.current,
-    onSendSync: handleSendSync,
-    onSendStateRequest: handleSendStateRequest,
-    onSendStateResponse: handleSendStateResponse,
-    onSendHeartbeat: handleSendHeartbeat,
-    onMutedChange: setIsMuted, // Sync mute state with player
+    videoId: roomStore.currentVideo?.videoId ?? null,
+    playbackState: roomStore.playbackState,
+    hasControlPermission: roomStore.hasControlPermission,
+    sendMessage: sendMessageWrapper,
+    createMessageFields,
+    onMutedChange: setIsMuted,
   });
 
   // Wire up video sync handlers to refs
@@ -731,6 +721,35 @@ export default function RoomPage() {
 
             {/* Reaction overlay - z-index higher than blocker */}
             <ReactionOverlay reactions={roomStore.reactions} className="z-20" />
+
+            {/* Join Overlay - 視聴開始ボタン（Late Joiner向け） */}
+            {/* 表示条件:
+                - 動画が選択されている
+                - プレイヤーが準備完了
+                - まだ視聴開始ボタンをクリックしていない
+                - 動画が再生中（他のユーザーが再生を開始した）
+                - Late Joinerである（playbackState.lastUpdated > 0 かつ自分が設定したものではない）
+                - 権限者（creator）ではない（creator は自分で動画を選択・再生するため）
+            */}
+            {roomStore.currentVideo && isPlayerReady && !hasJoined &&
+              roomStore.playbackState.isPlaying &&
+              roomStore.playbackState.lastUpdated > 0 &&
+              !roomStore.isCreator && (
+              <JoinOverlay
+                videoTitle={roomStore.currentVideo.title}
+                videoThumbnail={roomStore.currentVideo.thumbnail}
+                onJoin={() => {
+                  // 同期的にユーザー操作フラグを設定（重要：これがないと自動再生がブロックされる）
+                  setUserInteraction();
+                  // 視聴開始済みフラグを設定
+                  setHasJoined(true);
+                  // 再生開始（ユーザー操作として認識される）
+                  if (player && roomStore.playbackState.isPlaying) {
+                    player.playVideo();
+                  }
+                }}
+              />
+            )}
           </div>
 
           {/* Player controls - 横向きフルスクリーン時は非表示 */}
