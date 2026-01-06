@@ -638,9 +638,17 @@ export class SyncEngine extends EventEmitter<SyncEngineEventType, SyncEngineEven
     const wasAuthority = this.hasControlPermission;
     this.hasControlPermission = hasPermission;
 
+    console.log('[SyncEngine] setControlPermission:', {
+      hasPermission,
+      wasAuthority,
+      willStartHeartbeat: hasPermission && !wasAuthority,
+      willStopHeartbeat: !hasPermission && wasAuthority,
+    });
+
     // 権限が付与された場合
     if (hasPermission && !wasAuthority) {
       this.updateSnapshot({ status: 'authority' });
+      console.log('[SyncEngine] Starting heartbeat...');
       this.startHeartbeat();
     }
     // 権限が剥奪された場合

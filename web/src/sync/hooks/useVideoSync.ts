@@ -153,6 +153,10 @@ export function useVideoSync({
 
   useEffect(() => {
     const engine = engineRef.current;
+    console.log('[useVideoSync] useEffect 2: hasControlPermission changed:', {
+      hasControlPermission,
+      hasEngine: !!engine,
+    });
     if (!engine) return;
 
     // 権限変更をエンジンに通知

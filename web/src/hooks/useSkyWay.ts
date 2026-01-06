@@ -252,6 +252,11 @@ export function useSkyWay({ roomName, token, onMessage }: UseSkyWayOptions) {
 
       // Check if creator BEFORE joining (members array doesn't include us yet)
       const isCreator = room.members.length === 0;
+      console.log('[useSkyWay] Room join:', {
+        roomMembersCount: room.members.length,
+        isCreator,
+        userId: user.id,
+      });
 
       const memberMetadata: MemberMetadata = {
         id: user.id,
