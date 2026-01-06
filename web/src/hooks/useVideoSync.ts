@@ -55,6 +55,13 @@ export function useVideoSync({
   const stateResponseTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   // Store t1 for NTP-style RTT calculation
   const stateRequestT1Ref = useRef<number>(0);
+  // Pending initial state to apply when player becomes ready (fixes race condition)
+  const pendingInitialStateRef = useRef<{
+    currentTime: number;
+    isPlaying: boolean;
+    playbackRate: number;
+    lastUpdated: number;
+  } | null>(null);
 
   // RTT Estimator for accurate network latency measurement (NTP RFC 5905)
   const rttEstimatorRef = useRef(new RTTEstimator());
@@ -216,19 +223,30 @@ export function useVideoSync({
     }
 
     // Apply the state
+    const state = {
+      currentTime: adjustedTime,
+      isPlaying: bestResponse.payload.isPlaying,
+      playbackRate: bestResponse.payload.playbackRate,
+      lastUpdated: Date.now(),
+    };
+
     if (player && isReady) {
-      const state = {
-        currentTime: adjustedTime,
-        isPlaying: bestResponse.payload.isPlaying,
-        playbackRate: bestResponse.payload.playbackRate,
-        lastUpdated: Date.now(),
-      };
+      console.log('[useVideoSync] Player ready, applying state immediately');
       // Use ref to get latest syncToState (avoids stale closure)
       syncToStateRef.current(state, true);
+      hasInitialSyncRef.current = true;
+      setIsInitialSyncComplete(true);
+    } else {
+      // Player not ready yet - store state for later application
+      // This fixes the race condition where state response arrives before player is ready
+      console.log('[useVideoSync] Player not ready, storing pending state', {
+        hasPlayer: !!player,
+        isReady,
+        pendingState: state,
+      });
+      pendingInitialStateRef.current = state;
     }
 
-    hasInitialSyncRef.current = true;
-    setIsInitialSyncComplete(true);
     pendingStateRequestRef.current = null;
     stateResponsesRef.current = [];
   }, [player, isReady, playbackState]);
@@ -480,7 +498,20 @@ export function useVideoSync({
 
   const syncToState = useCallback(
     (state: typeof playbackState, isInitialSync = false) => {
-      if (!player || !isReady) return;
+      if (!player || !isReady) {
+        console.log('[useVideoSync] syncToState called but player not ready', {
+          hasPlayer: !!player,
+          isReady,
+          isInitialSync,
+        });
+        return;
+      }
+
+      console.log('[useVideoSync] syncToState executing', {
+        isInitialSync,
+        stateIsPlaying: state.isPlaying,
+        stateCurrentTime: state.currentTime,
+      });
 
       isSyncingRef.current = true;
 
@@ -536,6 +567,19 @@ export function useVideoSync({
   useEffect(() => {
     processBestStateResponseRef.current = processBestStateResponse;
   }, [processBestStateResponse]);
+
+  // Apply pending initial state when player becomes ready (fixes race condition)
+  // This handles the case where state response arrives before player is ready
+  useEffect(() => {
+    if (player && isReady && pendingInitialStateRef.current && !hasInitialSyncRef.current) {
+      const pendingState = pendingInitialStateRef.current;
+      console.log('[useVideoSync] Player now ready, applying pending initial state', pendingState);
+      pendingInitialStateRef.current = null;
+      syncToState(pendingState, true);
+      hasInitialSyncRef.current = true;
+      setIsInitialSyncComplete(true);
+    }
+  }, [player, isReady, syncToState]);
 
   const play = useCallback(() => {
     if (!player || !hasControlPermission) return;
