@@ -113,6 +113,12 @@ export class SyncEngine extends EventEmitter<SyncEngineEventType, SyncEngineEven
   private hasControlPermission = false;
 
   /**
+   * 初期同期完了後にheartbeatを開始するかどうか
+   * setControlPermission(true) が初期同期前に呼ばれた場合に使用
+   */
+  private pendingHeartbeatStart = false;
+
+  /**
    * コンストラクタ
    *
    * @param config - 設定オブジェクト
@@ -150,6 +156,9 @@ export class SyncEngine extends EventEmitter<SyncEngineEventType, SyncEngineEven
         userId: config.userId,
         getCurrentVideoId: () => this.currentVideoId,
         hasControlPermission: () => this.hasControlPermission,
+        // isAuthority returns whether we're currently sending heartbeats
+        // This is used in state response's isController field
+        isAuthority: () => this.heartbeatProtocol?.isRunning() ?? false,
         createMessageFields: config.createMessageFields,
       }
     );
@@ -308,6 +317,9 @@ export class SyncEngine extends EventEmitter<SyncEngineEventType, SyncEngineEven
     // State Requestを送信
     const state = await this.stateRequestProtocol.requestState();
 
+    // Check if an authority (heartbeat sender) responded
+    const authorityResponded = this.stateRequestProtocol.authorityResponded;
+
     if (state) {
       // 応答あり: 同期実行
       console.log('[SyncEngine] Got state response, syncing');
@@ -347,6 +359,21 @@ export class SyncEngine extends EventEmitter<SyncEngineEventType, SyncEngineEven
         status: this.hasControlPermission ? 'authority' : 'synced',
         hasInitialSync: true,
       });
+    }
+
+    // Handle pending heartbeat start (from setControlPermission called before initial sync)
+    if (this.pendingHeartbeatStart) {
+      this.pendingHeartbeatStart = false;
+
+      if (authorityResponded) {
+        // Someone is already sending heartbeats, so we should follow them
+        console.log('[SyncEngine] Authority responded during initial sync, not starting heartbeat (will follow instead)');
+        this.updateSnapshot({ status: 'synced' });
+      } else {
+        // No one is sending heartbeats, so we should become the authority
+        console.log('[SyncEngine] No authority responded, starting heartbeat');
+        this.startHeartbeat();
+      }
     }
 
     this.updateTestState();
@@ -641,20 +668,31 @@ export class SyncEngine extends EventEmitter<SyncEngineEventType, SyncEngineEven
     console.log('[SyncEngine] setControlPermission:', {
       hasPermission,
       wasAuthority,
-      willStartHeartbeat: hasPermission && !wasAuthority,
+      hasInitialSync: this.hasInitialSync,
+      willStartHeartbeat: hasPermission && !wasAuthority && this.hasInitialSync,
+      willDeferHeartbeat: hasPermission && !wasAuthority && !this.hasInitialSync,
       willStopHeartbeat: !hasPermission && wasAuthority,
     });
 
     // 権限が付与された場合
     if (hasPermission && !wasAuthority) {
       this.updateSnapshot({ status: 'authority' });
-      console.log('[SyncEngine] Starting heartbeat...');
-      this.startHeartbeat();
+
+      // 初期同期が完了している場合のみheartbeatを開始
+      // 初期同期中の場合は、同期完了後に他者がauthorityでなければ開始
+      if (this.hasInitialSync) {
+        console.log('[SyncEngine] Starting heartbeat...');
+        this.startHeartbeat();
+      } else {
+        console.log('[SyncEngine] Deferring heartbeat start until initial sync completes');
+        this.pendingHeartbeatStart = true;
+      }
     }
     // 権限が剥奪された場合
     else if (!hasPermission && wasAuthority) {
       this.updateSnapshot({ status: 'synced' });
       this.stopHeartbeat();
+      this.pendingHeartbeatStart = false;
     }
   }
 
@@ -804,6 +842,7 @@ export class SyncEngine extends EventEmitter<SyncEngineEventType, SyncEngineEven
     this.pendingInitialState = null;
     this.currentVideoId = null;
     this.hasControlPermission = false;
+    this.pendingHeartbeatStart = false;
 
     // イベントリスナーをクリア
     this.removeAllListeners();

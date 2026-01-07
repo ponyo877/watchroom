@@ -68,6 +68,12 @@ export interface StateRequestProtocolConfig {
   /** 制御権限取得関数 */
   hasControlPermission: () => boolean;
 
+  /**
+   * 現在Authorityとして動作中かどうか（heartbeat送信中かどうか）
+   * State Responseの isController フィールドに使用
+   */
+  isAuthority: () => boolean;
+
   /** メッセージフィールド生成関数 */
   createMessageFields: (senderId: string) => {
     senderId: string;
@@ -114,6 +120,12 @@ export class StateRequestProtocol {
   private resolveRequest: ((state: PlaybackState | null) => void) | null = null;
 
   /**
+   * 直近のState Requestでauthority（heartbeat送信中のユーザー）が応答したかどうか
+   * SyncEngineがheartbeat開始を決定する際に参照する
+   */
+  private _authorityResponded = false;
+
+  /**
    * コンストラクタ
    */
   constructor(
@@ -151,6 +163,9 @@ export class StateRequestProtocol {
    * 5. 補正済み再生状態を返却
    */
   async requestState(): Promise<PlaybackState | null> {
+    // Reset authority flag for new request
+    this._authorityResponded = false;
+
     // ビデオ準備待機
     await this.waitForVideoReady();
 
@@ -284,7 +299,9 @@ export class StateRequestProtocol {
           wallClockAtTime: t3,
           responderId: this.config.userId,
           responderTime: t3,
-          isController: this.config.hasControlPermission(),
+          // isController now means "I am currently acting as authority (sending heartbeats)"
+          // not just "I have permission to control"
+          isController: this.config.isAuthority(),
           epoch: this.clockManager.getEpoch(),
         },
         ...this.config.createMessageFields(this.config.userId),
@@ -349,11 +366,15 @@ export class StateRequestProtocol {
       return;
     }
 
+    // Check if any responder is currently acting as authority (sending heartbeats)
+    this._authorityResponded = this.responses.some((r) => r.payload.isController);
+
     // 最適な応答を選択
     const bestResponse = this.selectBestResponse(this.responses);
 
     console.log('[StateRequestProtocol] Processing best response:', {
       isController: bestResponse.payload.isController,
+      authorityResponded: this._authorityResponded,
       epoch: bestResponse.payload.epoch,
       totalResponses: this.responses.length,
     });
@@ -448,6 +469,21 @@ export class StateRequestProtocol {
       playbackRate: response.payload.playbackRate,
       lastUpdated: Date.now(),
     };
+  }
+
+  // ============================================================
+  // 状態取得
+  // ============================================================
+
+  /**
+   * 直近のState Requestでauthority（heartbeat送信中）が応答したかどうか
+   *
+   * SyncEngineがheartbeat開始を決定する際に使用:
+   * - true: 誰かがすでにheartbeatを送信中 → heartbeatを開始しない
+   * - false: 誰もheartbeatを送信していない → heartbeatを開始する
+   */
+  get authorityResponded(): boolean {
+    return this._authorityResponded;
   }
 
   // ============================================================

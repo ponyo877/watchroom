@@ -115,8 +115,12 @@ export class NetworkManager extends EventEmitter<NetworkEventType, NetworkEventD
    * @returns 送信成功かどうか
    */
   async sendHeartbeat(message: HeartbeatMessage): Promise<boolean> {
-    // Heartbeatは頻繁に送信されるためログを抑制
-    return this.sendMessage(message);
+    const result = await this.sendMessage(message);
+    // Log every 5th heartbeat to track if messages are actually being sent
+    if (message.payload.heartbeatSequence % 5 === 1) {
+      console.log('[NetworkManager] sendHeartbeat result:', { sequence: message.payload.heartbeatSequence, result });
+    }
+    return result;
   }
 
   // ============================================================
@@ -149,6 +153,16 @@ export class NetworkManager extends EventEmitter<NetworkEventType, NetworkEventD
    * ```
    */
   handleMessage(message: DataStreamMessage): void {
+    // Log sync-related messages (heartbeat logs every 5th)
+    if (message.type === 'sync' || message.type === 'state_request' || message.type === 'state_response') {
+      console.log('[NetworkManager] handleMessage:', { type: message.type, senderId: message.senderId });
+    } else if (message.type === 'heartbeat') {
+      const hb = message as HeartbeatMessage;
+      if (hb.payload.heartbeatSequence % 5 === 1) {
+        console.log('[NetworkManager] handleMessage: heartbeat from', message.senderId, 'seq:', hb.payload.heartbeatSequence);
+      }
+    }
+
     switch (message.type) {
       case 'sync':
         this.emit('sync', message as SyncMessage);

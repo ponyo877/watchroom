@@ -145,12 +145,14 @@ export default function RoomPage() {
   });
 
   // Video sync hook - sendMessage wrapper
+  // Note: We don't check isConnected here because:
+  // 1. useSkyWay.sendMessage already checks if dataStreamRef.current exists
+  // 2. Including isConnected in deps would cause stale closure issues
+  //    (SyncEngine captures this function at creation time, but isConnected
+  //    changes later, causing messages to never be sent)
   const sendMessageWrapper = useCallback(async (message: DataStreamMessage) => {
-    if (isConnected) {
-      return skySendMessage(message);
-    }
-    return false;
-  }, [isConnected, skySendMessage]);
+    return skySendMessage(message);
+  }, [skySendMessage]);
 
   // 視聴開始済みフラグ（JoinOverlayでクリック済み）
   const [hasJoined, setHasJoined] = useState(false);
