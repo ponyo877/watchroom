@@ -50,7 +50,6 @@ import type { NetworkManager } from '../core/NetworkManager';
 import type { PlayerController } from '../core/PlayerController';
 import type { HeartbeatMessage } from '@/types/message';
 import { TIMING_CONSTANTS, type PlaybackState } from '../types';
-import { useRoomStore } from '@/stores/roomStore';
 
 /**
  * HeartbeatProtocolの設定
@@ -77,6 +76,12 @@ export interface HeartbeatProtocolConfig {
 
   /** 同期コールバック（フォロワー用） */
   onSyncNeeded?: (state: PlaybackState) => void;
+
+  /** Authority喪失コールバック（heartbeatタイムアウト時） */
+  onAuthorityLost?: () => void;
+
+  /** playbackState更新コールバック（JoinOverlay表示中でも最新状態を維持するため） */
+  onPlaybackStateUpdate?: (state: PlaybackState) => void;
 }
 
 /**
@@ -110,6 +115,18 @@ export class HeartbeatProtocol {
   /** 初期同期完了フラグ（フォロワー用） */
   private hasInitialSync = false;
 
+  /** 最後にheartbeatを受信した時刻 */
+  private lastHeartbeatReceived = 0;
+
+  /** heartbeatタイムアウト監視タイマーID */
+  private heartbeatTimeoutId: ReturnType<typeof setTimeout> | null = null;
+
+  /** heartbeatタイムアウト監視中かどうか */
+  private isWatchingHeartbeat = false;
+
+  /** イベントリスナー解除関数 */
+  private unsubscribeHeartbeat: (() => void) | null = null;
+
   /**
    * コンストラクタ
    */
@@ -124,8 +141,8 @@ export class HeartbeatProtocol {
     this.playerController = playerController;
     this.config = config;
 
-    // Heartbeat受信をリッスン
-    this.networkManager.on('heartbeat', this.handleHeartbeat.bind(this));
+    // Heartbeat受信をリッスン（解除関数を保存）
+    this.unsubscribeHeartbeat = this.networkManager.on('heartbeat', this.handleHeartbeat.bind(this));
   }
 
   // ============================================================
@@ -141,7 +158,6 @@ export class HeartbeatProtocol {
   start(): void {
     // 既に開始している場合は何もしない
     if (this.intervalId) {
-      console.log('[HeartbeatProtocol] Already started');
       return;
     }
 
@@ -173,31 +189,22 @@ export class HeartbeatProtocol {
   private sendHeartbeat(): void {
     // プレイヤー未準備なら送信しない
     if (!this.playerController.isPlayerReady()) {
-      console.log('[HeartbeatProtocol] sendHeartbeat skipped: player not ready');
       return;
     }
 
     // ビデオなしなら送信しない
     const videoId = this.config.getCurrentVideoId();
     if (!videoId) {
-      console.log('[HeartbeatProtocol] sendHeartbeat skipped: no videoId');
       return;
     }
 
     // 権限がなければ送信しない
     if (!this.config.hasControlPermission()) {
-      console.log('[HeartbeatProtocol] sendHeartbeat skipped: no control permission');
       return;
     }
 
     const now = Date.now();
     this.heartbeatSequence++;
-
-    console.log('[HeartbeatProtocol] Sending heartbeat:', {
-      videoId,
-      currentTime: this.playerController.getCurrentTime().toFixed(2),
-      sequence: this.heartbeatSequence,
-    });
 
     const message: HeartbeatMessage = {
       type: 'heartbeat',
@@ -208,7 +215,7 @@ export class HeartbeatProtocol {
         playbackRate: this.playerController.getPlaybackRate(),
         wallClockAtTime: now,
         epoch: this.clockManager.getEpoch(),
-        memberCount: 0, // TODO: ルームストアから取得
+        memberCount: 0, // 現在未使用（quorum detection用に予約）
         heartbeatSequence: this.heartbeatSequence,
       },
       ...this.config.createMessageFields(this.config.userId),
@@ -229,9 +236,10 @@ export class HeartbeatProtocol {
    * 【処理フロー】
    * 1. 自分のハートビートは無視
    * 2. 自分がハートビート送信中なら無視（Authority役割中）
-   * 3. 時刻補正を計算
-   * 4. roomStoreのplaybackStateを更新（JoinOverlay用）
-   * 5. 初期同期完了済みならドリフト判定＆シーク
+   * 3. タイムアウト監視を開始/リセット
+   * 4. 時刻補正を計算
+   * 5. playbackStateを更新（コールバック経由、JoinOverlay用）
+   * 6. 初期同期完了済みならドリフト判定＆シーク
    *
    * 【全員操作可能モード対応】
    * hasControlPermissionではなくisRunning()でチェックすることで、
@@ -240,16 +248,8 @@ export class HeartbeatProtocol {
    * - それ以外の人: 他者のハートビートで同期
    */
   private handleHeartbeat(message: HeartbeatMessage): void {
-    console.log('[HeartbeatProtocol] handleHeartbeat called:', {
-      senderId: message.senderId,
-      myUserId: this.config.userId,
-      isRunning: this.isRunning(),
-      sequence: message.payload.heartbeatSequence,
-    });
-
     // 自分のハートビートは無視
     if (message.senderId === this.config.userId) {
-      console.log('[HeartbeatProtocol] handleHeartbeat: ignoring own heartbeat');
       return;
     }
 
@@ -257,8 +257,20 @@ export class HeartbeatProtocol {
     // 【重要】hasControlPermissionではなくisRunning()でチェック
     // これにより「全員操作可能」モードでも、実際にハートビートを送信している人以外は同期を受ける
     if (this.isRunning()) {
-      console.log('[HeartbeatProtocol] handleHeartbeat: ignoring because I am running heartbeat');
       return;
+    }
+
+    // heartbeat受信時刻を記録
+    this.lastHeartbeatReceived = Date.now();
+
+    // 初回heartbeat受信時にタイムアウト監視を開始
+    if (!this.isWatchingHeartbeat) {
+      this.isWatchingHeartbeat = true;
+      console.log('[HeartbeatProtocol] Starting heartbeat timeout watch');
+      this.resetHeartbeatTimeout();
+    } else {
+      // 既に監視中ならタイマーをリセット
+      this.resetHeartbeatTimeout();
     }
 
     // パケットロス検出
@@ -280,23 +292,17 @@ export class HeartbeatProtocol {
       adjustedTime += elapsedSeconds * message.payload.playbackRate;
     }
 
-    // roomStoreのplaybackStateを更新
-    // 【重要】JoinOverlay表示中でもplaybackStateを最新に保つことで、
-    // performDeferredSyncが正確な時刻を取得できる
+    // playbackStateを更新（JoinOverlay表示中でも最新状態を維持するため）
     const playbackState: PlaybackState = {
       currentTime: adjustedTime,
       isPlaying: message.payload.isPlaying,
       playbackRate: message.payload.playbackRate,
       lastUpdated: now,
     };
-    useRoomStore.getState().setPlaybackState(playbackState);
+    this.config.onPlaybackStateUpdate?.(playbackState);
 
     // 初期同期未完了ならプレイヤー同期はスキップ（JoinOverlay表示中）
     if (!this.hasInitialSync) {
-      console.log('[HeartbeatProtocol] Received heartbeat (pre-join), playbackState updated:', {
-        adjustedTime: adjustedTime.toFixed(2),
-        isPlaying: message.payload.isPlaying,
-      });
       return;
     }
 
@@ -307,13 +313,10 @@ export class HeartbeatProtocol {
 
       // 閾値を超えたらシーク
       if (drift > TIMING_CONSTANTS.SYNC_THRESHOLD) {
-        console.log(`[HeartbeatProtocol] Drift detected: ${drift.toFixed(2)}s > ${TIMING_CONSTANTS.SYNC_THRESHOLD}s, syncing to ${adjustedTime.toFixed(2)}s`);
+        console.log(`[HeartbeatProtocol] Drift detected: ${drift.toFixed(2)}s, syncing to ${adjustedTime.toFixed(2)}s`);
 
         // コールバックで同期を通知
         this.config.onSyncNeeded?.(playbackState);
-      } else {
-        // ドリフトが小さい場合もログ（デバッグ用）
-        console.log(`[HeartbeatProtocol] In sync: drift=${drift.toFixed(2)}s, local=${localTime.toFixed(2)}s, remote=${adjustedTime.toFixed(2)}s`);
       }
     }
   }
@@ -337,6 +340,46 @@ export class HeartbeatProtocol {
     }
 
     this.lastReceivedSequence = sequence;
+  }
+
+  // ============================================================
+  // タイムアウト監視
+  // ============================================================
+
+  /**
+   * heartbeatタイムアウトタイマーをリセット
+   *
+   * heartbeatを受信するたびに呼び出し、タイマーをリセット。
+   * 15秒間heartbeatがなければonAuthorityLostコールバックを発火。
+   */
+  private resetHeartbeatTimeout(): void {
+    if (this.heartbeatTimeoutId) {
+      clearTimeout(this.heartbeatTimeoutId);
+    }
+
+    this.heartbeatTimeoutId = setTimeout(() => {
+      console.log('[HeartbeatProtocol] Authority heartbeat timeout detected');
+      this.isWatchingHeartbeat = false;
+      this.config.onAuthorityLost?.();
+    }, TIMING_CONSTANTS.HEARTBEAT_TIMEOUT);
+  }
+
+  /**
+   * heartbeatタイムアウト監視を停止
+   */
+  stopWatchingHeartbeat(): void {
+    if (this.heartbeatTimeoutId) {
+      clearTimeout(this.heartbeatTimeoutId);
+      this.heartbeatTimeoutId = null;
+    }
+    this.isWatchingHeartbeat = false;
+  }
+
+  /**
+   * 最後にheartbeatを受信した時刻を取得
+   */
+  getLastHeartbeatTime(): number {
+    return this.lastHeartbeatReceived;
   }
 
   // ============================================================
@@ -374,10 +417,18 @@ export class HeartbeatProtocol {
    * リソースを解放
    */
   dispose(): void {
-    console.log('[HeartbeatProtocol] Disposing');
     this.stop();
+    this.stopWatchingHeartbeat();
+
+    // イベントリスナーを解除
+    if (this.unsubscribeHeartbeat) {
+      this.unsubscribeHeartbeat();
+      this.unsubscribeHeartbeat = null;
+    }
+
     this.hasInitialSync = false;
     this.heartbeatSequence = 0;
     this.lastReceivedSequence = 0;
+    this.lastHeartbeatReceived = 0;
   }
 }

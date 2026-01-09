@@ -63,6 +63,12 @@ export const TIMING_CONSTANTS = {
 
   /** syncToState後の同期中フラグ解除遅延（ミリ秒） */
   SYNC_COOLDOWN: 100,
+
+  /** Heartbeatタイムアウト（ミリ秒）- この期間heartbeatがなければAuthority再選出 */
+  HEARTBEAT_TIMEOUT: 15000,
+
+  /** Authority再選出時の最大ランダム遅延（ミリ秒） */
+  AUTHORITY_REELECTION_MAX_DELAY: 2000,
 } as const;
 
 // ============================================================
@@ -184,14 +190,7 @@ export interface PlayerEventData {
   muteChange: boolean;
 }
 
-/**
- * PlayerControllerの設定
- */
-export interface PlayerControllerConfig {
-  elementId: string;
-  videoId: string;
-  onMutedChange?: (isMuted: boolean) => void;
-}
+// PlayerControllerConfigはPlayerController.tsで定義されています
 
 // ============================================================
 // NetworkManager 関連

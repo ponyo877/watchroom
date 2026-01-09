@@ -119,6 +119,12 @@ export class SyncEngine extends EventEmitter<SyncEngineEventType, SyncEngineEven
   private pendingHeartbeatStart = false;
 
   /**
+   * Authority再選出のタイムアウトID
+   * ランダム遅延中にキャンセルできるよう保持
+   */
+  private reelectionTimeoutId: ReturnType<typeof setTimeout> | null = null;
+
+  /**
    * コンストラクタ
    *
    * @param config - 設定オブジェクト
@@ -160,6 +166,7 @@ export class SyncEngine extends EventEmitter<SyncEngineEventType, SyncEngineEven
         // This is used in state response's isController field
         isAuthority: () => this.heartbeatProtocol?.isRunning() ?? false,
         createMessageFields: config.createMessageFields,
+        onPlaybackStateUpdate: (state) => useRoomStore.getState().setPlaybackState(state),
       }
     );
 
@@ -174,6 +181,8 @@ export class SyncEngine extends EventEmitter<SyncEngineEventType, SyncEngineEven
         hasControlPermission: () => this.hasControlPermission,
         createMessageFields: config.createMessageFields,
         onSyncNeeded: (state) => this.playerController.syncToState(state),
+        onAuthorityLost: () => this.handleAuthorityLost(),
+        onPlaybackStateUpdate: (state) => useRoomStore.getState().setPlaybackState(state),
       }
     );
 
@@ -696,6 +705,62 @@ export class SyncEngine extends EventEmitter<SyncEngineEventType, SyncEngineEven
     }
   }
 
+  /**
+   * Authority喪失時の処理
+   *
+   * Heartbeatタイムアウトが発生した場合に呼び出される。
+   * 権限があれば、ランダム遅延後にAuthority化を試みる。
+   *
+   * 【処理フロー】
+   * 1. 権限がなければ無視
+   * 2. 既にAuthority役割中なら無視
+   * 3. ランダム遅延（0-2秒）後にAuthority化を試行
+   * 4. 遅延中に他者のheartbeatを受信していなければ、heartbeat開始
+   */
+  private handleAuthorityLost(): void {
+    // 権限がなければ何もしない
+    if (!this.hasControlPermission) {
+      console.log('[SyncEngine] Authority lost but no permission, ignoring');
+      return;
+    }
+
+    // 既にAuthority役割中なら何もしない
+    if (this.heartbeatProtocol.isRunning()) {
+      console.log('[SyncEngine] Authority lost but already running heartbeat');
+      return;
+    }
+
+    // 既に再選出処理中なら何もしない
+    if (this.reelectionTimeoutId) {
+      console.log('[SyncEngine] Authority lost but reelection already in progress');
+      return;
+    }
+
+    // ランダム遅延で再選出
+    const delay = Math.random() * TIMING_CONSTANTS.AUTHORITY_REELECTION_MAX_DELAY;
+    console.log(`[SyncEngine] Authority lost, attempting reelection in ${delay.toFixed(0)}ms`);
+
+    this.reelectionTimeoutId = setTimeout(() => {
+      this.reelectionTimeoutId = null;
+
+      // 再チェック: 遅延中に他のheartbeatを受信していないか
+      const timeSinceLastHeartbeat = Date.now() - this.heartbeatProtocol.getLastHeartbeatTime();
+      if (timeSinceLastHeartbeat < TIMING_CONSTANTS.HEARTBEAT_TIMEOUT) {
+        console.log('[SyncEngine] Received heartbeat during reelection delay, aborting');
+        return;
+      }
+
+      // 再チェック: 既にAuthority役割中でないか
+      if (this.heartbeatProtocol.isRunning()) {
+        console.log('[SyncEngine] Already running heartbeat during reelection, aborting');
+        return;
+      }
+
+      console.log('[SyncEngine] Becoming new authority after reelection');
+      this.startHeartbeat();
+    }, delay);
+  }
+
   // ============================================================
   // 状態取得
   // ============================================================
@@ -827,6 +892,12 @@ export class SyncEngine extends EventEmitter<SyncEngineEventType, SyncEngineEven
     // クリーンアップハンドラを実行
     this.cleanupHandlers.forEach((cleanup) => cleanup());
     this.cleanupHandlers = [];
+
+    // 再選出タイマーをクリア
+    if (this.reelectionTimeoutId) {
+      clearTimeout(this.reelectionTimeoutId);
+      this.reelectionTimeoutId = null;
+    }
 
     // 各コンポーネントを解放
     this.heartbeatProtocol.dispose();

@@ -53,7 +53,6 @@ import type {
   StateResponseMessage,
 } from '@/types/message';
 import { TIMING_CONSTANTS, PLAYER_STATE, type PlaybackState } from '../types';
-import { useRoomStore } from '@/stores/roomStore';
 
 /**
  * StateRequestProtocolの設定
@@ -83,6 +82,9 @@ export interface StateRequestProtocolConfig {
     sequenceNumber: number;
     viewNumber: number;
   };
+
+  /** playbackState更新コールバック（JoinOverlay表示中でも最新状態を維持するため） */
+  onPlaybackStateUpdate?: (state: PlaybackState) => void;
 }
 
 /**
@@ -125,6 +127,10 @@ export class StateRequestProtocol {
    */
   private _authorityResponded = false;
 
+  /** イベントリスナー解除関数 */
+  private unsubscribeStateResponse: (() => void) | null = null;
+  private unsubscribeStateRequest: (() => void) | null = null;
+
   /**
    * コンストラクタ
    */
@@ -139,11 +145,11 @@ export class StateRequestProtocol {
     this.playerController = playerController;
     this.config = config;
 
-    // State Response受信をリッスン
-    this.networkManager.on('stateResponse', this.handleStateResponse.bind(this));
+    // State Response受信をリッスン（解除関数を保存）
+    this.unsubscribeStateResponse = this.networkManager.on('stateResponse', this.handleStateResponse.bind(this));
 
-    // State Request受信をリッスン
-    this.networkManager.on('stateRequest', this.handleStateRequest.bind(this));
+    // State Request受信をリッスン（解除関数を保存）
+    this.unsubscribeStateRequest = this.networkManager.on('stateRequest', this.handleStateRequest.bind(this));
   }
 
   // ============================================================
@@ -334,11 +340,6 @@ export class StateRequestProtocol {
     // 別のリクエストに対する応答は無視
     if (message.payload.requestId !== this.pendingRequestId) return;
 
-    console.log('[StateRequestProtocol] Received state response:', {
-      isController: message.payload.isController,
-      epoch: message.payload.epoch,
-    });
-
     // 応答を収集
     this.responses.push(message);
   }
@@ -372,11 +373,9 @@ export class StateRequestProtocol {
     // 最適な応答を選択
     const bestResponse = this.selectBestResponse(this.responses);
 
-    console.log('[StateRequestProtocol] Processing best response:', {
-      isController: bestResponse.payload.isController,
-      authorityResponded: this._authorityResponded,
-      epoch: bestResponse.payload.epoch,
+    console.log('[StateRequestProtocol] Best response selected:', {
       totalResponses: this.responses.length,
+      authorityResponded: this._authorityResponded,
     });
 
     // 時刻補正を計算
@@ -387,14 +386,8 @@ export class StateRequestProtocol {
       this.clockManager.updateEpoch(bestResponse.payload.epoch);
     }
 
-    // roomStoreのplaybackStateを更新
-    // 【重要】JoinOverlay表示中でもplaybackStateを最新に保つことで、
-    // performDeferredSyncが正確な時刻を取得できる
-    useRoomStore.getState().setPlaybackState(adjustedState);
-    console.log('[StateRequestProtocol] Updated roomStore playbackState:', {
-      currentTime: adjustedState.currentTime.toFixed(2),
-      isPlaying: adjustedState.isPlaying,
-    });
+    // playbackStateを更新（JoinOverlay表示中でも最新状態を維持するため）
+    this.config.onPlaybackStateUpdate?.(adjustedState);
 
     // リセット
     this.pendingRequestId = null;
@@ -494,11 +487,19 @@ export class StateRequestProtocol {
    * リソースを解放
    */
   dispose(): void {
-    console.log('[StateRequestProtocol] Disposing');
-
     if (this.responseTimeout) {
       clearTimeout(this.responseTimeout);
       this.responseTimeout = null;
+    }
+
+    // イベントリスナーを解除
+    if (this.unsubscribeStateResponse) {
+      this.unsubscribeStateResponse();
+      this.unsubscribeStateResponse = null;
+    }
+    if (this.unsubscribeStateRequest) {
+      this.unsubscribeStateRequest();
+      this.unsubscribeStateRequest = null;
     }
 
     this.pendingRequestId = null;

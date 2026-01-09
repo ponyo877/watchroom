@@ -51,7 +51,6 @@ export type {
 
   // 設定関連
   SyncEngineConfig,
-  PlayerControllerConfig,
   SendMessageFn,
 
   // イベント関連
@@ -81,7 +80,7 @@ export {
 // ============================================================
 
 export { SyncEngine } from './core/SyncEngine';
-export { PlayerController } from './core/PlayerController';
+export { PlayerController, type PlayerControllerConfig } from './core/PlayerController';
 export { NetworkManager } from './core/NetworkManager';
 export { ClockManager } from './core/ClockManager';
 export { EventEmitter } from './core/EventEmitter';
