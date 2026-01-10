@@ -7,6 +7,17 @@
   --safe-area-inset-bottom: env(safe-area-inset-bottom, 0px);
   --safe-area-inset-left: env(safe-area-inset-left, 0px);
   --safe-area-inset-right: env(safe-area-inset-right, 0px);
+
+  /* === YouTube-like Layout Variables === */
+  /* 縦持ち */
+  --yt-player-height-portrait: 40%;
+  --yt-player-height-portrait-kb: 28%;
+  --yt-chat-header-height: 48px;
+  --yt-chat-input-height: 56px;
+
+  /* 横持ち */
+  --yt-player-width-landscape: 65%;
+  --yt-chat-width-landscape: 35%;
 }
 
 /* === Touch Device Hover Disable === */
@@ -121,6 +132,138 @@
   background: var(--color-card);
   border-top: 1px solid var(--color-border);
   padding-bottom: var(--safe-area-inset-bottom);
+}
+
+/* === YouTube-like Layout System === */
+
+/* メインコンテナ - 縦持ちデフォルト */
+.yt-container {
+  display: flex;
+  flex-direction: column;
+  height: 100dvh;
+  height: 100vh; /* fallback */
+  overflow: hidden;
+}
+
+/* 横持ち・チャット表示時は左右分割 */
+.yt-container--landscape-chat {
+  flex-direction: row;
+}
+
+/* === Player Area (動画 + コントロール) === */
+.yt-player {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  overflow: hidden;
+}
+
+/* 縦持ち時のプレイヤー高さ */
+.yt-player--portrait {
+  height: var(--yt-player-height-portrait);
+  width: 100%;
+}
+
+/* 縦持ち・キーボード表示時 */
+.yt-player--portrait-kb {
+  height: var(--yt-player-height-portrait-kb);
+  width: 100%;
+}
+
+/* 横持ち・チャット非表示時（フル幅） */
+.yt-player--landscape-full {
+  width: 100%;
+  height: 100%;
+}
+
+/* 横持ち・チャット表示時（65%幅） */
+.yt-player--landscape-split {
+  width: var(--yt-player-width-landscape);
+  height: 100%;
+}
+
+/* 動画コンテナ（yt-player内） */
+.yt-video-container {
+  flex: 1;
+  min-height: 0;
+  position: relative;
+  background: black;
+  overflow: hidden;
+}
+
+/* PlayerControlsコンテナ（yt-player内） */
+.yt-player-controls {
+  height: 64px;
+  flex-shrink: 0;
+  border-top: 1px solid var(--color-border);
+  background: var(--color-card);
+  position: relative;
+  z-index: 20;
+}
+
+/* === Chat Area === */
+.yt-chat {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+  background: var(--color-card);
+}
+
+/* 横持ち時のチャット幅 */
+.yt-chat--landscape {
+  width: var(--yt-chat-width-landscape);
+  flex: none;
+  border-left: 1px solid var(--color-border);
+}
+
+/* === Chat Header (YouTube風) === */
+.yt-chat-header {
+  height: var(--yt-chat-header-height);
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 12px;
+  border-bottom: 1px solid var(--color-border);
+  background: var(--color-card);
+}
+
+/* === Chat Messages (内部スクロール) === */
+.yt-chat-messages {
+  flex: 1;
+  overflow-y: auto;
+  overscroll-behavior: none;
+  -webkit-overflow-scrolling: touch;
+  min-height: 0;
+  padding: 12px;
+}
+
+/* === Chat Input === */
+.yt-chat-input {
+  height: var(--yt-chat-input-height);
+  flex-shrink: 0;
+  border-top: 1px solid var(--color-border);
+  background: var(--color-card);
+  display: flex;
+  align-items: center;
+  padding: 0 12px;
+}
+
+/* 縦持ち時の入力エリア - safe area対応 */
+.yt-chat-input--portrait {
+  padding-bottom: var(--safe-area-inset-bottom);
+}
+
+/* 横持ち・キーボード表示時の入力エリア */
+.yt-chat-input--landscape-kb {
+  position: fixed;
+  left: var(--yt-player-width-landscape);
+  right: 0;
+  bottom: 0;
+  z-index: 50;
 }
 
 @theme {

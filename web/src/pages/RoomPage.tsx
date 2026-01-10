@@ -11,9 +11,9 @@ import {
   PanelRightOpen,
   Play,
   Pause,
-  X,
 } from 'lucide-react';
-import { useMobileLandscapeFullscreen, useIsMobile } from '@/hooks/useLandscape';
+import { useYouTubeLayout } from '@/hooks/useYouTubeLayout';
+import { useIsMobile } from '@/hooks/useLandscape';
 import { useRoomStore } from '@/stores/roomStore';
 import { useUserStore } from '@/stores/userStore';
 import { useShortUrl } from '@/hooks/useShortUrl';
@@ -53,8 +53,17 @@ export default function RoomPage() {
   const { roomId, shortId } = useParams();
   const navigate = useNavigate();
 
-  // モバイル対応フック
-  const isLandscapeFullscreen = useMobileLandscapeFullscreen();
+  // YouTube風レイアウトフック
+  const {
+    showLandscapeChat,
+    isLandscapeFullscreen,
+    toggleLandscapeChat,
+    closeLandscapeChat,
+    containerClass,
+    playerClass,
+    chatClass,
+    chatInputClass,
+  } = useYouTubeLayout();
   const isMobile = useIsMobile();
 
   const userId = useUserStore((state) => state.id);
@@ -74,7 +83,6 @@ export default function RoomPage() {
   const [showVideoSearch, setShowVideoSearch] = useState(false);
   const [showPlayHistory, setShowPlayHistory] = useState(false);
   const [isPasswordVerified, setIsPasswordVerified] = useState(false);
-  const [showMobileChat, setShowMobileChat] = useState(false);
   const [showMobileMembers, setShowMobileMembers] = useState(false);
   const [isSidebarHidden, setIsSidebarHidden] = useState(false);
 
@@ -84,12 +92,8 @@ export default function RoomPage() {
   // 横向きフルスクリーン時のコントロール表示
   const [showLandscapeControls, setShowLandscapeControls] = useState(false);
   const landscapeControlsTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  // 横向きフルスクリーン時のサイドパネル
-  const [showLandscapeChat, setShowLandscapeChat] = useState(false);
+  // 横向きフルスクリーン時のメンバーパネル（チャットはuseYouTubeLayoutで管理）
   const [showLandscapeMembers, setShowLandscapeMembers] = useState(false);
-
-  // モバイルキーボード表示状態
-  const [isKeyboardOpen, setIsKeyboardOpen] = useState(false);
 
   // Derive password dialog visibility during rendering (not via Effect)
   const showPasswordDialog = roomInfo?.hasPassword === true && !isPasswordVerified;
@@ -491,7 +495,7 @@ export default function RoomPage() {
     if (landscapeControlsTimeoutRef.current) {
       clearTimeout(landscapeControlsTimeoutRef.current);
     }
-    // サイドパネルが開いている間は自動非表示しない
+    // チャットまたはメンバーパネルが開いている間は自動非表示しない
     if (!showLandscapeChat && !showLandscapeMembers) {
       landscapeControlsTimeoutRef.current = setTimeout(() => {
         setShowLandscapeControls(false);
@@ -503,10 +507,18 @@ export default function RoomPage() {
   const handleVideoTap = useCallback(() => {
     if (!roomStore.hasControlPermission || !roomStore.currentVideo) return;
 
-    // 横向きフルスクリーン時はコントロール表示をトグル
+    // 横向きフルスクリーン時
     if (isLandscapeFullscreen) {
-      setShowLandscapeControls((prev) => !prev);
-      resetLandscapeControlsTimer();
+      // チャットが表示されていない場合はチャットを表示
+      if (!showLandscapeChat) {
+        toggleLandscapeChat();
+        setShowLandscapeControls(true);
+        resetLandscapeControlsTimer();
+      } else {
+        // チャット表示中はコントロール表示をトグル
+        setShowLandscapeControls((prev) => !prev);
+        resetLandscapeControlsTimer();
+      }
       return;
     }
 
@@ -538,18 +550,20 @@ export default function RoomPage() {
     isConnected,
     updateRoomMetadata,
     isLandscapeFullscreen,
+    showLandscapeChat,
+    toggleLandscapeChat,
     resetLandscapeControlsTimer,
   ]);
 
-  // 横向きフルスクリーン解除時にコントロールタイマーをクリア＆サイドパネルを閉じる
+  // 横向きフルスクリーン解除時にコントロールタイマーをクリア＆メンバーパネルを閉じる
   useEffect(() => {
     if (!isLandscapeFullscreen) {
       if (landscapeControlsTimeoutRef.current) {
         clearTimeout(landscapeControlsTimeoutRef.current);
       }
       setShowLandscapeControls(false);
-      setShowLandscapeChat(false);
       setShowLandscapeMembers(false);
+      // チャットはuseYouTubeLayout内で自動的に閉じられる
     }
   }, [isLandscapeFullscreen]);
 
@@ -593,85 +607,66 @@ export default function RoomPage() {
   }
 
   return (
-    <div className="min-h-screen-mobile bg-background animate-fade-in">
-      <div className={`flex h-screen-mobile ${isLandscapeFullscreen ? 'landscape-fullscreen' : ''}`}>
-        {/* Main content */}
-        <main className="flex-1 flex flex-col min-w-0 relative">
-          {/* Header - 横向きフルスクリーン時は非表示 */}
-          <header className={`h-14 border-b border-border bg-card flex items-center justify-between px-2 md:px-4 relative z-20 pt-safe flex-shrink-0 ${isLandscapeFullscreen && !showLandscapeControls ? 'hidden' : ''}`}>
-            <div className="flex items-center gap-2 md:gap-4 min-w-0">
-              <button
-                onClick={handleLeaveRoom}
-                className="p-2 hover:bg-accent rounded-md flex-shrink-0"
-                title="部屋を出る"
-              >
-                <LogOut className="h-5 w-5" />
-              </button>
-              <h1 className="font-semibold truncate text-sm md:text-base">
-                {roomStore.room?.name || `Room: ${actualRoomId?.slice(0, 8)}...`}
-              </h1>
-            </div>
+    <div className="bg-background animate-fade-in">
+      {/* YouTube風レイアウトコンテナ - モバイル用 */}
+      {isMobile ? (
+        <div className={containerClass}>
+          {/* ヘッダー - 横向きフルスクリーン時は常に非表示（rowレイアウトに含められないため） */}
+          {!isLandscapeFullscreen && (
+            <header className="h-14 border-b border-border bg-card flex items-center justify-between px-2 relative z-20 pt-safe flex-shrink-0">
+              <div className="flex items-center gap-2 min-w-0">
+                <button
+                  onClick={handleLeaveRoom}
+                  className="p-2 hover:bg-accent rounded-md flex-shrink-0"
+                  title="部屋を出る"
+                >
+                  <LogOut className="h-5 w-5" />
+                </button>
+                <h1 className="font-semibold truncate text-sm">
+                  {roomStore.room?.name || `Room: ${actualRoomId?.slice(0, 8)}...`}
+                </h1>
+              </div>
+              <div className="flex items-center gap-1">
+                <button
+                  onClick={() => setShowVideoSearch(true)}
+                  className="flex items-center gap-2 px-3 py-2 bg-primary text-primary-foreground rounded-md shadow-lg shadow-primary/25 active:scale-95 transition-all duration-200"
+                  title="AddVideo"
+                >
+                  <Film className="h-4 w-4" />
+                </button>
+                <button
+                  onClick={() => setShowMobileMembers(true)}
+                  className="p-2 hover:bg-accent rounded-md"
+                  title="メンバー"
+                >
+                  <Users className="h-5 w-5" />
+                </button>
+                <button
+                  onClick={() => setShowSettings(true)}
+                  className="p-2 hover:bg-accent rounded-md"
+                  title="設定"
+                >
+                  <Settings className="h-5 w-5" />
+                </button>
+                <ShareButton
+                  roomId={actualRoomId || ''}
+                  shortId={shortId}
+                  roomName={roomStore.room?.name || 'WatchRoom'}
+                />
+              </div>
+            </header>
+          )}
 
-            <div className="flex items-center gap-1 md:gap-2">
-              <button
-                onClick={() => setShowVideoSearch(true)}
-                className="flex items-center gap-2 px-3 py-2 bg-primary text-primary-foreground rounded-md shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/30 hover:scale-105 active:scale-95 transition-all duration-200"
-                title="AddVideo"
-              >
-                <Film className="h-4 w-4" />
-                <span className="hidden md:inline">AddVideo</span>
-              </button>
-              <button
-                onClick={() => setShowPlayHistory(true)}
-                className="p-2 hover:bg-accent rounded-md hidden md:flex"
-                title="再生履歴"
-              >
-                <History className="h-5 w-5" />
-              </button>
-              <button
-                onClick={() => setShowMemberList(!showMemberList)}
-                className="p-2 hover:bg-accent rounded-md hidden md:flex"
-                title="メンバー"
-              >
-                <Users className="h-5 w-5" />
-              </button>
-              <button
-                onClick={() => setShowSettings(true)}
-                className="p-2 hover:bg-accent rounded-md"
-                title="設定"
-              >
-                <Settings className="h-5 w-5" />
-              </button>
-              <ShareButton
-                roomId={actualRoomId || ''}
-                shortId={shortId}
-                roomName={roomStore.room?.name || 'WatchRoom'}
+          {/* 動画プレイヤーエリア */}
+          <div className={playerClass}>
+            {/* 動画コンテナ */}
+            <div className="yt-video-container">
+              {/* YouTube Player Container */}
+              <div
+                id={playerElementId.current}
+                className="w-full h-full"
+                style={{ display: roomStore.currentVideo ? 'block' : 'none' }}
               />
-            </div>
-          </header>
-
-          {/* Content area - flex-row when landscape chat is open */}
-          <div className={`flex-1 flex min-h-0 ${
-            isLandscapeFullscreen && showLandscapeChat ? 'flex-row' : 'flex-col'
-          }`}>
-          {/* Video area container - flex-1 to fill available space */}
-          <div className={`flex flex-col flex-1 ${
-            isLandscapeFullscreen ? 'min-w-0 min-h-0' : ''
-          }`}>
-          {/* Video player - shrinks to 16:9 aspect ratio when mobile chat is open, or 40vh when keyboard is open */}
-          <div className={`relative bg-black overflow-hidden ${
-            showMobileChat && !isLandscapeFullscreen
-              ? isKeyboardOpen
-                ? 'h-[40vh] w-full flex-shrink-0'  // キーボード表示時は固定40vh
-                : 'aspect-video w-full flex-shrink-0'  // チャット表示時は16:9
-              : 'flex-1 min-h-0'
-          }`}>
-            {/* YouTube Player Container */}
-            <div
-              id={playerElementId.current}
-              className="w-full h-full"
-              style={{ display: roomStore.currentVideo ? 'block' : 'none' }}
-            />
 
             {/* Transparent overlay - タップで再生/停止 */}
             {roomStore.currentVideo && (
@@ -753,81 +748,98 @@ export default function RoomPage() {
                 }}
               />
             )}
-          </div>
+            </div>{/* End of yt-video-container */}
 
-          {/* Player controls - 横向きフルスクリーン時は非表示 */}
-          <div className={`h-16 border-t border-border bg-card relative z-20 ${isLandscapeFullscreen && !showLandscapeControls ? 'hidden' : ''}`}>
-            <PlayerControls
-              isPlaying={isPlaying}
-              currentTime={currentTime}
-              duration={duration}
-              playbackRate={roomStore.playbackState.playbackRate}
-              hasControlPermission={roomStore.hasControlPermission}
-              volume={volume}
-              isMuted={isMuted}
-              onPlay={() => {
-                play();
-                const newState = { isPlaying: true, currentTime, lastUpdated: Date.now() };
-                roomStore.setPlaybackState(newState);
-                if (isConnected) {
-                  updateRoomMetadata({ playbackState: { ...roomStore.playbackState, ...newState } });
-                }
-              }}
-              onPause={() => {
-                pause();
-                const newState = { isPlaying: false, currentTime, lastUpdated: Date.now() };
-                roomStore.setPlaybackState(newState);
-                if (isConnected) {
-                  updateRoomMetadata({ playbackState: { ...roomStore.playbackState, ...newState } });
-                }
-              }}
-              onSeek={(time) => {
-                seek(time);
-                setCurrentTime(time);
-                const newState = { currentTime: time, lastUpdated: Date.now() };
-                roomStore.setPlaybackState(newState);
-                if (isConnected) {
-                  updateRoomMetadata({ playbackState: { ...roomStore.playbackState, ...newState } });
-                }
-              }}
-              onPlaybackRateChange={(rate) => {
-                setPlaybackRate(rate);
-                const newState = { playbackRate: rate, lastUpdated: Date.now() };
-                roomStore.setPlaybackState(newState);
-                if (isConnected) {
-                  updateRoomMetadata({ playbackState: { ...roomStore.playbackState, ...newState } });
-                }
-              }}
-              onVolumeChange={(newVolume) => {
-                setVolume(newVolume);
-                setIsMuted(false);
-                if (player) {
-                  player.setVolume(newVolume);
-                  player.unMute();
-                }
-              }}
-              onMuteToggle={() => {
-                const newMuted = !isMuted;
-                setIsMuted(newMuted);
-                if (player) {
-                  if (newMuted) {
-                    player.mute();
-                  } else {
+            {/* Player controls */}
+            <div className={`yt-player-controls ${isLandscapeFullscreen && !showLandscapeControls ? 'hidden' : ''}`}>
+              <PlayerControls
+                isPlaying={isPlaying}
+                currentTime={currentTime}
+                duration={duration}
+                playbackRate={roomStore.playbackState.playbackRate}
+                hasControlPermission={roomStore.hasControlPermission}
+                volume={volume}
+                isMuted={isMuted}
+                onPlay={() => {
+                  play();
+                  const newState = { isPlaying: true, currentTime, lastUpdated: Date.now() };
+                  roomStore.setPlaybackState(newState);
+                  if (isConnected) {
+                    updateRoomMetadata({ playbackState: { ...roomStore.playbackState, ...newState } });
+                  }
+                }}
+                onPause={() => {
+                  pause();
+                  const newState = { isPlaying: false, currentTime, lastUpdated: Date.now() };
+                  roomStore.setPlaybackState(newState);
+                  if (isConnected) {
+                    updateRoomMetadata({ playbackState: { ...roomStore.playbackState, ...newState } });
+                  }
+                }}
+                onSeek={(time) => {
+                  seek(time);
+                  setCurrentTime(time);
+                  const newState = { currentTime: time, lastUpdated: Date.now() };
+                  roomStore.setPlaybackState(newState);
+                  if (isConnected) {
+                    updateRoomMetadata({ playbackState: { ...roomStore.playbackState, ...newState } });
+                  }
+                }}
+                onPlaybackRateChange={(rate) => {
+                  setPlaybackRate(rate);
+                  const newState = { playbackRate: rate, lastUpdated: Date.now() };
+                  roomStore.setPlaybackState(newState);
+                  if (isConnected) {
+                    updateRoomMetadata({ playbackState: { ...roomStore.playbackState, ...newState } });
+                  }
+                }}
+                onVolumeChange={(newVolume) => {
+                  setVolume(newVolume);
+                  setIsMuted(false);
+                  if (player) {
+                    player.setVolume(newVolume);
                     player.unMute();
                   }
-                }
-              }}
-            />
+                }}
+                onMuteToggle={() => {
+                  const newMuted = !isMuted;
+                  setIsMuted(newMuted);
+                  if (player) {
+                    if (newMuted) {
+                      player.mute();
+                    } else {
+                      player.unMute();
+                    }
+                  }
+                }}
+              />
+            </div>
           </div>
+
+          {/* チャットエリア - 縦持ち時は常時表示、横持ち時はtoggleLandscapeChatで表示 */}
+          {(!isLandscapeFullscreen || showLandscapeChat) && (
+            <div className={chatClass}>
+              <ChatPanel
+                messages={roomStore.chatMessages}
+                onSendMessage={handleSendChatMessage}
+                roomId={actualRoomId || ''}
+                memberCount={roomStore.members.length}
+                onClose={isLandscapeFullscreen ? () => {
+                  closeLandscapeChat();
+                  resetLandscapeControlsTimer();
+                } : undefined}
+                showCloseButton={isLandscapeFullscreen}
+                chatInputClass={chatInputClass}
+                isLandscapeFullscreen={isLandscapeFullscreen}
+              />
+            </div>
+          )}
 
           {/* Landscape action bar - 横向きフルスクリーン時のコントロール表示中のみ（チャット非表示時） */}
           {isLandscapeFullscreen && showLandscapeControls && !showLandscapeChat && (
-            <div className="h-12 bg-gradient-to-t from-black/80 to-transparent flex items-center justify-center gap-6 px-4 relative z-20">
+            <div className="absolute bottom-16 left-0 right-0 h-12 bg-gradient-to-t from-black/80 to-transparent flex items-center justify-center gap-6 px-4 z-20">
               <button
-                onClick={() => {
-                  setShowLandscapeChat(true);
-                  setShowLandscapeControls(true);
-                }}
+                onClick={toggleLandscapeChat}
                 className="flex items-center gap-2 px-3 py-2 rounded-lg bg-white/10 active:bg-white/20 transition-colors touch-feedback"
                 title="チャット"
               >
@@ -855,167 +867,216 @@ export default function RoomPage() {
               <ReactionPicker onSelectReaction={handleSendReaction} compact />
             </div>
           )}
-          </div>{/* End of Video area container */}
-
-          {/* Landscape inline chat panel - shown when chat is open in landscape mode */}
-          {isLandscapeFullscreen && showLandscapeChat && (
-            <div className="w-[min(320px,40vw)] h-full flex flex-col border-l border-border bg-card">
-              {/* Chat header with close button */}
-              <div className="h-10 flex items-center justify-between px-3 border-b border-border bg-card/80 flex-shrink-0">
-                <span className="font-semibold text-sm">チャット</span>
+        </div>
+      ) : (
+        /* デスクトップ用レイアウト（既存のまま維持） */
+        <div className="flex h-screen">
+          <main className="flex-1 flex flex-col min-w-0 relative">
+            {/* Header */}
+            <header className="h-14 border-b border-border bg-card flex items-center justify-between px-4 relative z-20 pt-safe flex-shrink-0">
+              <div className="flex items-center gap-4 min-w-0">
                 <button
-                  onClick={() => {
-                    setShowLandscapeChat(false);
-                    resetLandscapeControlsTimer();
-                  }}
-                  className="p-1.5 rounded-md active:bg-accent hover:bg-accent"
+                  onClick={handleLeaveRoom}
+                  className="p-2 hover:bg-accent rounded-md flex-shrink-0"
+                  title="部屋を出る"
                 >
-                  <X className="h-4 w-4" />
+                  <LogOut className="h-5 w-5" />
                 </button>
+                <h1 className="font-semibold truncate">
+                  {roomStore.room?.name || `Room: ${actualRoomId?.slice(0, 8)}...`}
+                </h1>
               </div>
-              <div className="flex-1 min-h-0">
-                <ChatPanel
-                  messages={roomStore.chatMessages}
-                  onSendMessage={handleSendChatMessage}
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setShowVideoSearch(true)}
+                  className="flex items-center gap-2 px-3 py-2 bg-primary text-primary-foreground rounded-md shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/30 hover:scale-105 active:scale-95 transition-all duration-200"
+                  title="AddVideo"
+                >
+                  <Film className="h-4 w-4" />
+                  <span>AddVideo</span>
+                </button>
+                <button
+                  onClick={() => setShowPlayHistory(true)}
+                  className="p-2 hover:bg-accent rounded-md"
+                  title="再生履歴"
+                >
+                  <History className="h-5 w-5" />
+                </button>
+                <button
+                  onClick={() => setShowMemberList(!showMemberList)}
+                  className="p-2 hover:bg-accent rounded-md"
+                  title="メンバー"
+                >
+                  <Users className="h-5 w-5" />
+                </button>
+                <button
+                  onClick={() => setShowSettings(true)}
+                  className="p-2 hover:bg-accent rounded-md"
+                  title="設定"
+                >
+                  <Settings className="h-5 w-5" />
+                </button>
+                <ShareButton
                   roomId={actualRoomId || ''}
+                  shortId={shortId}
+                  roomName={roomStore.room?.name || 'WatchRoom'}
+                />
+              </div>
+            </header>
+
+            {/* Video area */}
+            <div className="flex-1 flex flex-col min-h-0">
+              <div className="relative bg-black overflow-hidden flex-1 min-h-0">
+                <div
+                  id={playerElementId.current}
+                  className="w-full h-full"
+                  style={{ display: roomStore.currentVideo ? 'block' : 'none' }}
+                />
+                {!roomStore.currentVideo && (
+                  <div className="w-full h-full flex flex-col items-center justify-center">
+                    <p className="text-white/50 mb-4">動画が選択されていません</p>
+                    <button
+                      onClick={() => setShowVideoSearch(true)}
+                      className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-md shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/30 hover:scale-105 active:scale-95 transition-all duration-200"
+                      title="AddVideo"
+                    >
+                      <Film className="h-4 w-4" />
+                      <span>AddVideo</span>
+                    </button>
+                  </div>
+                )}
+                {roomStore.currentVideo && (
+                  <YouTubeAttribution className="absolute bottom-2 right-2 z-15" />
+                )}
+                <ReactionOverlay reactions={roomStore.reactions} className="z-20" />
+              </div>
+
+              {/* Player controls */}
+              <div className="h-16 border-t border-border bg-card relative z-20">
+                <PlayerControls
+                  isPlaying={isPlaying}
+                  currentTime={currentTime}
+                  duration={duration}
+                  playbackRate={roomStore.playbackState.playbackRate}
+                  hasControlPermission={roomStore.hasControlPermission}
+                  volume={volume}
+                  isMuted={isMuted}
+                  onPlay={() => {
+                    play();
+                    const newState = { isPlaying: true, currentTime, lastUpdated: Date.now() };
+                    roomStore.setPlaybackState(newState);
+                    if (isConnected) {
+                      updateRoomMetadata({ playbackState: { ...roomStore.playbackState, ...newState } });
+                    }
+                  }}
+                  onPause={() => {
+                    pause();
+                    const newState = { isPlaying: false, currentTime, lastUpdated: Date.now() };
+                    roomStore.setPlaybackState(newState);
+                    if (isConnected) {
+                      updateRoomMetadata({ playbackState: { ...roomStore.playbackState, ...newState } });
+                    }
+                  }}
+                  onSeek={(time) => {
+                    seek(time);
+                    setCurrentTime(time);
+                    const newState = { currentTime: time, lastUpdated: Date.now() };
+                    roomStore.setPlaybackState(newState);
+                    if (isConnected) {
+                      updateRoomMetadata({ playbackState: { ...roomStore.playbackState, ...newState } });
+                    }
+                  }}
+                  onPlaybackRateChange={(rate) => {
+                    setPlaybackRate(rate);
+                    const newState = { playbackRate: rate, lastUpdated: Date.now() };
+                    roomStore.setPlaybackState(newState);
+                    if (isConnected) {
+                      updateRoomMetadata({ playbackState: { ...roomStore.playbackState, ...newState } });
+                    }
+                  }}
+                  onVolumeChange={(newVolume) => {
+                    setVolume(newVolume);
+                    setIsMuted(false);
+                    if (player) {
+                      player.setVolume(newVolume);
+                      player.unMute();
+                    }
+                  }}
+                  onMuteToggle={() => {
+                    const newMuted = !isMuted;
+                    setIsMuted(newMuted);
+                    if (player) {
+                      if (newMuted) {
+                        player.mute();
+                      } else {
+                        player.unMute();
+                      }
+                    }
+                  }}
                 />
               </div>
             </div>
-          )}
 
-          {/* Mobile inline chat panel - shown when chat is open in portrait mode */}
-          {showMobileChat && !isLandscapeFullscreen && (
-            <div className="flex-1 min-h-0 md:hidden border-t border-border">
+            {/* Sidebar toggle button */}
+            <button
+              onClick={() => setIsSidebarHidden(!isSidebarHidden)}
+              className="absolute right-0 top-1/2 -translate-y-1/2 z-20 p-2 bg-card border border-border rounded-l-lg shadow-lg hover:bg-accent transition-colors"
+              title={isSidebarHidden ? 'チャットを表示' : 'チャットを非表示'}
+              aria-expanded={!isSidebarHidden}
+            >
+              {isSidebarHidden ? (
+                <PanelRightOpen className="h-5 w-5" />
+              ) : (
+                <PanelRightClose className="h-5 w-5" />
+              )}
+            </button>
+          </main>
+
+          {/* Desktop Sidebar */}
+          <aside
+            className={`flex flex-col border-l border-border bg-card overflow-hidden
+              transition-[width] duration-300 ease-out
+              ${isSidebarHidden ? 'w-0' : 'w-80'}`}
+          >
+            <MemberListCompact
+              members={roomStore.members}
+              currentUserId={userId}
+            />
+            {showMemberList ? (
+              <MemberList
+                members={roomStore.members}
+                currentUserId={userId}
+                isCreator={roomStore.isCreator}
+                onKick={handleKickUser}
+                onBan={handleBanUser}
+                onGrantPermission={(id) => {
+                  roomStore.addAllowedUserId(id);
+                  if (isConnected) {
+                    const newAllowedUserIds = [...allowedUserIds.filter((i) => i !== id), id];
+                    updateRoomMetadata({ allowedUserIds: newAllowedUserIds });
+                  }
+                }}
+                onRevokePermission={(id) => {
+                  roomStore.removeAllowedUserId(id);
+                  if (isConnected) {
+                    const newAllowedUserIds = allowedUserIds.filter((i) => i !== id);
+                    updateRoomMetadata({ allowedUserIds: newAllowedUserIds });
+                  }
+                }}
+                allowedUserIds={allowedUserIds}
+              />
+            ) : (
               <ChatPanel
                 messages={roomStore.chatMessages}
                 onSendMessage={handleSendChatMessage}
+                onSelectReaction={handleSendReaction}
                 roomId={actualRoomId || ''}
-                onKeyboardStateChange={setIsKeyboardOpen}
+                memberCount={roomStore.members.length}
               />
-            </div>
-          )}
-          </div>{/* End of Content area */}
-
-          {/* Mobile bottom navigation - 横向きフルスクリーン時またはキーボード表示時は非表示 */}
-          <div className={`h-14 border-t border-border bg-card flex items-center justify-around md:hidden relative z-20 pb-safe ${isLandscapeFullscreen || isKeyboardOpen ? 'hidden' : ''}`}>
-            {showMobileChat ? (
-              /* Chat close button when chat is open */
-              <>
-                <button
-                  onClick={() => setShowMobileChat(false)}
-                  className="flex flex-col items-center gap-1 p-2 text-primary"
-                >
-                  <MessageCircle className="h-5 w-5" fill="currentColor" />
-                  <span className="text-xs">閉じる</span>
-                </button>
-                <button
-                  onClick={() => {
-                    setShowMobileChat(false);
-                    setShowMobileMembers(true);
-                  }}
-                  className="flex flex-col items-center gap-1 p-2"
-                >
-                  <Users className="h-5 w-5" />
-                  <span className="text-xs">メンバー</span>
-                </button>
-                <button
-                  onClick={() => setShowPlayHistory(true)}
-                  className="flex flex-col items-center gap-1 p-2"
-                >
-                  <History className="h-5 w-5" />
-                  <span className="text-xs">履歴</span>
-                </button>
-                <ReactionPicker onSelectReaction={handleSendReaction} compact />
-              </>
-            ) : (
-              /* Normal navigation when chat is closed */
-              <>
-                <button
-                  onClick={() => setShowMobileChat(true)}
-                  className="flex flex-col items-center gap-1 p-2"
-                >
-                  <MessageCircle className="h-5 w-5" />
-                  <span className="text-xs">チャット</span>
-                </button>
-                <button
-                  onClick={() => setShowMobileMembers(true)}
-                  className="flex flex-col items-center gap-1 p-2"
-                >
-                  <Users className="h-5 w-5" />
-                  <span className="text-xs">メンバー</span>
-                </button>
-                <button
-                  onClick={() => setShowPlayHistory(true)}
-                  className="flex flex-col items-center gap-1 p-2"
-                >
-                  <History className="h-5 w-5" />
-                  <span className="text-xs">履歴</span>
-                </button>
-                <ReactionPicker onSelectReaction={handleSendReaction} compact />
-              </>
             )}
-          </div>
-
-          {/* Sidebar toggle button - desktop only */}
-          <button
-            onClick={() => setIsSidebarHidden(!isSidebarHidden)}
-            className="hidden md:flex absolute right-0 top-1/2 -translate-y-1/2 z-20 p-2 bg-card border border-border rounded-l-lg shadow-lg hover:bg-accent transition-colors"
-            title={isSidebarHidden ? 'チャットを表示' : 'チャットを非表示'}
-            aria-expanded={!isSidebarHidden}
-          >
-            {isSidebarHidden ? (
-              <PanelRightOpen className="h-5 w-5" />
-            ) : (
-              <PanelRightClose className="h-5 w-5" />
-            )}
-          </button>
-        </main>
-
-        {/* Desktop Sidebar - flex item that expands/collapses */}
-        <aside
-          className={`hidden md:flex flex-col border-l border-border bg-card overflow-hidden
-            transition-[width] duration-300 ease-out
-            ${isSidebarHidden ? 'w-0' : 'w-80'}`}
-        >
-          {/* Compact member list - always visible */}
-          <MemberListCompact
-            members={roomStore.members}
-            currentUserId={userId}
-          />
-          {/* Chat or full member list */}
-          {showMemberList ? (
-            <MemberList
-              members={roomStore.members}
-              currentUserId={userId}
-              isCreator={roomStore.isCreator}
-              onKick={handleKickUser}
-              onBan={handleBanUser}
-              onGrantPermission={(id) => {
-                roomStore.addAllowedUserId(id);
-                if (isConnected) {
-                  const newAllowedUserIds = [...allowedUserIds.filter((i) => i !== id), id];
-                  updateRoomMetadata({ allowedUserIds: newAllowedUserIds });
-                }
-              }}
-              onRevokePermission={(id) => {
-                roomStore.removeAllowedUserId(id);
-                if (isConnected) {
-                  const newAllowedUserIds = allowedUserIds.filter((i) => i !== id);
-                  updateRoomMetadata({ allowedUserIds: newAllowedUserIds });
-                }
-              }}
-              allowedUserIds={allowedUserIds}
-            />
-          ) : (
-            <ChatPanel
-              messages={roomStore.chatMessages}
-              onSendMessage={handleSendChatMessage}
-              onSelectReaction={handleSendReaction}
-              roomId={actualRoomId || ''}
-            />
-          )}
-        </aside>
-      </div>
+          </aside>
+        </div>
+      )}
 
       {/* Mobile Chat Bottom Sheet - only used when NOT in inline mode */}
       {/* Inline mode is used when showMobileChat is true in portrait */}

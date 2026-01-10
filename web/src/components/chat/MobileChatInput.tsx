@@ -1,19 +1,23 @@
-import { useState, useRef, useEffect, useCallback } from 'react';
+import { useState, useRef, useCallback } from 'react';
 import { Send } from 'lucide-react';
 import { useKeyboardState } from '@/hooks/useKeyboardState';
 
 interface MobileChatInputProps {
   onSendMessage: (text: string) => void;
   onKeyboardStateChange?: (isOpen: boolean) => void;
+  chatInputClass?: string;
+  isLandscapeFullscreen?: boolean;
 }
 
 /**
  * モバイル専用チャット入力コンポーネント
- * キーボード表示時に固定位置でキーボードの上に配置される
+ * YouTube風レイアウトに対応
  */
 export default function MobileChatInput({
   onSendMessage,
   onKeyboardStateChange,
+  chatInputClass = 'yt-chat-input yt-chat-input--portrait',
+  isLandscapeFullscreen = false,
 }: MobileChatInputProps) {
   const [input, setInput] = useState('');
   const [isComposing, setIsComposing] = useState(false);
@@ -22,15 +26,34 @@ export default function MobileChatInput({
   const { isKeyboardOpen } = useKeyboardState();
 
   // キーボード状態を親コンポーネントに通知
-  useEffect(() => {
-    onKeyboardStateChange?.(isKeyboardOpen && isFocused);
-  }, [isKeyboardOpen, isFocused, onKeyboardStateChange]);
+  const notifyKeyboardState = useCallback((isOpen: boolean) => {
+    onKeyboardStateChange?.(isOpen);
+  }, [onKeyboardStateChange]);
+
+  // フォーカス状態とキーボード状態を監視
+  const handleFocus = useCallback(() => {
+    setIsFocused(true);
+    // キーボードが開くまで少し待つ
+    setTimeout(() => {
+      notifyKeyboardState(true);
+    }, 100);
+  }, [notifyKeyboardState]);
+
+  const handleBlur = useCallback(() => {
+    setIsFocused(false);
+    // キーボードが閉じるまで少し待つ
+    setTimeout(() => {
+      notifyKeyboardState(false);
+    }, 100);
+  }, [notifyKeyboardState]);
 
   const handleSubmit = useCallback((e?: React.FormEvent) => {
     e?.preventDefault();
     if (input.trim()) {
       onSendMessage(input.trim());
       setInput('');
+      // 送信後もフォーカスを維持
+      inputRef.current?.focus();
     }
   }, [input, onSendMessage]);
 
@@ -44,16 +67,13 @@ export default function MobileChatInput({
     }
   }, [isComposing, handleSubmit]);
 
-  const handleFocus = useCallback(() => {
-    setIsFocused(true);
-  }, []);
+  // 横持ち・キーボード表示時のみfixed配置
+  const shouldBeFixed = isLandscapeFullscreen && isKeyboardOpen && isFocused;
 
-  const handleBlur = useCallback(() => {
-    setIsFocused(false);
-  }, []);
-
-  // キーボードが開いているかつフォーカスがある場合は固定位置
-  const shouldBeFixed = isKeyboardOpen && isFocused;
+  // クラス名の決定
+  const containerClass = shouldBeFixed
+    ? 'yt-chat-input yt-chat-input--landscape-kb'
+    : chatInputClass;
 
   return (
     <>
@@ -61,16 +81,7 @@ export default function MobileChatInput({
       {shouldBeFixed && <div className="h-14 flex-shrink-0" />}
 
       {/* チャット入力 */}
-      <div
-        className={`
-          h-14 border-t border-border/50 flex items-center px-4 bg-card
-          transition-all duration-200
-          ${shouldBeFixed
-            ? 'fixed left-0 right-0 bottom-0 z-50 pb-safe'
-            : ''
-          }
-        `}
-      >
+      <div className={containerClass}>
         <form
           onSubmit={handleSubmit}
           className="flex-1 flex items-center gap-2 bg-muted/50 rounded-full px-4 py-2 focus-within:ring-2 focus-within:ring-primary/20 transition-shadow duration-200"
