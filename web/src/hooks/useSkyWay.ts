@@ -310,6 +310,16 @@ export function useSkyWay({ roomName, token, onMessage }: UseSkyWayOptions) {
         const metadata = parseMemberMetadata(e.member.metadata);
         if (metadata) {
           roomStoreActions.addMember(metadata);
+          // 入室通知をチャットに追加
+          roomStoreActions.addChatMessage({
+            id: `system-join-${metadata.id}-${Date.now()}`,
+            type: 'join',
+            text: `${metadata.name}が入室しました`,
+            senderId: 'system',
+            senderName: 'System',
+            senderIconUrl: '',
+            timestamp: Date.now(),
+          });
         }
       });
 
@@ -318,6 +328,16 @@ export function useSkyWay({ roomName, token, onMessage }: UseSkyWayOptions) {
 
         // 1. Remove member from local store (use user.id from metadata, not SkyWay member.id)
         if (leavingMemberMetadata) {
+          // 退室通知をチャットに追加
+          roomStoreActions.addChatMessage({
+            id: `system-leave-${leavingMemberMetadata.id}-${Date.now()}`,
+            type: 'leave',
+            text: `${leavingMemberMetadata.name}が退室しました`,
+            senderId: 'system',
+            senderName: 'System',
+            senderIconUrl: '',
+            timestamp: Date.now(),
+          });
           roomStoreActions.removeMember(leavingMemberMetadata.id);
         }
 

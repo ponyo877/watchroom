@@ -262,6 +262,7 @@ export function useRoom({
           pastMessages.forEach((msg: { message_id: string; text: string; sender_id: string; sender_name: string; sender_icon_url?: string; timestamp: number }) => {
             roomStoreActions.addChatMessage({
               id: msg.message_id,
+              type: 'message',
               text: msg.text,
               senderId: msg.sender_id,
               senderName: msg.sender_name,

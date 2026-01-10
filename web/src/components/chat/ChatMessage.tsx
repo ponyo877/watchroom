@@ -14,6 +14,17 @@ export default function ChatMessage({ message, onReport }: ChatMessageProps) {
   const isOwnMessage = message.senderId === userId;
   const [showMenu, setShowMenu] = useState(false);
 
+  // システムメッセージ（入退室通知）の場合は控えめに表示
+  if (message.type === 'join' || message.type === 'leave') {
+    return (
+      <div className="flex justify-center py-1">
+        <span className="text-xs text-muted-foreground/60 italic">
+          {message.text}
+        </span>
+      </div>
+    );
+  }
+
   return (
     <div className={`flex gap-2 group ${isOwnMessage ? 'flex-row-reverse' : ''}`}>
       <div className="relative">

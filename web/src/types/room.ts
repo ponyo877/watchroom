@@ -23,8 +23,11 @@ export interface RoomState {
   hasControlPermission: boolean;
 }
 
+export type ChatMessageType = 'message' | 'join' | 'leave';
+
 export interface ChatMessageItem {
   id: string;
+  type: ChatMessageType;
   text: string;
   senderId: string;
   senderName: string;

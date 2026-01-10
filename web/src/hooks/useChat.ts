@@ -35,6 +35,7 @@ export function useChat({ roomId, onSendMessage }: UseChatOptions) {
       // Add to local state immediately
       const chatItem: ChatMessageItem = {
         id: message.payload.messageId,
+        type: 'message',
         text: message.payload.text,
         senderId: message.senderId,
         senderName: message.payload.senderName,
@@ -72,6 +73,7 @@ export function useChat({ roomId, onSendMessage }: UseChatOptions) {
 
       const chatItem: ChatMessageItem = {
         id: message.payload.messageId,
+        type: 'message',
         text: message.payload.text,
         senderId: message.senderId,
         senderName: message.payload.senderName,

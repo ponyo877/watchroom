@@ -68,6 +68,7 @@ describe('roomStore', () => {
     for (let i = 0; i < 105; i++) {
       store.addChatMessage({
         id: `msg-${i}`,
+        type: 'message',
         senderId: 'user-1',
         senderName: 'Test',
         senderIconUrl: '',
