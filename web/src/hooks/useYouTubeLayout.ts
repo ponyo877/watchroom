@@ -35,11 +35,29 @@ export function useYouTubeLayout(): UseYouTubeLayoutReturn {
 
   const [isLandscapeFullscreen, setIsLandscapeFullscreen] = useState(() => {
     if (typeof window === 'undefined') return false;
-    const isLandscape = window.matchMedia('(orientation: landscape)').matches;
-    const isSmallHeight = window.innerHeight <= 500;
-    const isMobile = window.matchMedia('(max-width: 1024px)').matches;
-    return isLandscape && isSmallHeight && isMobile;
+    return checkIsLandscapeFullscreen();
   });
+
+  // 横持ちフルスクリーン判定（アスペクト比ベース）
+  function checkIsLandscapeFullscreen(): boolean {
+    if (typeof window === 'undefined') return false;
+
+    const isLandscape = window.matchMedia('(orientation: landscape)').matches;
+    const isMobile = window.matchMedia('(max-width: 1024px)').matches;
+
+    // アスペクト比ベースの判定（幅が高さの1.3倍以上）
+    const isLandscapeAspect = window.innerWidth > window.innerHeight * 1.3;
+
+    // 高さが画面の60%以下（横持ちモバイル特有の低い高さ）
+    // screen.heightはデバイスの物理的な画面高さ
+    const screenHeight = window.screen?.height || window.innerHeight;
+    const isSmallHeight = window.innerHeight <= screenHeight * 0.6;
+
+    // フォールバック: 固定値での判定（screen.heightが取得できない場合）
+    const isSmallHeightFallback = window.innerHeight <= 500;
+
+    return isLandscape && isMobile && (isLandscapeAspect || isSmallHeight || isSmallHeightFallback);
+  }
 
   const [showLandscapeChat, setShowLandscapeChat] = useState(false);
 
@@ -51,9 +69,7 @@ export function useYouTubeLayout(): UseYouTubeLayoutReturn {
 
     const checkLayout = () => {
       const isLandscape = window.matchMedia('(orientation: landscape)').matches;
-      const isSmallHeight = window.innerHeight <= 500;
-      const isMobile = window.matchMedia('(max-width: 1024px)').matches;
-      const newIsLandscapeFullscreen = isLandscape && isSmallHeight && isMobile;
+      const newIsLandscapeFullscreen = checkIsLandscapeFullscreen();
       const newMode: LayoutMode = isLandscape ? 'landscape' : 'portrait';
 
       // デバウンスで状態更新（向き変更アニメーション中のフリッカー防止）

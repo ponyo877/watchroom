@@ -18,6 +18,172 @@
   /* 横持ち */
   --yt-player-width-landscape: 65%;
   --yt-chat-width-landscape: 35%;
+
+  /* === Mobile Layout v2 CSS Variables (set by useMobileLayout) === */
+  --mobile-viewport-height: 100vh;
+  --mobile-keyboard-visible: 0;
+  --mobile-keyboard-height: 0px;
+  --mobile-chat-visible: 0;
+  --mobile-orientation: portrait;
+  --mobile-landscape-fullscreen: 0;
+}
+
+/* === Mobile Layout v2 (data-attribute based) === */
+
+/* メインコンテナ */
+.mobile-container {
+  display: flex;
+  flex-direction: column;
+  height: 100dvh;
+  height: var(--mobile-viewport-height, 100vh);
+  width: 100%;
+  overflow: hidden;
+  position: relative;
+  padding-top: var(--safe-area-inset-top);
+}
+
+/* 横持ち時は横並び */
+.mobile-container[data-orientation="landscape"] {
+  flex-direction: row;
+  padding-top: 0;
+  padding-left: var(--safe-area-inset-left);
+  padding-right: var(--safe-area-inset-right);
+}
+
+/* === Mobile Player === */
+.mobile-player {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  overflow: hidden;
+  background: black;
+  /* 縦持ち時: 40% */
+  height: var(--yt-player-height-portrait);
+  width: 100%;
+  transition: height 0.2s ease-out, width 0.2s ease-out;
+}
+
+/* 縦持ち・キーボード表示時: 28% */
+.mobile-container[data-keyboard="true"] .mobile-player {
+  height: var(--yt-player-height-portrait-kb);
+}
+
+/* 横持ち時: フル幅・フル高さ */
+.mobile-container[data-orientation="landscape"] .mobile-player {
+  height: 100%;
+  width: 100%;
+}
+
+/* 横持ち・チャット表示時: 65%幅 */
+.mobile-container[data-orientation="landscape"][data-chat="true"] .mobile-player {
+  width: var(--yt-player-width-landscape);
+}
+
+/* === Mobile Chat === */
+.mobile-chat {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+  background: var(--color-card);
+}
+
+/* 横持ち時: チャットはデフォルト非表示 */
+.mobile-container[data-orientation="landscape"] .mobile-chat {
+  display: none;
+}
+
+/* 横持ち・チャット表示時: 35%幅でスライドイン */
+.mobile-container[data-orientation="landscape"][data-chat="true"] .mobile-chat {
+  display: flex;
+  width: var(--yt-chat-width-landscape);
+  flex: none;
+  border-left: 1px solid var(--color-border);
+  animation: slide-in-from-right 0.3s ease-out forwards;
+}
+
+/* === Mobile Header === */
+.mobile-header {
+  height: 48px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 12px;
+  background: var(--color-card);
+  border-bottom: 1px solid var(--color-border);
+}
+
+/* 横持ちフルスクリーン時: ヘッダー非表示 */
+.mobile-container[data-orientation="landscape"] .mobile-header {
+  display: none;
+}
+
+/* === Mobile Chat Input === */
+.mobile-chat-input {
+  height: var(--yt-chat-input-height);
+  flex-shrink: 0;
+  border-top: 1px solid var(--color-border);
+  background: var(--color-card);
+  display: flex;
+  align-items: center;
+  padding: 0 12px;
+  padding-bottom: var(--safe-area-inset-bottom);
+}
+
+/* 横持ち時: safe-area不要 */
+.mobile-container[data-orientation="landscape"] .mobile-chat-input {
+  padding-bottom: 0;
+}
+
+/* 横持ち・キーボード表示時: 固定位置 */
+.mobile-container[data-orientation="landscape"][data-keyboard="true"] .mobile-chat-input {
+  position: fixed;
+  left: var(--yt-player-width-landscape);
+  right: 0;
+  bottom: 0;
+  z-index: 50;
+}
+
+/* === Landscape Overlay (チャット非表示時のトグルボタン) === */
+.mobile-landscape-overlay {
+  position: fixed;
+  top: 50%;
+  right: 0;
+  transform: translateY(-50%);
+  z-index: 40;
+  padding: 8px;
+}
+
+.mobile-landscape-overlay-btn {
+  width: 40px;
+  height: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: oklch(from var(--color-card) l c h / 0.8);
+  backdrop-filter: blur(8px);
+  border-radius: 8px 0 0 8px;
+  border: 1px solid var(--color-border);
+  border-right: none;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.mobile-landscape-overlay-btn:hover {
+  background: var(--color-accent);
+}
+
+/* 縦持ち時は非表示 */
+.mobile-container[data-orientation="portrait"] .mobile-landscape-overlay {
+  display: none;
+}
+
+/* チャット表示時も非表示 */
+.mobile-container[data-chat="true"] .mobile-landscape-overlay {
+  display: none;
 }
 
 /* === Touch Device Hover Disable === */

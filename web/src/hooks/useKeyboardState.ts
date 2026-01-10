@@ -36,9 +36,10 @@ export function useKeyboardState(): KeyboardState {
       // 高さの差分を計算
       const heightDiff = initialHeight - currentHeight;
 
-      // 150px以上縮小した場合はキーボードが開いていると判定
-      // （一般的なモバイルキーボードは200-400px程度）
-      const isKeyboardOpen = heightDiff > 150;
+      // 画面比率ベースの閾値（最小150px、または初期高さの15%）
+      // 小さい画面では比率ベース、大きい画面では固定値150pxを使用
+      const minKeyboardHeight = Math.max(100, Math.min(150, initialHeight * 0.15));
+      const isKeyboardOpen = heightDiff > minKeyboardHeight;
 
       setState({
         isKeyboardOpen,

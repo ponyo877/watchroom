@@ -52,6 +52,13 @@ async function bootstrap() {
       </QueryClientProvider>
     </React.StrictMode>
   );
+
+  // Service Worker登録（本番環境のみ）
+  if ('serviceWorker' in navigator && import.meta.env.PROD) {
+    navigator.serviceWorker.register('/sw.js').catch((error) => {
+      console.warn('SW registration failed:', error);
+    });
+  }
 }
 
 bootstrap();

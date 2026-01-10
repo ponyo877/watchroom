@@ -49,8 +49,25 @@ export function useViewportHeight() {
     const handleOrientationChange = () => {
       initialHeightRef.current = null;
       // 向き変更後に高さが安定するまで少し待つ
-      setTimeout(() => setVH(true), 100);
+      setTimeout(() => {
+        setVH(true);
+        // safe-area CSS変数を強制再計算（iOS Safari対応）
+        updateSafeAreaInsets();
+      }, 100);
     };
+
+    // safe-area insetを再計算してCSS変数に設定
+    const updateSafeAreaInsets = () => {
+      // CSS変数を一度削除して再設定することで強制的に再計算させる
+      const root = document.documentElement;
+      root.style.setProperty('--safe-area-inset-top', 'env(safe-area-inset-top, 0px)');
+      root.style.setProperty('--safe-area-inset-bottom', 'env(safe-area-inset-bottom, 0px)');
+      root.style.setProperty('--safe-area-inset-left', 'env(safe-area-inset-left, 0px)');
+      root.style.setProperty('--safe-area-inset-right', 'env(safe-area-inset-right, 0px)');
+    };
+
+    // 初期設定時もsafe-areaを設定
+    updateSafeAreaInsets();
 
     window.addEventListener('resize', handleResize);
     window.addEventListener('orientationchange', handleOrientationChange);
