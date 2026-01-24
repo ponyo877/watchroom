@@ -5,25 +5,25 @@ export default function LanguageSwitcher() {
   const { currentLocale, getAlternatePath } = useLanguage();
 
   return (
-    <div className="flex items-center px-2 py-1.5 rounded-lg text-sm">
+    <div className="flex items-center px-3 py-1.5 rounded-full bg-muted/50 text-sm">
       <Link
         to={getAlternatePath('ja')}
         className={`transition-colors duration-200 ${
           currentLocale === 'ja'
-            ? 'font-bold text-primary'
-            : 'text-muted-foreground hover:text-foreground'
+            ? 'font-bold text-blue-600'
+            : 'text-gray-400 hover:text-gray-600'
         }`}
         aria-label="日本語に切り替え"
       >
         JA
       </Link>
-      <span className="text-muted-foreground/50 mx-1">|</span>
+      <span className="text-gray-300 mx-1.5">|</span>
       <Link
         to={getAlternatePath('en')}
         className={`transition-colors duration-200 ${
           currentLocale === 'en'
-            ? 'font-bold text-primary'
-            : 'text-muted-foreground hover:text-foreground'
+            ? 'font-bold text-blue-600'
+            : 'text-gray-400 hover:text-gray-600'
         }`}
         aria-label="Switch to English"
       >
