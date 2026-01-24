@@ -3,6 +3,7 @@ import { useEffect } from 'react';
 import { useUserStore } from '@/stores/userStore';
 import { useUIStore } from '@/stores/uiStore';
 import { useViewportHeight } from '@/hooks/useViewportHeight';
+import { LanguageWrapper } from '@/i18n/LanguageWrapper';
 import HomePage from '@/pages/HomePage';
 import RoomPage from '@/pages/RoomPage';
 import AdminPage from '@/pages/AdminPage';
@@ -43,11 +44,19 @@ function App() {
     <ThemeProvider>
       <BrowserRouter>
         <Routes>
-          <Route path="/" element={<HomePage />} />
-          <Route path="/room/:roomId" element={<RoomPage />} />
-          <Route path="/r/:shortId" element={<RoomPage />} />
-          <Route path="/admin" element={<AdminPage />} />
-          <Route path="*" element={<NotFoundPage />} />
+          {/* Japanese (default) */}
+          <Route path="/" element={<LanguageWrapper lang="ja"><HomePage /></LanguageWrapper>} />
+          <Route path="/room/:roomId" element={<LanguageWrapper lang="ja"><RoomPage /></LanguageWrapper>} />
+          <Route path="/r/:shortId" element={<LanguageWrapper lang="ja"><RoomPage /></LanguageWrapper>} />
+          <Route path="/admin" element={<LanguageWrapper lang="ja"><AdminPage /></LanguageWrapper>} />
+
+          {/* English */}
+          <Route path="/en" element={<LanguageWrapper lang="en"><HomePage /></LanguageWrapper>} />
+          <Route path="/en/room/:roomId" element={<LanguageWrapper lang="en"><RoomPage /></LanguageWrapper>} />
+          <Route path="/en/r/:shortId" element={<LanguageWrapper lang="en"><RoomPage /></LanguageWrapper>} />
+          <Route path="/en/admin" element={<LanguageWrapper lang="en"><AdminPage /></LanguageWrapper>} />
+
+          <Route path="*" element={<LanguageWrapper lang="ja"><NotFoundPage /></LanguageWrapper>} />
         </Routes>
       </BrowserRouter>
     </ThemeProvider>
