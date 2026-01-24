@@ -1,10 +1,12 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Monitor, User, Search, X } from 'lucide-react';
+import { t } from '@lingui/macro';
 import { useUserStore } from '@/stores/userStore';
 import ThemeToggle from './ThemeToggle';
 import UserSettings from '@/components/user/UserSettings';
 import { Input } from '@/components/ui/Input';
+import LanguageSwitcher from './LanguageSwitcher';
 
 interface HeaderProps {
   onCreateRoom?: () => void;
@@ -34,7 +36,7 @@ export default function Header({ onCreateRoom, searchQuery, onSearchChange }: He
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
                 <Input
                   type="text"
-                  placeholder="部屋を検索..."
+                  placeholder={t`Search rooms...`}
                   value={searchQuery || ''}
                   onChange={(e) => onSearchChange(e.target.value)}
                   className="pl-10"
@@ -50,7 +52,7 @@ export default function Header({ onCreateRoom, searchQuery, onSearchChange }: He
               <button
                 onClick={() => setShowMobileSearch(!showMobileSearch)}
                 className="p-2 rounded-lg sm:hidden active:scale-95 md:hover:bg-accent touch-feedback"
-                aria-label="検索"
+                aria-label={t`Search`}
               >
                 {showMobileSearch ? (
                   <X className="h-5 w-5" />
@@ -63,7 +65,7 @@ export default function Header({ onCreateRoom, searchQuery, onSearchChange }: He
             <button
               onClick={() => setShowUserSettings(true)}
               className="flex items-center gap-2 p-1.5 md:px-2 md:py-1.5 rounded-lg transition-colors duration-200 active:scale-95 md:hover:bg-accent touch-feedback"
-              title="ユーザー設定"
+              title={t`User settings`}
               data-testid="account-button"
             >
               <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center overflow-hidden">
@@ -83,6 +85,7 @@ export default function Header({ onCreateRoom, searchQuery, onSearchChange }: He
             </button>
 
             <ThemeToggle />
+            <LanguageSwitcher />
 
             {onCreateRoom && (
               <button
@@ -103,7 +106,7 @@ export default function Header({ onCreateRoom, searchQuery, onSearchChange }: He
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
               <Input
                 type="text"
-                placeholder="部屋を検索..."
+                placeholder={t`Search rooms...`}
                 value={searchQuery || ''}
                 onChange={(e) => onSearchChange(e.target.value)}
                 className="pl-10 w-full"

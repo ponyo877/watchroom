@@ -1,4 +1,5 @@
 import { Settings, Users, Crown, Lock, UserCheck, UserX } from 'lucide-react';
+import { Trans, t } from '@lingui/macro';
 import type { MemberMetadata } from '@/types/skyway';
 import {
   Dialog,
@@ -25,20 +26,22 @@ interface RoomSettingsProps {
   onOpenPasswordSettings: () => void;
 }
 
-const PERMISSION_MODE_LABELS: Record<PermissionMode, { label: string; description: string }> = {
-  creator: {
-    label: '作成者のみ',
-    description: '部屋の作成者だけが操作できます',
-  },
-  specific: {
-    label: '指定メンバー',
-    description: '選択したメンバーが操作できます',
-  },
-  all: {
-    label: '全員',
-    description: '全員が操作できます',
-  },
-};
+function getPermissionModeLabels(): Record<PermissionMode, { label: string; description: string }> {
+  return {
+    creator: {
+      label: t`Creator only`,
+      description: t`Only the room creator can control`,
+    },
+    specific: {
+      label: t`Specific members`,
+      description: t`Selected members can control`,
+    },
+    all: {
+      label: t`Everyone`,
+      description: t`Everyone can control`,
+    },
+  };
+}
 
 export default function RoomSettings({
   open,
@@ -55,12 +58,13 @@ export default function RoomSettings({
   onOpenPasswordSettings,
 }: RoomSettingsProps) {
   const nonCreatorMembers = members.filter((m) => !m.isCreator);
+  const permissionModeLabels = getPermissionModeLabels();
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader icon={<Settings className="h-5 w-5 text-muted-foreground" />}>
-          <DialogTitle>部屋設定</DialogTitle>
+          <DialogTitle><Trans>Room Settings</Trans></DialogTitle>
         </DialogHeader>
 
         <div className="flex-1 overflow-y-auto space-y-6 -mx-6 px-6">
@@ -68,18 +72,18 @@ export default function RoomSettings({
           <section>
             <h3 className="font-medium mb-3 flex items-center gap-2">
               <Lock className="h-4 w-4" />
-              パスワード
+              <Trans>Password</Trans>
             </h3>
             <div className="flex items-center justify-between p-3 bg-muted/50 rounded-xl">
               <span className="text-sm">
-                {hasPassword ? 'パスワードが設定されています' : 'パスワードなし（公開）'}
+                {hasPassword ? <Trans>Password is set</Trans> : <Trans>No password (public)</Trans>}
               </span>
               {isCreator && (
                 <button
                   onClick={onOpenPasswordSettings}
                   className="px-3 py-1.5 text-sm bg-primary text-primary-foreground rounded-lg hover:opacity-90 transition-opacity"
                 >
-                  {hasPassword ? '変更' : '設定'}
+                  {hasPassword ? <Trans>Change</Trans> : <Trans>Set</Trans>}
                 </button>
               )}
             </div>
@@ -89,10 +93,10 @@ export default function RoomSettings({
           <section>
             <h3 className="font-medium mb-3 flex items-center gap-2">
               <Crown className="h-4 w-4" />
-              操作権限
+              <Trans>Control Permissions</Trans>
             </h3>
             <div className="space-y-2">
-              {(Object.entries(PERMISSION_MODE_LABELS) as [PermissionMode, { label: string; description: string }][]).map(
+              {(Object.entries(permissionModeLabels) as [PermissionMode, { label: string; description: string }][]).map(
                 ([mode, { label, description }]) => (
                   <button
                     key={mode}
@@ -117,11 +121,11 @@ export default function RoomSettings({
             <section>
               <h3 className="font-medium mb-3 flex items-center gap-2">
                 <Users className="h-4 w-4" />
-                メンバー権限
+                <Trans>Member Permissions</Trans>
               </h3>
               {nonCreatorMembers.length === 0 ? (
                 <p className="text-sm text-muted-foreground text-center py-4">
-                  他のメンバーがいません
+                  <Trans>No other members</Trans>
                 </p>
               ) : (
                 <div className="space-y-2">
@@ -150,7 +154,7 @@ export default function RoomSettings({
                             {member.name}
                             {member.id === currentUserId && (
                               <span className="text-xs text-muted-foreground ml-1">
-                                (あなた)
+                                <Trans>(you)</Trans>
                               </span>
                             )}
                           </span>
@@ -189,7 +193,7 @@ export default function RoomSettings({
             onClick={() => onOpenChange(false)}
             className="flex-1 px-4 py-2.5 border border-border rounded-xl hover:bg-accent/50 transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]"
           >
-            閉じる
+            <Trans>Close</Trans>
           </button>
         </DialogFooter>
       </DialogContent>

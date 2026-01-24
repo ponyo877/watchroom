@@ -1,5 +1,7 @@
 import { type ClassValue, clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
+import { t, plural } from '@lingui/macro';
+import { useLingui } from '@lingui/react';
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -29,7 +31,7 @@ export function formatDuration(seconds: number): string {
   return `${minutes}:${secs.toString().padStart(2, '0')}`;
 }
 
-export function formatRelativeTime(date: Date): string {
+export function formatRelativeTime(date: Date, locale: string = 'ja'): string {
   const now = new Date();
   const diffMs = now.getTime() - date.getTime();
   const diffSecs = Math.floor(diffMs / 1000);
@@ -37,9 +39,26 @@ export function formatRelativeTime(date: Date): string {
   const diffHours = Math.floor(diffMins / 60);
   const diffDays = Math.floor(diffHours / 24);
 
-  if (diffSecs < 60) return 'たった今';
-  if (diffMins < 60) return `${diffMins}分前`;
-  if (diffHours < 24) return `${diffHours}時間前`;
-  if (diffDays < 7) return `${diffDays}日前`;
-  return date.toLocaleDateString('ja-JP');
+  if (diffSecs < 60) return t`Just now`;
+  if (diffMins < 60)
+    return plural(diffMins, {
+      one: '# minute ago',
+      other: '# minutes ago',
+    });
+  if (diffHours < 24)
+    return plural(diffHours, {
+      one: '# hour ago',
+      other: '# hours ago',
+    });
+  if (diffDays < 7)
+    return plural(diffDays, {
+      one: '# day ago',
+      other: '# days ago',
+    });
+  return date.toLocaleDateString(locale === 'en' ? 'en-US' : 'ja-JP');
+}
+
+export function useRelativeTime() {
+  const { i18n } = useLingui();
+  return (date: Date) => formatRelativeTime(date, i18n.locale);
 }

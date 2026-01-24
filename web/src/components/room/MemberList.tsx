@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Crown, User, MoreVertical, UserMinus, Ban, Shield } from 'lucide-react';
+import { Trans, t, plural } from '@lingui/macro';
 import type { MemberMetadata } from '@/types/skyway';
 
 interface MemberListProps {
@@ -37,7 +38,12 @@ export default function MemberList({
 
   return (
     <div className="p-4">
-      <h3 className="font-semibold mb-3">メンバー ({members.length})</h3>
+      <h3 className="font-semibold mb-3">
+        {plural(members.length, {
+          one: '# Member',
+          other: '# Members',
+        })}
+      </h3>
       <div className="space-y-2">
         {members.map((member, index) => {
           const isCurrentUser = member.id === currentUserId;
@@ -69,12 +75,12 @@ export default function MemberList({
                   {member.name}
                   {isCurrentUser && (
                     <span className="text-xs text-muted-foreground ml-1">
-                      (あなた)
+                      <Trans>(you)</Trans>
                     </span>
                   )}
                 </span>
                 {hasPermission && !member.isCreator && (
-                  <span className="text-xs text-primary">操作権限あり</span>
+                  <span className="text-xs text-primary"><Trans>Has control permission</Trans></span>
                 )}
               </div>
               <div className="flex items-center gap-1">
@@ -109,7 +115,7 @@ export default function MemberList({
                               className="w-full flex items-center gap-2 px-3 py-2 text-sm hover:bg-accent"
                             >
                               <Shield className="h-4 w-4" />
-                              操作権限を取消
+                              <Trans>Revoke permission</Trans>
                             </button>
                           ) : (
                             <button
@@ -120,7 +126,7 @@ export default function MemberList({
                               className="w-full flex items-center gap-2 px-3 py-2 text-sm hover:bg-accent"
                             >
                               <Shield className="h-4 w-4" />
-                              操作権限を付与
+                              <Trans>Grant permission</Trans>
                             </button>
                           )}
                           <button
@@ -131,7 +137,7 @@ export default function MemberList({
                             className="w-full flex items-center gap-2 px-3 py-2 text-sm text-orange-600 hover:bg-accent"
                           >
                             <UserMinus className="h-4 w-4" />
-                            キックする
+                            <Trans>Kick</Trans>
                           </button>
                           <button
                             onClick={() => {
@@ -141,7 +147,7 @@ export default function MemberList({
                             className="w-full flex items-center gap-2 px-3 py-2 text-sm text-destructive hover:bg-accent"
                           >
                             <Ban className="h-4 w-4" />
-                            BANする
+                            <Trans>Ban</Trans>
                           </button>
                         </div>
                       </>
@@ -163,17 +169,17 @@ export default function MemberList({
           <div className="relative bg-card border border-border rounded-lg p-6 w-full max-w-md mx-4">
             <h3 className="font-semibold mb-4 flex items-center gap-2">
               <Ban className="h-5 w-5 text-destructive" />
-              ユーザーをBANする
+              <Trans>Ban User</Trans>
             </h3>
 
             <div className="mb-4">
               <label className="block text-sm font-medium mb-1">
-                BAN理由 <span className="text-destructive">*</span>
+                <Trans>Ban Reason</Trans> <span className="text-destructive">*</span>
               </label>
               <textarea
                 value={banReason}
                 onChange={(e) => setBanReason(e.target.value)}
-                placeholder="BAN理由を入力してください"
+                placeholder={t`Enter ban reason`}
                 className="w-full px-3 py-2 border border-input rounded-md bg-background text-sm resize-none"
                 rows={3}
               />
@@ -184,14 +190,14 @@ export default function MemberList({
                 onClick={() => setBanDialogUserId(null)}
                 className="flex-1 px-4 py-2 border border-border rounded-md hover:bg-accent"
               >
-                キャンセル
+                <Trans>Cancel</Trans>
               </button>
               <button
                 onClick={handleBan}
                 disabled={!banReason.trim()}
                 className="flex-1 px-4 py-2 bg-destructive text-white rounded-md hover:opacity-90 disabled:opacity-50"
               >
-                BANする
+                <Trans>Ban</Trans>
               </button>
             </div>
           </div>

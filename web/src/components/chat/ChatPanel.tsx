@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
+import { Trans } from '@lingui/macro';
 import ChatMessage from './ChatMessage';
 import ReportDialog from './ReportDialog';
 import ReactionPicker from './ReactionPicker';
@@ -96,7 +97,7 @@ export default function ChatPanel({
       <div className="yt-chat-messages relative">
         {messages.length === 0 ? (
           <p className="text-center text-muted-foreground text-sm py-8">
-            メッセージはまだありません
+            <Trans>No messages yet</Trans>
           </p>
         ) : (
           messages.map((message, index) => (

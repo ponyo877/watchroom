@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Search, Link } from 'lucide-react';
+import { Trans, t } from '@lingui/macro';
 import axiosInstance from '@/lib/api';
 import { formatDuration } from '@/lib/youtube';
 import { getFromCache, saveToCache } from '@/lib/searchCache';
@@ -99,7 +100,7 @@ export default function VideoSearch({ open, onOpenChange, onSelectVideo }: Video
         onOpenChange(false);
         return;
       } else {
-        setError('動画が見つかりませんでした');
+        setError(t`Video not found`);
         setIsSearching(false);
         return;
       }
@@ -107,7 +108,7 @@ export default function VideoSearch({ open, onOpenChange, onSelectVideo }: Video
 
     // 最小3文字の制限
     if (query.trim().length < 3) {
-      setError('3文字以上入力してください');
+      setError(t`Please enter at least 3 characters`);
       return;
     }
 
@@ -142,7 +143,7 @@ export default function VideoSearch({ open, onOpenChange, onSelectVideo }: Video
       setResults(videos);
     } catch (err) {
       console.error('Failed to search videos:', err);
-      setError('動画の検索に失敗しました');
+      setError(t`Failed to search videos`);
     } finally {
       setIsSearching(false);
     }
@@ -152,7 +153,7 @@ export default function VideoSearch({ open, onOpenChange, onSelectVideo }: Video
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl">
         <DialogHeader icon={<Search className="h-5 w-5 text-muted-foreground" />}>
-          <DialogTitle>動画を検索</DialogTitle>
+          <DialogTitle><Trans>Search Videos</Trans></DialogTitle>
         </DialogHeader>
 
         <form onSubmit={handleSearch} className="space-y-3">
@@ -161,7 +162,7 @@ export default function VideoSearch({ open, onOpenChange, onSelectVideo }: Video
               type="text"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="キーワードで検索 または YouTubeのURLを貼り付け"
+              placeholder={t`Search by keyword or paste YouTube URL`}
               className="flex-1 px-4 py-2.5 border border-input rounded-xl bg-background/50 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary/50 hover:border-primary/30 transition-all duration-200"
             />
             <button
@@ -174,7 +175,7 @@ export default function VideoSearch({ open, onOpenChange, onSelectVideo }: Video
           </div>
           <p className="text-xs text-muted-foreground flex items-center gap-1">
             <Link className="h-3 w-3" />
-            YouTube URLを貼り付けると直接動画を追加できます
+            <Trans>Paste a YouTube URL to add video directly</Trans>
           </p>
         </form>
 
@@ -183,7 +184,7 @@ export default function VideoSearch({ open, onOpenChange, onSelectVideo }: Video
             <p className="text-center text-destructive py-8">{error}</p>
           ) : results.length === 0 ? (
             <p className="text-center text-muted-foreground py-8">
-              検索キーワードを入力してください
+              <Trans>Enter a search keyword</Trans>
             </p>
           ) : (
             <div className="space-y-2">

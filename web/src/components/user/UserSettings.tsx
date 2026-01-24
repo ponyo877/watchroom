@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Settings, Trash2, AlertTriangle } from 'lucide-react';
+import { Trans, t } from '@lingui/macro';
 import { useUserStore } from '@/stores/userStore';
 import { clearAllUserData } from '@/lib/storage';
 import IconUploader from './IconUploader';
@@ -51,7 +52,7 @@ export default function UserSettings({ open, onClose }: UserSettingsProps) {
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent>
         <DialogHeader icon={<Settings className="h-5 w-5" />}>
-          <DialogTitle>ユーザー設定</DialogTitle>
+          <DialogTitle><Trans>User Settings</Trans></DialogTitle>
         </DialogHeader>
 
         <div className="flex-1 overflow-y-auto min-h-0 -mx-6 px-6">
@@ -59,7 +60,7 @@ export default function UserSettings({ open, onClose }: UserSettingsProps) {
           {/* Profile Icon */}
           <div>
             <label className="block text-sm font-medium mb-3">
-              プロフィールアイコン
+              <Trans>Profile Icon</Trans>
             </label>
             <IconUploader
               currentIconUrl={userStore.iconUrl}
@@ -70,13 +71,13 @@ export default function UserSettings({ open, onClose }: UserSettingsProps) {
 
           {/* Display Name */}
           <div>
-            <label className="block text-sm font-medium mb-2">表示名</label>
+            <label className="block text-sm font-medium mb-2"><Trans>Display Name</Trans></label>
             <div className="flex gap-2">
               <Input
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder="表示名を入力"
+                placeholder={t`Enter display name`}
                 maxLength={20}
               />
               <Button
@@ -84,11 +85,11 @@ export default function UserSettings({ open, onClose }: UserSettingsProps) {
                 disabled={isSaving || name === userStore.name}
                 size="default"
               >
-                {saved ? '保存しました' : '保存'}
+                {saved ? <Trans>Saved</Trans> : <Trans>Save</Trans>}
               </Button>
             </div>
             <p className="text-xs text-muted-foreground mt-1">
-              他のユーザーに表示される名前です（20文字以内）
+              <Trans>This name is visible to other users (max 20 characters)</Trans>
             </p>
           </div>
 
@@ -97,12 +98,12 @@ export default function UserSettings({ open, onClose }: UserSettingsProps) {
 
           {/* User ID */}
           <div>
-            <label className="block text-sm font-medium mb-2">ユーザーID</label>
+            <label className="block text-sm font-medium mb-2"><Trans>User ID</Trans></label>
             <div className="px-4 py-2.5 bg-muted/50 backdrop-blur-sm rounded-xl text-sm font-mono text-muted-foreground">
               {userStore.id}
             </div>
             <p className="text-xs text-muted-foreground mt-1">
-              このIDは変更できません
+              <Trans>This ID cannot be changed</Trans>
             </p>
           </div>
 
@@ -110,10 +111,10 @@ export default function UserSettings({ open, onClose }: UserSettingsProps) {
           <div className="border-t border-border pt-6">
             <label className="block text-sm font-medium mb-2 flex items-center gap-2 text-destructive">
               <AlertTriangle className="h-4 w-4" />
-              データ管理
+              <Trans>Data Management</Trans>
             </label>
             <p className="text-xs text-muted-foreground mb-3">
-              ローカルに保存されているすべてのデータ（ユーザーID、表示名、アイコン、テーマ設定、検索キャッシュ）を削除します。この操作は取り消せません。
+              <Trans>Delete all locally stored data (user ID, display name, icon, theme settings, search cache). This action cannot be undone.</Trans>
             </p>
             {!showDeleteConfirm ? (
               <Button
@@ -122,12 +123,12 @@ export default function UserSettings({ open, onClose }: UserSettingsProps) {
                 className="w-full"
               >
                 <Trash2 className="h-4 w-4 mr-2" />
-                すべてのデータを削除
+                <Trans>Delete All Data</Trans>
               </Button>
             ) : (
               <div className="space-y-2">
                 <p className="text-sm text-destructive font-medium">
-                  本当に削除しますか？
+                  <Trans>Are you sure you want to delete?</Trans>
                 </p>
                 <div className="flex gap-2">
                   <Button
@@ -135,14 +136,14 @@ export default function UserSettings({ open, onClose }: UserSettingsProps) {
                     onClick={handleDeleteData}
                     className="flex-1"
                   >
-                    削除する
+                    <Trans>Delete</Trans>
                   </Button>
                   <Button
                     variant="outline"
                     onClick={() => setShowDeleteConfirm(false)}
                     className="flex-1"
                   >
-                    キャンセル
+                    <Trans>Cancel</Trans>
                   </Button>
                 </div>
               </div>
@@ -154,7 +155,7 @@ export default function UserSettings({ open, onClose }: UserSettingsProps) {
         <DialogFooter className="mt-6 border-t border-border pt-4 flex-shrink-0">
           <DialogClose asChild>
             <Button variant="outline" className="w-full">
-              閉じる
+              <Trans>Close</Trans>
             </Button>
           </DialogClose>
         </DialogFooter>

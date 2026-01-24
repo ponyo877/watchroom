@@ -1,5 +1,6 @@
 import { useEffect, useState, useMemo, useCallback } from 'react';
 import { RefreshCw } from 'lucide-react';
+import { Trans, t, plural } from '@lingui/macro';
 import RoomCard from './RoomCard';
 import Loading from '@/components/common/Loading';
 import PullToRefresh from '@/components/common/PullToRefresh';
@@ -81,7 +82,7 @@ export default function RoomList({ searchQuery = '' }: RoomListProps) {
       setError(null);
     } catch (err) {
       console.error('Failed to fetch rooms:', err);
-      setError('部屋の読み込みに失敗しました');
+      setError(t`Failed to load rooms`);
     } finally {
       setIsLoading(false);
       setIsRefreshing(false);
@@ -120,12 +121,24 @@ export default function RoomList({ searchQuery = '' }: RoomListProps) {
   // Format relative time
   const getRelativeTime = (date: Date) => {
     const seconds = Math.floor((Date.now() - date.getTime()) / 1000);
-    if (seconds < 60) return 'たった今';
+    if (seconds < 60) return t`Just now`;
     const minutes = Math.floor(seconds / 60);
-    if (minutes < 60) return `${minutes}分前`;
+    if (minutes < 60)
+      return plural(minutes, {
+        one: '# minute ago',
+        other: '# minutes ago',
+      });
     const hours = Math.floor(minutes / 60);
-    if (hours < 24) return `${hours}時間前`;
-    return `${Math.floor(hours / 24)}日前`;
+    if (hours < 24)
+      return plural(hours, {
+        one: '# hour ago',
+        other: '# hours ago',
+      });
+    const days = Math.floor(hours / 24);
+    return plural(days, {
+      one: '# day ago',
+      other: '# days ago',
+    });
   };
 
   // Desktop refresh button component
@@ -134,7 +147,7 @@ export default function RoomList({ searchQuery = '' }: RoomListProps) {
       onClick={handleRefresh}
       disabled={isRefreshing}
       className="hidden sm:flex items-center gap-2 px-3 py-1.5 text-sm text-muted-foreground hover:text-foreground hover:bg-accent rounded-lg transition-all duration-200 group"
-      title="更新 (R)"
+      title={t`Refresh (R)`}
     >
       <RefreshCw
         className={`h-4 w-4 transition-transform duration-500 ${
@@ -142,7 +155,7 @@ export default function RoomList({ searchQuery = '' }: RoomListProps) {
         }`}
       />
       <span className="text-xs">
-        {isRefreshing ? '更新中...' : lastUpdated ? getRelativeTime(lastUpdated) : '更新'}
+        {isRefreshing ? t`Refreshing...` : lastUpdated ? getRelativeTime(lastUpdated) : t`Refresh`}
       </span>
       <kbd className="hidden lg:inline-flex h-5 items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground">
         R
@@ -153,7 +166,7 @@ export default function RoomList({ searchQuery = '' }: RoomListProps) {
   if (isLoading) {
     return (
       <div className="py-12">
-        <Loading size="lg" text="部屋を読み込み中..." />
+        <Loading size="lg" text={t`Loading rooms...`} />
       </div>
     );
   }
@@ -166,7 +179,7 @@ export default function RoomList({ searchQuery = '' }: RoomListProps) {
           onClick={handleRefresh}
           className="mt-4 px-4 py-2 text-sm bg-primary text-primary-foreground rounded-lg hover:opacity-90 transition-opacity"
         >
-          再試行
+          <Trans>Retry</Trans>
         </button>
       </div>
     );
@@ -182,13 +195,13 @@ export default function RoomList({ searchQuery = '' }: RoomListProps) {
       {rooms.length === 0 ? (
         <div className="py-12 text-center">
           <p className="text-muted-foreground">
-            まだ部屋がありません。最初の部屋を作成してみましょう！
+            <Trans>No rooms yet. Create the first one!</Trans>
           </p>
         </div>
       ) : filteredRooms.length === 0 ? (
         <div className="py-8 text-center">
           <p className="text-muted-foreground">
-            「{searchQuery}」に一致する部屋が見つかりませんでした
+            <Trans>No rooms found matching "{searchQuery}"</Trans>
           </p>
         </div>
       ) : (

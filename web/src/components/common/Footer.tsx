@@ -1,4 +1,5 @@
 import { ExternalLink } from 'lucide-react';
+import { t } from '@lingui/macro';
 
 interface FooterProps {
   className?: string;
@@ -8,11 +9,11 @@ export default function Footer({ className = '' }: FooterProps) {
   const links = [
     {
       href: 'https://www.youtube.com/t/terms',
-      label: 'YouTube利用規約',
+      label: t`YouTube Terms of Service`,
     },
     {
       href: 'https://policies.google.com/privacy',
-      label: 'Googleプライバシーポリシー',
+      label: t`Google Privacy Policy`,
     },
   ];
 
