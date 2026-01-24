@@ -1,0 +1,366 @@
+msgid ""
+msgstr ""
+"POT-Creation-Date: 2026-01-24 13:19+0900\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: @lingui/cli\n"
+"Language: en\n"
+
+#: src/components/room/MemberList.tsx:78
+#: src/components/room/RoomSettings.tsx:157
+msgid "(you)"
+msgstr "(you)"
+
+#. placeholder {0}: members.length
+#: src/components/room/MemberList.tsx:42
+msgid "{0, plural, one {# Member} other {# Members}}"
+msgstr "{0, plural, one {# Member} other {# Members}}"
+
+#: src/components/room/RoomList.tsx:138
+msgid "{days, plural, one {# day ago} other {# days ago}}"
+msgstr "{days, plural, one {# day ago} other {# days ago}}"
+
+#: src/lib/utils.ts:54
+msgid "{diffDays, plural, one {# day ago} other {# days ago}}"
+msgstr "{diffDays, plural, one {# day ago} other {# days ago}}"
+
+#: src/lib/utils.ts:49
+msgid "{diffHours, plural, one {# hour ago} other {# hours ago}}"
+msgstr "{diffHours, plural, one {# hour ago} other {# hours ago}}"
+
+#: src/lib/utils.ts:44
+msgid "{diffMins, plural, one {# minute ago} other {# minutes ago}}"
+msgstr "{diffMins, plural, one {# minute ago} other {# minutes ago}}"
+
+#: src/components/room/RoomList.tsx:133
+msgid "{hours, plural, one {# hour ago} other {# hours ago}}"
+msgstr "{hours, plural, one {# hour ago} other {# hours ago}}"
+
+#: src/components/room/RoomList.tsx:127
+msgid "{minutes, plural, one {# minute ago} other {# minutes ago}}"
+msgstr "{minutes, plural, one {# minute ago} other {# minutes ago}}"
+
+#: src/components/room/PasswordDialog.tsx:50
+msgid "An error occurred"
+msgstr "An error occurred"
+
+#: src/components/user/UserSettings.tsx:131
+msgid "Are you sure you want to delete?"
+msgstr "Are you sure you want to delete?"
+
+#: src/pages/NotFoundPage.tsx:20
+msgid "Back to Home"
+msgstr "Back to Home"
+
+#: src/components/room/MemberList.tsx:150
+#: src/components/room/MemberList.tsx:200
+msgid "Ban"
+msgstr "Ban"
+
+#: src/components/room/MemberList.tsx:177
+msgid "Ban Reason"
+msgstr "Ban Reason"
+
+#: src/components/room/MemberList.tsx:172
+msgid "Ban User"
+msgstr "Ban User"
+
+#: src/components/room/CreateRoomDialog.tsx:123
+#: src/components/room/MemberList.tsx:193
+#: src/components/room/PasswordDialog.tsx:105
+#: src/components/user/UserSettings.tsx:146
+msgid "Cancel"
+msgstr "Cancel"
+
+#: src/components/room/RoomSettings.tsx:86
+msgid "Change"
+msgstr "Change"
+
+#: src/components/room/RoomSettings.tsx:196
+#: src/components/user/UserSettings.tsx:158
+msgid "Close"
+msgstr "Close"
+
+#: src/components/room/RoomSettings.tsx:96
+msgid "Control Permissions"
+msgstr "Control Permissions"
+
+#: src/components/room/CreateRoomDialog.tsx:130
+msgid "Create"
+msgstr "Create"
+
+#: src/components/room/CreateRoomDialog.tsx:71
+msgid "Create Room"
+msgstr "Create Room"
+
+#: src/components/room/CreateRoomDialog.tsx:130
+msgid "Creating..."
+msgstr "Creating..."
+
+#: src/components/room/RoomSettings.tsx:32
+msgid "Creator only"
+msgstr "Creator only"
+
+#: src/components/user/UserSettings.tsx:114
+msgid "Data Management"
+msgstr "Data Management"
+
+#: src/components/user/UserSettings.tsx:139
+msgid "Delete"
+msgstr "Delete"
+
+#: src/components/user/UserSettings.tsx:126
+msgid "Delete All Data"
+msgstr "Delete All Data"
+
+#: src/components/user/UserSettings.tsx:117
+msgid "Delete all locally stored data (user ID, display name, icon, theme settings, search cache). This action cannot be undone."
+msgstr "Delete all locally stored data (user ID, display name, icon, theme settings, search cache). This action cannot be undone."
+
+#: src/components/user/UserSettings.tsx:74
+msgid "Display Name"
+msgstr "Display Name"
+
+#: src/components/room/CreateRoomDialog.tsx:87
+msgid "e.g. Music Night"
+msgstr "e.g. Music Night"
+
+#: src/components/player/VideoSearch.tsx:187
+msgid "Enter a search keyword"
+msgstr "Enter a search keyword"
+
+#: src/components/room/MemberList.tsx:182
+msgid "Enter ban reason"
+msgstr "Enter ban reason"
+
+#: src/components/user/UserSettings.tsx:80
+msgid "Enter display name"
+msgstr "Enter display name"
+
+#: src/components/room/PasswordDialog.tsx:77
+msgid "Enter password"
+msgstr "Enter password"
+
+#: src/components/room/RoomSettings.tsx:40
+msgid "Everyone"
+msgstr "Everyone"
+
+#: src/components/room/RoomSettings.tsx:41
+msgid "Everyone can control"
+msgstr "Everyone can control"
+
+#: src/components/room/CreateRoomDialog.tsx:61
+msgid "Failed to create room"
+msgstr "Failed to create room"
+
+#: src/components/room/RoomList.tsx:85
+msgid "Failed to load rooms"
+msgstr "Failed to load rooms"
+
+#: src/components/player/VideoSearch.tsx:146
+msgid "Failed to search videos"
+msgstr "Failed to search videos"
+
+#: src/components/common/Footer.tsx:16
+msgid "Google Privacy Policy"
+msgstr "Google Privacy Policy"
+
+#: src/components/room/MemberList.tsx:129
+msgid "Grant permission"
+msgstr "Grant permission"
+
+#: src/components/room/MemberList.tsx:83
+msgid "Has control permission"
+msgstr "Has control permission"
+
+#: src/components/room/PasswordDialog.tsx:46
+msgid "Incorrect password"
+msgstr "Incorrect password"
+
+#: src/components/room/PasswordDialog.tsx:112
+msgid "Join"
+msgstr "Join"
+
+#: src/components/room/RoomList.tsx:124
+#: src/lib/utils.ts:42
+msgid "Just now"
+msgstr "Just now"
+
+#: src/components/room/MemberList.tsx:140
+msgid "Kick"
+msgstr "Kick"
+
+#: src/components/room/RoomList.tsx:169
+msgid "Loading rooms..."
+msgstr "Loading rooms..."
+
+#: src/components/room/RoomSettings.tsx:124
+msgid "Member Permissions"
+msgstr "Member Permissions"
+
+#: src/components/chat/ChatPanel.tsx:100
+msgid "No messages yet"
+msgstr "No messages yet"
+
+#: src/components/room/RoomSettings.tsx:128
+msgid "No other members"
+msgstr "No other members"
+
+#: src/components/room/RoomSettings.tsx:79
+msgid "No password (public)"
+msgstr "No password (public)"
+
+#: src/components/room/RoomList.tsx:204
+msgid "No rooms found matching \"{searchQuery}\""
+msgstr "No rooms found matching \"{searchQuery}\""
+
+#: src/components/room/RoomList.tsx:198
+msgid "No rooms yet. Create the first one!"
+msgstr "No rooms yet. Create the first one!"
+
+#: src/components/room/RoomSettings.tsx:33
+msgid "Only the room creator can control"
+msgstr "Only the room creator can control"
+
+#: src/pages/NotFoundPage.tsx:14
+msgid "Page not found"
+msgstr "Page not found"
+
+#: src/components/room/PasswordDialog.tsx:69
+#: src/components/room/RoomSettings.tsx:75
+msgid "Password"
+msgstr "Password"
+
+#: src/components/room/CreateRoomDialog.tsx:98
+msgid "Password (optional)"
+msgstr "Password (optional)"
+
+#: src/components/room/RoomSettings.tsx:79
+msgid "Password is set"
+msgstr "Password is set"
+
+#: src/components/room/PasswordDialog.tsx:60
+msgid "Password Required"
+msgstr "Password Required"
+
+#: src/components/room/CreateRoomDialog.tsx:109
+msgid "Password will be required when joining"
+msgstr "Password will be required when joining"
+
+#: src/components/player/VideoSearch.tsx:178
+msgid "Paste a YouTube URL to add video directly"
+msgstr "Paste a YouTube URL to add video directly"
+
+#: src/components/player/VideoSearch.tsx:111
+msgid "Please enter at least 3 characters"
+msgstr "Please enter at least 3 characters"
+
+#: src/components/room/PasswordDialog.tsx:36
+msgid "Please enter password"
+msgstr "Please enter password"
+
+#: src/components/user/UserSettings.tsx:63
+msgid "Profile Icon"
+msgstr "Profile Icon"
+
+#: src/components/room/RoomList.tsx:158
+msgid "Refresh"
+msgstr "Refresh"
+
+#: src/components/room/RoomList.tsx:150
+msgid "Refresh (R)"
+msgstr "Refresh (R)"
+
+#: src/components/room/RoomList.tsx:158
+msgid "Refreshing..."
+msgstr "Refreshing..."
+
+#: src/components/room/RoomList.tsx:182
+msgid "Retry"
+msgstr "Retry"
+
+#: src/components/room/MemberList.tsx:118
+msgid "Revoke permission"
+msgstr "Revoke permission"
+
+#: src/components/room/CreateRoomDialog.tsx:80
+msgid "Room Name"
+msgstr "Room Name"
+
+#: src/components/room/RoomSettings.tsx:67
+msgid "Room Settings"
+msgstr "Room Settings"
+
+#: src/components/user/UserSettings.tsx:88
+msgid "Save"
+msgstr "Save"
+
+#: src/components/user/UserSettings.tsx:88
+msgid "Saved"
+msgstr "Saved"
+
+#: src/components/common/Header.tsx:55
+msgid "Search"
+msgstr "Search"
+
+#: src/components/player/VideoSearch.tsx:165
+msgid "Search by keyword or paste YouTube URL"
+msgstr "Search by keyword or paste YouTube URL"
+
+#: src/components/common/Header.tsx:39
+#: src/components/common/Header.tsx:109
+msgid "Search rooms..."
+msgstr "Search rooms..."
+
+#: src/components/player/VideoSearch.tsx:156
+msgid "Search Videos"
+msgstr "Search Videos"
+
+#: src/components/room/RoomSettings.tsx:37
+msgid "Selected members can control"
+msgstr "Selected members can control"
+
+#: src/components/room/RoomSettings.tsx:86
+msgid "Set"
+msgstr "Set"
+
+#: src/components/room/CreateRoomDialog.tsx:105
+msgid "Set password (leave empty for public)"
+msgstr "Set password (leave empty for public)"
+
+#: src/components/room/RoomSettings.tsx:36
+msgid "Specific members"
+msgstr "Specific members"
+
+#: src/components/user/UserSettings.tsx:106
+msgid "This ID cannot be changed"
+msgstr "This ID cannot be changed"
+
+#: src/components/user/UserSettings.tsx:92
+msgid "This name is visible to other users (max 20 characters)"
+msgstr "This name is visible to other users (max 20 characters)"
+
+#: src/components/user/UserSettings.tsx:101
+msgid "User ID"
+msgstr "User ID"
+
+#: src/components/common/Header.tsx:68
+msgid "User settings"
+msgstr "User settings"
+
+#: src/components/user/UserSettings.tsx:55
+msgid "User Settings"
+msgstr "User Settings"
+
+#: src/components/room/PasswordDialog.tsx:112
+msgid "Verifying..."
+msgstr "Verifying..."
+
+#: src/components/player/VideoSearch.tsx:103
+msgid "Video not found"
+msgstr "Video not found"
+
+#: src/components/common/Footer.tsx:12
+msgid "YouTube Terms of Service"
+msgstr "YouTube Terms of Service"

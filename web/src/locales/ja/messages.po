@@ -1,0 +1,366 @@
+msgid ""
+msgstr ""
+"POT-Creation-Date: 2026-01-24 13:19+0900\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: @lingui/cli\n"
+"Language: ja\n"
+
+#: src/components/room/MemberList.tsx:78
+#: src/components/room/RoomSettings.tsx:157
+msgid "(you)"
+msgstr "(あなた)"
+
+#. placeholder {0}: members.length
+#: src/components/room/MemberList.tsx:42
+msgid "{0, plural, one {# Member} other {# Members}}"
+msgstr "{0, plural, one {#人のメンバー} other {#人のメンバー}}"
+
+#: src/components/room/RoomList.tsx:138
+msgid "{days, plural, one {# day ago} other {# days ago}}"
+msgstr "{days, plural, one {#日前} other {#日前}}"
+
+#: src/lib/utils.ts:54
+msgid "{diffDays, plural, one {# day ago} other {# days ago}}"
+msgstr "{diffDays, plural, one {#日前} other {#日前}}"
+
+#: src/lib/utils.ts:49
+msgid "{diffHours, plural, one {# hour ago} other {# hours ago}}"
+msgstr "{diffHours, plural, one {#時間前} other {#時間前}}"
+
+#: src/lib/utils.ts:44
+msgid "{diffMins, plural, one {# minute ago} other {# minutes ago}}"
+msgstr "{diffMins, plural, one {#分前} other {#分前}}"
+
+#: src/components/room/RoomList.tsx:133
+msgid "{hours, plural, one {# hour ago} other {# hours ago}}"
+msgstr "{hours, plural, one {#時間前} other {#時間前}}"
+
+#: src/components/room/RoomList.tsx:127
+msgid "{minutes, plural, one {# minute ago} other {# minutes ago}}"
+msgstr "{minutes, plural, one {#分前} other {#分前}}"
+
+#: src/components/room/PasswordDialog.tsx:50
+msgid "An error occurred"
+msgstr "エラーが発生しました"
+
+#: src/components/user/UserSettings.tsx:131
+msgid "Are you sure you want to delete?"
+msgstr "本当に削除しますか？"
+
+#: src/pages/NotFoundPage.tsx:20
+msgid "Back to Home"
+msgstr "ホームに戻る"
+
+#: src/components/room/MemberList.tsx:150
+#: src/components/room/MemberList.tsx:200
+msgid "Ban"
+msgstr "BANする"
+
+#: src/components/room/MemberList.tsx:177
+msgid "Ban Reason"
+msgstr "BAN理由"
+
+#: src/components/room/MemberList.tsx:172
+msgid "Ban User"
+msgstr "ユーザーをBANする"
+
+#: src/components/room/CreateRoomDialog.tsx:123
+#: src/components/room/MemberList.tsx:193
+#: src/components/room/PasswordDialog.tsx:105
+#: src/components/user/UserSettings.tsx:146
+msgid "Cancel"
+msgstr "キャンセル"
+
+#: src/components/room/RoomSettings.tsx:86
+msgid "Change"
+msgstr "変更"
+
+#: src/components/room/RoomSettings.tsx:196
+#: src/components/user/UserSettings.tsx:158
+msgid "Close"
+msgstr "閉じる"
+
+#: src/components/room/RoomSettings.tsx:96
+msgid "Control Permissions"
+msgstr "操作権限"
+
+#: src/components/room/CreateRoomDialog.tsx:130
+msgid "Create"
+msgstr "作成"
+
+#: src/components/room/CreateRoomDialog.tsx:71
+msgid "Create Room"
+msgstr "部屋を作成"
+
+#: src/components/room/CreateRoomDialog.tsx:130
+msgid "Creating..."
+msgstr "作成中..."
+
+#: src/components/room/RoomSettings.tsx:32
+msgid "Creator only"
+msgstr "作成者のみ"
+
+#: src/components/user/UserSettings.tsx:114
+msgid "Data Management"
+msgstr "データ管理"
+
+#: src/components/user/UserSettings.tsx:139
+msgid "Delete"
+msgstr "削除する"
+
+#: src/components/user/UserSettings.tsx:126
+msgid "Delete All Data"
+msgstr "すべてのデータを削除"
+
+#: src/components/user/UserSettings.tsx:117
+msgid "Delete all locally stored data (user ID, display name, icon, theme settings, search cache). This action cannot be undone."
+msgstr "ローカルに保存されているすべてのデータ（ユーザーID、表示名、アイコン、テーマ設定、検索キャッシュ）を削除します。この操作は取り消せません。"
+
+#: src/components/user/UserSettings.tsx:74
+msgid "Display Name"
+msgstr "表示名"
+
+#: src/components/room/CreateRoomDialog.tsx:87
+msgid "e.g. Music Night"
+msgstr "例: Music Night"
+
+#: src/components/player/VideoSearch.tsx:187
+msgid "Enter a search keyword"
+msgstr "検索キーワードを入力してください"
+
+#: src/components/room/MemberList.tsx:182
+msgid "Enter ban reason"
+msgstr "BAN理由を入力してください"
+
+#: src/components/user/UserSettings.tsx:80
+msgid "Enter display name"
+msgstr "表示名を入力"
+
+#: src/components/room/PasswordDialog.tsx:77
+msgid "Enter password"
+msgstr "パスワードを入力"
+
+#: src/components/room/RoomSettings.tsx:40
+msgid "Everyone"
+msgstr "全員"
+
+#: src/components/room/RoomSettings.tsx:41
+msgid "Everyone can control"
+msgstr "全員が操作できます"
+
+#: src/components/room/CreateRoomDialog.tsx:61
+msgid "Failed to create room"
+msgstr "部屋の作成に失敗しました"
+
+#: src/components/room/RoomList.tsx:85
+msgid "Failed to load rooms"
+msgstr "部屋の読み込みに失敗しました"
+
+#: src/components/player/VideoSearch.tsx:146
+msgid "Failed to search videos"
+msgstr "動画の検索に失敗しました"
+
+#: src/components/common/Footer.tsx:16
+msgid "Google Privacy Policy"
+msgstr "Googleプライバシーポリシー"
+
+#: src/components/room/MemberList.tsx:129
+msgid "Grant permission"
+msgstr "操作権限を付与"
+
+#: src/components/room/MemberList.tsx:83
+msgid "Has control permission"
+msgstr "操作権限あり"
+
+#: src/components/room/PasswordDialog.tsx:46
+msgid "Incorrect password"
+msgstr "パスワードが正しくありません"
+
+#: src/components/room/PasswordDialog.tsx:112
+msgid "Join"
+msgstr "入室"
+
+#: src/components/room/RoomList.tsx:124
+#: src/lib/utils.ts:42
+msgid "Just now"
+msgstr "たった今"
+
+#: src/components/room/MemberList.tsx:140
+msgid "Kick"
+msgstr "キックする"
+
+#: src/components/room/RoomList.tsx:169
+msgid "Loading rooms..."
+msgstr "部屋を読み込み中..."
+
+#: src/components/room/RoomSettings.tsx:124
+msgid "Member Permissions"
+msgstr "メンバー権限"
+
+#: src/components/chat/ChatPanel.tsx:100
+msgid "No messages yet"
+msgstr "メッセージはまだありません"
+
+#: src/components/room/RoomSettings.tsx:128
+msgid "No other members"
+msgstr "他のメンバーがいません"
+
+#: src/components/room/RoomSettings.tsx:79
+msgid "No password (public)"
+msgstr "パスワードなし（公開）"
+
+#: src/components/room/RoomList.tsx:204
+msgid "No rooms found matching \"{searchQuery}\""
+msgstr "「{searchQuery}」に一致する部屋が見つかりませんでした"
+
+#: src/components/room/RoomList.tsx:198
+msgid "No rooms yet. Create the first one!"
+msgstr "まだ部屋がありません。最初の部屋を作成してみましょう！"
+
+#: src/components/room/RoomSettings.tsx:33
+msgid "Only the room creator can control"
+msgstr "部屋の作成者だけが操作できます"
+
+#: src/pages/NotFoundPage.tsx:14
+msgid "Page not found"
+msgstr "ページが見つかりません"
+
+#: src/components/room/PasswordDialog.tsx:69
+#: src/components/room/RoomSettings.tsx:75
+msgid "Password"
+msgstr "パスワード"
+
+#: src/components/room/CreateRoomDialog.tsx:98
+msgid "Password (optional)"
+msgstr "パスワード（オプション）"
+
+#: src/components/room/RoomSettings.tsx:79
+msgid "Password is set"
+msgstr "パスワードが設定されています"
+
+#: src/components/room/PasswordDialog.tsx:60
+msgid "Password Required"
+msgstr "パスワードが必要です"
+
+#: src/components/room/CreateRoomDialog.tsx:109
+msgid "Password will be required when joining"
+msgstr "パスワードを設定すると、入室時に必要になります"
+
+#: src/components/player/VideoSearch.tsx:178
+msgid "Paste a YouTube URL to add video directly"
+msgstr "YouTube URLを貼り付けると直接動画を追加できます"
+
+#: src/components/player/VideoSearch.tsx:111
+msgid "Please enter at least 3 characters"
+msgstr "3文字以上入力してください"
+
+#: src/components/room/PasswordDialog.tsx:36
+msgid "Please enter password"
+msgstr "パスワードを入力してください"
+
+#: src/components/user/UserSettings.tsx:63
+msgid "Profile Icon"
+msgstr "プロフィールアイコン"
+
+#: src/components/room/RoomList.tsx:158
+msgid "Refresh"
+msgstr "更新"
+
+#: src/components/room/RoomList.tsx:150
+msgid "Refresh (R)"
+msgstr "更新 (R)"
+
+#: src/components/room/RoomList.tsx:158
+msgid "Refreshing..."
+msgstr "更新中..."
+
+#: src/components/room/RoomList.tsx:182
+msgid "Retry"
+msgstr "再試行"
+
+#: src/components/room/MemberList.tsx:118
+msgid "Revoke permission"
+msgstr "操作権限を取消"
+
+#: src/components/room/CreateRoomDialog.tsx:80
+msgid "Room Name"
+msgstr "部屋名"
+
+#: src/components/room/RoomSettings.tsx:67
+msgid "Room Settings"
+msgstr "部屋設定"
+
+#: src/components/user/UserSettings.tsx:88
+msgid "Save"
+msgstr "保存"
+
+#: src/components/user/UserSettings.tsx:88
+msgid "Saved"
+msgstr "保存しました"
+
+#: src/components/common/Header.tsx:55
+msgid "Search"
+msgstr "検索"
+
+#: src/components/player/VideoSearch.tsx:165
+msgid "Search by keyword or paste YouTube URL"
+msgstr "キーワードで検索 または YouTubeのURLを貼り付け"
+
+#: src/components/common/Header.tsx:39
+#: src/components/common/Header.tsx:109
+msgid "Search rooms..."
+msgstr "部屋を検索..."
+
+#: src/components/player/VideoSearch.tsx:156
+msgid "Search Videos"
+msgstr "動画を検索"
+
+#: src/components/room/RoomSettings.tsx:37
+msgid "Selected members can control"
+msgstr "選択したメンバーが操作できます"
+
+#: src/components/room/RoomSettings.tsx:86
+msgid "Set"
+msgstr "設定"
+
+#: src/components/room/CreateRoomDialog.tsx:105
+msgid "Set password (leave empty for public)"
+msgstr "パスワードを設定（空欄で公開）"
+
+#: src/components/room/RoomSettings.tsx:36
+msgid "Specific members"
+msgstr "指定メンバー"
+
+#: src/components/user/UserSettings.tsx:106
+msgid "This ID cannot be changed"
+msgstr "このIDは変更できません"
+
+#: src/components/user/UserSettings.tsx:92
+msgid "This name is visible to other users (max 20 characters)"
+msgstr "他のユーザーに表示される名前です（20文字以内）"
+
+#: src/components/user/UserSettings.tsx:101
+msgid "User ID"
+msgstr "ユーザーID"
+
+#: src/components/common/Header.tsx:68
+msgid "User settings"
+msgstr "ユーザー設定"
+
+#: src/components/user/UserSettings.tsx:55
+msgid "User Settings"
+msgstr "ユーザー設定"
+
+#: src/components/room/PasswordDialog.tsx:112
+msgid "Verifying..."
+msgstr "確認中..."
+
+#: src/components/player/VideoSearch.tsx:103
+msgid "Video not found"
+msgstr "動画が見つかりませんでした"
+
+#: src/components/common/Footer.tsx:12
+msgid "YouTube Terms of Service"
+msgstr "YouTube利用規約"
