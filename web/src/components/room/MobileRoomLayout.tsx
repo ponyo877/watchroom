@@ -1,5 +1,6 @@
 import { ReactNode } from 'react';
 import { MessageCircle } from 'lucide-react';
+import { t } from '@lingui/macro';
 import { useMobileLayout } from '@/hooks/useMobileLayout';
 
 interface MobileRoomLayoutProps {
@@ -74,7 +75,7 @@ export default function MobileRoomLayout({
           <button
             className="mobile-landscape-overlay-btn"
             onClick={toggleChat}
-            title="チャットを開く"
+            title={t`Open chat`}
           >
             <MessageCircle className="h-5 w-5" />
           </button>

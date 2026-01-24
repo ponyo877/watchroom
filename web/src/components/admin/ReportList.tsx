@@ -9,6 +9,7 @@ import {
   ChevronUp,
   Clock,
 } from 'lucide-react';
+import { t } from '@lingui/macro';
 import { formatRelativeTime } from '@/lib/utils';
 import type { Report } from '@/hooks/useAdmin';
 
@@ -18,12 +19,12 @@ interface ReportListProps {
   onBanUser: (userId: string, reason: string) => Promise<boolean>;
 }
 
-const STATUS_LABELS: Record<Report['status'], { label: string; color: string }> = {
-  pending: { label: '未対応', color: 'bg-yellow-100 text-yellow-800' },
-  reviewed: { label: '確認済み', color: 'bg-blue-100 text-blue-800' },
-  actioned: { label: '対応済み', color: 'bg-green-100 text-green-800' },
-  dismissed: { label: '却下', color: 'bg-gray-100 text-gray-800' },
-};
+const getStatusLabels = (): Record<Report['status'], { label: string; color: string }> => ({
+  pending: { label: t`Pending`, color: 'bg-yellow-100 text-yellow-800' },
+  reviewed: { label: t`Reviewed`, color: 'bg-blue-100 text-blue-800' },
+  actioned: { label: t`Actioned`, color: 'bg-green-100 text-green-800' },
+  dismissed: { label: t`Dismissed`, color: 'bg-gray-100 text-gray-800' },
+});
 
 export default function ReportList({
   reports,
@@ -62,7 +63,7 @@ export default function ReportList({
     return (
       <div className="p-8 text-center">
         <AlertTriangle className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-        <p className="text-muted-foreground">通報はありません</p>
+        <p className="text-muted-foreground">{t`No reports`}</p>
       </div>
     );
   }
@@ -79,20 +80,20 @@ export default function ReportList({
               <div className="flex items-center gap-2 mb-1">
                 <span
                   className={`px-2 py-0.5 text-xs rounded-full ${
-                    STATUS_LABELS[report.status].color
+                    getStatusLabels()[report.status].color
                   }`}
                 >
-                  {STATUS_LABELS[report.status].label}
+                  {getStatusLabels()[report.status].label}
                 </span>
                 <span className="text-xs text-muted-foreground">
                   {formatRelativeTime(new Date(report.createdAt))}
                 </span>
               </div>
               <p className="text-sm font-medium">
-                {report.reporterName} が {report.targetName} を通報
+                {t`${report.reporterName} reported ${report.targetName}`}
               </p>
               <p className="text-sm text-muted-foreground truncate max-w-md">
-                理由: {report.reason}
+                {t`Reason`}: {report.reason}
               </p>
             </div>
             {expandedId === report.id ? (
@@ -106,7 +107,7 @@ export default function ReportList({
             <div className="mt-4 pl-4 border-l-2 border-border">
               <div className="mb-4">
                 <h4 className="text-xs font-medium text-muted-foreground mb-1">
-                  通報されたメッセージ
+                  {t`Reported message`}
                 </h4>
                 <div className="p-3 bg-muted rounded-lg">
                   <p className="text-sm">{report.messageText}</p>
@@ -115,15 +116,15 @@ export default function ReportList({
 
               <div className="grid grid-cols-2 gap-4 mb-4 text-sm">
                 <div>
-                  <span className="text-muted-foreground">通報者:</span>{' '}
+                  <span className="text-muted-foreground">{t`Reporter`}:</span>{' '}
                   {report.reporterName}
                 </div>
                 <div>
-                  <span className="text-muted-foreground">対象者:</span>{' '}
+                  <span className="text-muted-foreground">{t`Target`}:</span>{' '}
                   {report.targetName}
                 </div>
                 <div>
-                  <span className="text-muted-foreground">ルームID:</span>{' '}
+                  <span className="text-muted-foreground">{t`Room ID`}:</span>{' '}
                   <code className="text-xs bg-muted px-1 rounded">
                     {report.roomId.slice(0, 8)}...
                   </code>
@@ -138,7 +139,7 @@ export default function ReportList({
                     className="flex items-center gap-1 px-3 py-1.5 text-sm bg-blue-100 text-blue-700 rounded-md hover:bg-blue-200 disabled:opacity-50"
                   >
                     <Eye className="h-4 w-4" />
-                    確認済みにする
+                    {t`Mark as reviewed`}
                   </button>
                   <button
                     onClick={() => handleAction(report.id, 'dismiss')}
@@ -146,7 +147,7 @@ export default function ReportList({
                     className="flex items-center gap-1 px-3 py-1.5 text-sm bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 disabled:opacity-50"
                   >
                     <X className="h-4 w-4" />
-                    却下
+                    {t`Dismiss`}
                   </button>
                 </div>
               )}
@@ -159,7 +160,7 @@ export default function ReportList({
                     className="flex items-center gap-1 px-3 py-1.5 text-sm bg-destructive text-white rounded-md hover:opacity-90 disabled:opacity-50"
                   >
                     <Ban className="h-4 w-4" />
-                    BANする
+                    {t`Ban user`}
                   </button>
                   <button
                     onClick={() => handleAction(report.id, 'action')}
@@ -167,7 +168,7 @@ export default function ReportList({
                     className="flex items-center gap-1 px-3 py-1.5 text-sm bg-green-100 text-green-700 rounded-md hover:bg-green-200 disabled:opacity-50"
                   >
                     <Check className="h-4 w-4" />
-                    対応済みにする
+                    {t`Mark as actioned`}
                   </button>
                   <button
                     onClick={() => handleAction(report.id, 'dismiss')}
@@ -175,7 +176,7 @@ export default function ReportList({
                     className="flex items-center gap-1 px-3 py-1.5 text-sm bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 disabled:opacity-50"
                   >
                     <X className="h-4 w-4" />
-                    却下
+                    {t`Dismiss`}
                   </button>
                 </div>
               )}
@@ -183,7 +184,7 @@ export default function ReportList({
               {(report.status === 'actioned' || report.status === 'dismissed') && (
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
                   <Clock className="h-4 w-4" />
-                  この通報は既に処理されています
+                  {t`This report has already been processed`}
                 </div>
               )}
             </div>

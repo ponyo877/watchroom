@@ -1,6 +1,7 @@
 import { useState, useCallback } from 'react';
 import { Shield, AlertTriangle, Ban, RefreshCw, LogOut } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { t } from '@lingui/macro';
 import { useAdmin } from '@/hooks/useAdmin';
 import ReportList from '@/components/admin/ReportList';
 import BanList from '@/components/admin/BanList';
@@ -61,9 +62,9 @@ export default function AdminPage() {
               <Shield className="h-6 w-6 text-primary" />
             </div>
             <div>
-              <h1 className="text-xl font-bold">管理者ログイン</h1>
+              <h1 className="text-xl font-bold">{t`Admin Login`}</h1>
               <p className="text-sm text-muted-foreground">
-                管理者の認証情報を入力してください
+                {t`Enter administrator credentials`}
               </p>
             </div>
           </div>
@@ -71,26 +72,26 @@ export default function AdminPage() {
           <form onSubmit={handleLogin} className="space-y-4">
             <div>
               <label className="block text-sm font-medium mb-1">
-                ユーザー名
+                {t`Username`}
               </label>
               <input
                 type="text"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
-                placeholder="ユーザー名を入力"
+                placeholder={t`Enter username`}
                 className="w-full px-3 py-2 border border-input rounded-md bg-background"
                 autoFocus
               />
             </div>
             <div>
               <label className="block text-sm font-medium mb-1">
-                パスワード
+                {t`Password`}
               </label>
               <input
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder="パスワードを入力"
+                placeholder={t`Enter password`}
                 className="w-full px-3 py-2 border border-input rounded-md bg-background"
               />
             </div>
@@ -100,7 +101,7 @@ export default function AdminPage() {
               disabled={!username.trim() || !password.trim()}
               className="w-full px-4 py-2 bg-primary text-primary-foreground rounded-md hover:opacity-90 disabled:opacity-50"
             >
-              ログイン
+              {t`Login`}
             </button>
           </form>
 
@@ -108,7 +109,7 @@ export default function AdminPage() {
             onClick={() => navigate('/')}
             className="w-full mt-4 px-4 py-2 border border-border rounded-md hover:bg-accent"
           >
-            ホームに戻る
+            {t`Back to home`}
           </button>
         </div>
       </div>
@@ -123,7 +124,7 @@ export default function AdminPage() {
             <div className="p-2 bg-primary/10 rounded-full">
               <Shield className="h-5 w-5 text-primary" />
             </div>
-            <h1 className="text-xl font-bold">管理者ダッシュボード</h1>
+            <h1 className="text-xl font-bold">{t`Admin Dashboard`}</h1>
           </div>
 
           <div className="flex items-center gap-2">
@@ -131,7 +132,7 @@ export default function AdminPage() {
               onClick={handleRefresh}
               disabled={isLoading}
               className="p-2 hover:bg-accent rounded-md disabled:opacity-50"
-              title="更新"
+              title={t`Refresh`}
             >
               <RefreshCw
                 className={`h-5 w-5 ${isLoading ? 'animate-spin' : ''}`}
@@ -142,7 +143,7 @@ export default function AdminPage() {
               className="flex items-center gap-2 px-3 py-2 hover:bg-accent rounded-md"
             >
               <LogOut className="h-4 w-4" />
-              <span className="text-sm">ログアウト</span>
+              <span className="text-sm">{t`Logout`}</span>
             </button>
           </div>
         </div>
@@ -166,7 +167,7 @@ export default function AdminPage() {
             }`}
           >
             <AlertTriangle className="h-4 w-4" />
-            通報一覧
+            {t`Reports`}
             {reports.filter((r) => r.status === 'pending').length > 0 && (
               <span className="px-2 py-0.5 text-xs bg-destructive text-white rounded-full">
                 {reports.filter((r) => r.status === 'pending').length}
@@ -182,7 +183,7 @@ export default function AdminPage() {
             }`}
           >
             <Ban className="h-4 w-4" />
-            BAN一覧
+            {t`Ban List`}
             <span className="px-2 py-0.5 text-xs bg-muted-foreground/20 rounded-full">
               {bans.length}
             </span>

@@ -1,4 +1,5 @@
 import { useState, useCallback } from 'react';
+import { t } from '@lingui/macro';
 
 interface UseImageUploadOptions {
   maxSizeBytes?: number;
@@ -23,12 +24,13 @@ export function useImageUpload(options: UseImageUploadOptions = {}) {
   const validateFile = useCallback(
     (file: File): string | null => {
       if (!allowedTypes.includes(file.type)) {
-        return `対応していないファイル形式です。${allowedTypes.map((t) => t.split('/')[1]).join(', ')}のみ対応しています。`;
+        const formats = allowedTypes.map((type) => type.split('/')[1]).join(', ');
+        return t`Unsupported file format. Only ${formats} are supported.`;
       }
 
       if (file.size > maxSizeBytes) {
         const maxSizeMB = Math.round(maxSizeBytes / 1024 / 1024);
-        return `ファイルサイズが大きすぎます。${maxSizeMB}MB以下のファイルを選択してください。`;
+        return t`File size is too large. Please select a file under ${maxSizeMB}MB.`;
       }
 
       return null;
@@ -62,7 +64,7 @@ export function useImageUpload(options: UseImageUploadOptions = {}) {
         });
 
         if (!presignedResponse.ok) {
-          throw new Error('アップロードURLの取得に失敗しました');
+          throw new Error(t`Failed to get upload URL`);
         }
 
         const { upload_url, key, public_url } = await presignedResponse.json();
@@ -77,7 +79,7 @@ export function useImageUpload(options: UseImageUploadOptions = {}) {
         });
 
         if (!uploadResponse.ok) {
-          throw new Error('ファイルのアップロードに失敗しました');
+          throw new Error(t`Failed to upload file`);
         }
 
         setProgress(100);
@@ -88,7 +90,7 @@ export function useImageUpload(options: UseImageUploadOptions = {}) {
         };
       } catch (err) {
         const message =
-          err instanceof Error ? err.message : 'アップロードに失敗しました';
+          err instanceof Error ? err.message : t`Upload failed`;
         setError(message);
         return null;
       } finally {

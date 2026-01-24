@@ -1,4 +1,5 @@
 import { useState, useCallback, useEffect } from 'react';
+import { t } from '@lingui/macro';
 
 export interface Report {
   id: string;
@@ -51,7 +52,7 @@ export function useAdmin({ username, password }: UseAdminOptions) {
 
       if (!response.ok) {
         if (response.status === 401) {
-          setError('認証エラー: 管理者権限がありません');
+          setError(t`Authentication error: No admin privileges`);
           return;
         }
         throw new Error('Failed to fetch reports');
@@ -60,7 +61,7 @@ export function useAdmin({ username, password }: UseAdminOptions) {
       const data = await response.json();
       setReports(data.reports || []);
     } catch {
-      setError('通報一覧の取得に失敗しました');
+      setError(t`Failed to fetch reports`);
     } finally {
       setIsLoading(false);
     }
@@ -79,7 +80,7 @@ export function useAdmin({ username, password }: UseAdminOptions) {
 
       if (!response.ok) {
         if (response.status === 401) {
-          setError('認証エラー: 管理者権限がありません');
+          setError(t`Authentication error: No admin privileges`);
           return;
         }
         throw new Error('Failed to fetch bans');
@@ -88,7 +89,7 @@ export function useAdmin({ username, password }: UseAdminOptions) {
       const data = await response.json();
       setBans(data.bans || []);
     } catch {
-      setError('BAN一覧の取得に失敗しました');
+      setError(t`Failed to fetch ban list`);
     } finally {
       setIsLoading(false);
     }

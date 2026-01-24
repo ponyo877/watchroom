@@ -6,6 +6,12 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: @lingui/cli\n"
 "Language: en\n"
+"Project-Id-Version: \n"
+"Report-Msgid-Bugs-To: \n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Plural-Forms: \n"
 
 #: src/components/room/MemberList.tsx:78
 #: src/components/room/RoomSettings.tsx:157
@@ -16,6 +22,22 @@ msgstr "(you)"
 #: src/components/room/MemberList.tsx:42
 msgid "{0, plural, one {# Member} other {# Members}}"
 msgstr "{0, plural, one {# Member} other {# Members}}"
+
+#. placeholder {0}: metadata.name
+#: src/hooks/useSkyWay.ts:318
+msgid "{0} joined the room"
+msgstr "{0} joined the room"
+
+#. placeholder {0}: leavingMemberMetadata.name
+#: src/hooks/useSkyWay.ts:336
+msgid "{0} left the room"
+msgstr "{0} left the room"
+
+#. placeholder {0}: report.reporterName
+#. placeholder {1}: report.targetName
+#: src/components/admin/ReportList.tsx:93
+msgid "{0} reported {1}"
+msgstr "{0} reported {1}"
 
 #: src/components/room/RoomList.tsx:138
 msgid "{days, plural, one {# day ago} other {# days ago}}"
@@ -41,7 +63,40 @@ msgstr "{hours, plural, one {# hour ago} other {# hours ago}}"
 msgid "{minutes, plural, one {# minute ago} other {# minutes ago}}"
 msgstr "{minutes, plural, one {# minute ago} other {# minutes ago}}"
 
+#: src/components/room/ShareButton.tsx:30
+msgid "{roomName} - Watch videos together on WatchRoom!"
+msgstr "{roomName} - Watch videos together on WatchRoom!"
+
+#: src/components/admin/BanList.tsx:158
+msgid "1 day"
+msgstr "1 day"
+
+#: src/components/admin/BanList.tsx:160
+msgid "1 month"
+msgstr "1 month"
+
+#: src/components/admin/BanList.tsx:159
+msgid "1 week"
+msgstr "1 week"
+
+#: src/components/admin/ReportList.tsx:25
+msgid "Actioned"
+msgstr "Actioned"
+
+#: src/pages/AdminPage.tsx:127
+msgid "Admin Dashboard"
+msgstr "Admin Dashboard"
+
+#: src/pages/AdminPage.tsx:65
+msgid "Admin Login"
+msgstr "Admin Login"
+
+#: src/components/chat/ReportDialog.tsx:66
 #: src/components/room/PasswordDialog.tsx:50
+#: src/components/room/PasswordSettingsDialog.tsx:73
+#: src/components/room/PasswordSettingsDialog.tsx:98
+#: src/hooks/useShortUrl.ts:28
+#: src/hooks/useShortUrl.ts:39
 msgid "An error occurred"
 msgstr "An error occurred"
 
@@ -49,23 +104,50 @@ msgstr "An error occurred"
 msgid "Are you sure you want to delete?"
 msgstr "Are you sure you want to delete?"
 
+#: src/hooks/useAdmin.ts:55
+#: src/hooks/useAdmin.ts:83
+msgid "Authentication error: No admin privileges"
+msgstr "Authentication error: No admin privileges"
+
+#: src/pages/AdminPage.tsx:112
+msgid "Back to home"
+msgstr "Back to home"
+
 #: src/pages/NotFoundPage.tsx:20
+#: src/pages/RoomPage.tsx:590
 msgid "Back to Home"
 msgstr "Back to Home"
 
+#: src/components/admin/BanList.tsx:172
 #: src/components/room/MemberList.tsx:150
 #: src/components/room/MemberList.tsx:200
 msgid "Ban"
 msgstr "Ban"
 
+#: src/components/admin/BanList.tsx:71
+#: src/pages/AdminPage.tsx:186
+msgid "Ban List"
+msgstr "Ban List"
+
 #: src/components/room/MemberList.tsx:177
 msgid "Ban Reason"
 msgstr "Ban Reason"
+
+#: src/components/admin/BanList.tsx:77
+#: src/components/admin/ReportList.tsx:163
+msgid "Ban user"
+msgstr "Ban user"
 
 #: src/components/room/MemberList.tsx:172
 msgid "Ban User"
 msgstr "Ban User"
 
+#: src/components/admin/BanList.tsx:217
+msgid "Banned"
+msgstr "Banned"
+
+#: src/components/admin/BanList.tsx:178
+#: src/components/chat/ReportDialog.tsx:157
 #: src/components/room/CreateRoomDialog.tsx:123
 #: src/components/room/MemberList.tsx:193
 #: src/components/room/PasswordDialog.tsx:105
@@ -73,18 +155,46 @@ msgstr "Ban User"
 msgid "Cancel"
 msgstr "Cancel"
 
+#: src/components/room/PasswordSettingsDialog.tsx:124
 #: src/components/room/RoomSettings.tsx:86
 msgid "Change"
 msgstr "Change"
 
+#: src/components/chat/YouTubeChatHeader.tsx:23
+#: src/pages/RoomPage.tsx:845
+#: src/pages/RoomPage.tsx:848
+msgid "Chat"
+msgstr "Chat"
+
+#: src/components/player/PlayHistory.tsx:47
+msgid "Clear history"
+msgstr "Clear history"
+
+#: src/components/room/JoinOverlay.tsx:78
+msgid "Click to start playback with audio"
+msgstr "Click to start playback with audio"
+
+#: src/components/chat/YouTubeChatHeader.tsx:35
 #: src/components/room/RoomSettings.tsx:196
 #: src/components/user/UserSettings.tsx:158
 msgid "Close"
 msgstr "Close"
 
+#: src/components/room/PasswordSettingsDialog.tsx:178
+msgid "Confirm password"
+msgstr "Confirm password"
+
+#: src/pages/RoomPage.tsx:575
+msgid "Connecting..."
+msgstr "Connecting..."
+
 #: src/components/room/RoomSettings.tsx:96
 msgid "Control Permissions"
 msgstr "Control Permissions"
+
+#: src/components/room/ShareButton.tsx:102
+msgid "Copied!"
+msgstr "Copied!"
 
 #: src/components/room/CreateRoomDialog.tsx:130
 msgid "Create"
@@ -102,6 +212,11 @@ msgstr "Creating..."
 msgid "Creator only"
 msgstr "Creator only"
 
+#: src/components/room/PasswordSettingsDialog.tsx:144
+#: src/components/room/PasswordSettingsDialog.tsx:206
+msgid "Current password"
+msgstr "Current password"
+
 #: src/components/user/UserSettings.tsx:114
 msgid "Data Management"
 msgstr "Data Management"
@@ -118,9 +233,26 @@ msgstr "Delete All Data"
 msgid "Delete all locally stored data (user ID, display name, icon, theme settings, search cache). This action cannot be undone."
 msgstr "Delete all locally stored data (user ID, display name, icon, theme settings, search cache). This action cannot be undone."
 
+#: src/components/chat/ReportDialog.tsx:137
+msgid "Details (optional)"
+msgstr "Details (optional)"
+
+#: src/components/admin/ReportList.tsx:150
+#: src/components/admin/ReportList.tsx:179
+msgid "Dismiss"
+msgstr "Dismiss"
+
+#: src/components/admin/ReportList.tsx:26
+msgid "Dismissed"
+msgstr "Dismissed"
+
 #: src/components/user/UserSettings.tsx:74
 msgid "Display Name"
 msgstr "Display Name"
+
+#: src/components/admin/BanList.tsx:150
+msgid "Duration"
+msgstr "Duration"
 
 #: src/components/room/CreateRoomDialog.tsx:87
 msgid "e.g. Music Night"
@@ -130,6 +262,15 @@ msgstr "e.g. Music Night"
 msgid "Enter a search keyword"
 msgstr "Enter a search keyword"
 
+#: src/components/chat/ReportDialog.tsx:142
+msgid "Enter additional information if available"
+msgstr "Enter additional information if available"
+
+#: src/pages/AdminPage.tsx:67
+msgid "Enter administrator credentials"
+msgstr "Enter administrator credentials"
+
+#: src/components/admin/BanList.tsx:108
 #: src/components/room/MemberList.tsx:182
 msgid "Enter ban reason"
 msgstr "Enter ban reason"
@@ -139,8 +280,17 @@ msgid "Enter display name"
 msgstr "Enter display name"
 
 #: src/components/room/PasswordDialog.tsx:77
+#: src/pages/AdminPage.tsx:94
 msgid "Enter password"
 msgstr "Enter password"
+
+#: src/components/admin/BanList.tsx:94
+msgid "Enter user ID"
+msgstr "Enter user ID"
+
+#: src/pages/AdminPage.tsx:81
+msgid "Enter username"
+msgstr "Enter username"
 
 #: src/components/room/RoomSettings.tsx:40
 msgid "Everyone"
@@ -154,13 +304,46 @@ msgstr "Everyone can control"
 msgid "Failed to create room"
 msgstr "Failed to create room"
 
+#: src/hooks/useAdmin.ts:92
+msgid "Failed to fetch ban list"
+msgstr "Failed to fetch ban list"
+
+#: src/hooks/useAdmin.ts:64
+msgid "Failed to fetch reports"
+msgstr "Failed to fetch reports"
+
+#: src/hooks/useImageUpload.ts:67
+msgid "Failed to get upload URL"
+msgstr "Failed to get upload URL"
+
 #: src/components/room/RoomList.tsx:85
 msgid "Failed to load rooms"
 msgstr "Failed to load rooms"
 
+#: src/components/chat/ReportDialog.tsx:63
+msgid "Failed to report"
+msgstr "Failed to report"
+
 #: src/components/player/VideoSearch.tsx:146
 msgid "Failed to search videos"
 msgstr "Failed to search videos"
+
+#: src/components/room/PasswordSettingsDialog.tsx:70
+msgid "Failed to set password"
+msgstr "Failed to set password"
+
+#: src/hooks/useImageUpload.ts:82
+msgid "Failed to upload file"
+msgstr "Failed to upload file"
+
+#: src/hooks/useImageUpload.ts:33
+msgid "File size is too large. Please select a file under {maxSizeMB}MB."
+msgstr "File size is too large. Please select a file under {maxSizeMB}MB."
+
+#: src/components/admin/BanList.tsx:130
+#: src/components/admin/BanList.tsx:204
+msgid "Global"
+msgstr "Global"
 
 #: src/components/common/Footer.tsx:16
 msgid "Google Privacy Policy"
@@ -170,11 +353,28 @@ msgstr "Google Privacy Policy"
 msgid "Grant permission"
 msgstr "Grant permission"
 
+#: src/components/chat/ReportDialog.tsx:23
+msgid "Harassment or defamation"
+msgstr "Harassment or defamation"
+
 #: src/components/room/MemberList.tsx:83
 msgid "Has control permission"
 msgstr "Has control permission"
 
+#: src/components/chat/ReportDialog.tsx:25
+msgid "Hate speech"
+msgstr "Hate speech"
+
+#: src/pages/RoomPage.tsx:1025
+msgid "Hide chat"
+msgstr "Hide chat"
+
+#: src/components/chat/ReportDialog.tsx:24
+msgid "Inappropriate content"
+msgstr "Inappropriate content"
+
 #: src/components/room/PasswordDialog.tsx:46
+#: src/components/room/PasswordSettingsDialog.tsx:95
 msgid "Incorrect password"
 msgstr "Incorrect password"
 
@@ -191,13 +391,59 @@ msgstr "Just now"
 msgid "Kick"
 msgstr "Kick"
 
+#: src/pages/RoomPage.tsx:622
+#: src/pages/RoomPage.tsx:882
+msgid "Leave room"
+msgstr "Leave room"
+
+#: src/pages/RoomPage.tsx:575
+msgid "Loading room..."
+msgstr "Loading room..."
+
 #: src/components/room/RoomList.tsx:169
 msgid "Loading rooms..."
 msgstr "Loading rooms..."
 
+#: src/pages/AdminPage.tsx:104
+msgid "Login"
+msgstr "Login"
+
+#: src/pages/AdminPage.tsx:146
+msgid "Logout"
+msgstr "Logout"
+
+#: src/components/admin/ReportList.tsx:171
+msgid "Mark as actioned"
+msgstr "Mark as actioned"
+
+#: src/components/admin/ReportList.tsx:142
+msgid "Mark as reviewed"
+msgstr "Mark as reviewed"
+
 #: src/components/room/RoomSettings.tsx:124
 msgid "Member Permissions"
 msgstr "Member Permissions"
+
+#: src/pages/RoomPage.tsx:641
+#: src/pages/RoomPage.tsx:856
+#: src/pages/RoomPage.tsx:859
+#: src/pages/RoomPage.tsx:909
+#: src/pages/RoomPage.tsx:1089
+#: src/pages/RoomPage.tsx:1124
+msgid "Members"
+msgstr "Members"
+
+#: src/components/chat/ReportDialog.tsx:96
+msgid "Message being reported"
+msgstr "Message being reported"
+
+#: src/components/room/PasswordSettingsDialog.tsx:166
+msgid "New password"
+msgstr "New password"
+
+#: src/components/admin/BanList.tsx:188
+msgid "No banned users"
+msgstr "No banned users"
 
 #: src/components/chat/ChatPanel.tsx:100
 msgid "No messages yet"
@@ -211,6 +457,14 @@ msgstr "No other members"
 msgid "No password (public)"
 msgstr "No password (public)"
 
+#: src/components/player/PlayHistory.tsx:58
+msgid "No play history"
+msgstr "No play history"
+
+#: src/components/admin/ReportList.tsx:66
+msgid "No reports"
+msgstr "No reports"
+
 #: src/components/room/RoomList.tsx:204
 msgid "No rooms found matching \"{searchQuery}\""
 msgstr "No rooms found matching \"{searchQuery}\""
@@ -219,9 +473,25 @@ msgstr "No rooms found matching \"{searchQuery}\""
 msgid "No rooms yet. Create the first one!"
 msgstr "No rooms yet. Create the first one!"
 
+#: src/components/player/YouTubePlayer.tsx:43
+#: src/components/room/RoomCard.tsx:34
+#: src/pages/RoomPage.tsx:704
+#: src/pages/RoomPage.tsx:938
+msgid "No video selected"
+msgstr "No video selected"
+
 #: src/components/room/RoomSettings.tsx:33
 msgid "Only the room creator can control"
 msgstr "Only the room creator can control"
+
+#: src/components/room/MobileRoomLayout.tsx:78
+msgid "Open chat"
+msgstr "Open chat"
+
+#: src/components/chat/ReportDialog.tsx:26
+#: src/components/room/ShareButton.tsx:133
+msgid "Other"
+msgstr "Other"
 
 #: src/pages/NotFoundPage.tsx:14
 msgid "Page not found"
@@ -229,6 +499,7 @@ msgstr "Page not found"
 
 #: src/components/room/PasswordDialog.tsx:69
 #: src/components/room/RoomSettings.tsx:75
+#: src/pages/AdminPage.tsx:88
 msgid "Password"
 msgstr "Password"
 
@@ -240,31 +511,78 @@ msgstr "Password (optional)"
 msgid "Password is set"
 msgstr "Password is set"
 
+#: src/components/room/PasswordSettingsDialog.tsx:56
+msgid "Password must be at least 4 characters"
+msgstr "Password must be at least 4 characters"
+
 #: src/components/room/PasswordDialog.tsx:60
 msgid "Password Required"
 msgstr "Password Required"
+
+#: src/components/room/PasswordSettingsDialog.tsx:110
+msgid "Password Settings"
+msgstr "Password Settings"
 
 #: src/components/room/CreateRoomDialog.tsx:109
 msgid "Password will be required when joining"
 msgstr "Password will be required when joining"
 
+#: src/components/room/PasswordSettingsDialog.tsx:51
+msgid "Passwords do not match"
+msgstr "Passwords do not match"
+
 #: src/components/player/VideoSearch.tsx:178
 msgid "Paste a YouTube URL to add video directly"
 msgstr "Paste a YouTube URL to add video directly"
+
+#: src/components/admin/ReportList.tsx:23
+msgid "Pending"
+msgstr "Pending"
+
+#: src/components/admin/BanList.tsx:161
+msgid "Permanent"
+msgstr "Permanent"
+
+#: src/pages/RoomPage.tsx:902
+msgid "Play history"
+msgstr "Play history"
+
+#: src/components/player/PlayHistory.tsx:37
+msgid "Play History"
+msgstr "Play History"
+
+#: src/components/room/PasswordSettingsDialog.tsx:46
+msgid "Please enter a new password"
+msgstr "Please enter a new password"
 
 #: src/components/player/VideoSearch.tsx:111
 msgid "Please enter at least 3 characters"
 msgstr "Please enter at least 3 characters"
 
+#: src/components/room/PasswordSettingsDialog.tsx:84
+msgid "Please enter current password"
+msgstr "Please enter current password"
+
 #: src/components/room/PasswordDialog.tsx:36
 msgid "Please enter password"
 msgstr "Please enter password"
+
+#: src/components/admin/BanList.tsx:172
+msgid "Processing..."
+msgstr "Processing..."
 
 #: src/components/user/UserSettings.tsx:63
 msgid "Profile Icon"
 msgstr "Profile Icon"
 
+#: src/components/admin/BanList.tsx:101
+#: src/components/admin/BanList.tsx:214
+#: src/components/admin/ReportList.tsx:96
+msgid "Reason"
+msgstr "Reason"
+
 #: src/components/room/RoomList.tsx:158
+#: src/pages/AdminPage.tsx:135
 msgid "Refresh"
 msgstr "Refresh"
 
@@ -276,17 +594,87 @@ msgstr "Refresh (R)"
 msgid "Refreshing..."
 msgstr "Refreshing..."
 
+#: src/components/room/PasswordSettingsDialog.tsx:134
+msgid "Remove"
+msgstr "Remove"
+
+#: src/components/admin/BanList.tsx:229
+msgid "Remove ban"
+msgstr "Remove ban"
+
+#: src/components/player/PlayHistory.tsx:96
+msgid "Remove from history"
+msgstr "Remove from history"
+
+#: src/components/room/PasswordSettingsDialog.tsx:224
+msgid "Remove password"
+msgstr "Remove password"
+
+#: src/components/room/PasswordSettingsDialog.tsx:201
+msgid "Removing the password will allow anyone to enter the room."
+msgstr "Removing the password will allow anyone to enter the room."
+
+#: src/components/room/PasswordSettingsDialog.tsx:224
+msgid "Removing..."
+msgstr "Removing..."
+
+#: src/components/chat/ChatMessage.tsx:95
+#: src/components/chat/ReportDialog.tsx:164
+msgid "Report"
+msgstr "Report"
+
+#: src/components/chat/ReportDialog.tsx:76
+msgid "Report Message"
+msgstr "Report Message"
+
+#: src/components/chat/ReportDialog.tsx:108
+msgid "Report reason"
+msgstr "Report reason"
+
+#: src/components/chat/ReportDialog.tsx:84
+msgid "Report received"
+msgstr "Report received"
+
+#: src/components/admin/ReportList.tsx:110
+msgid "Reported message"
+msgstr "Reported message"
+
+#: src/components/admin/ReportList.tsx:119
+msgid "Reporter"
+msgstr "Reporter"
+
+#: src/pages/AdminPage.tsx:170
+msgid "Reports"
+msgstr "Reports"
+
 #: src/components/room/RoomList.tsx:182
 msgid "Retry"
 msgstr "Retry"
+
+#: src/components/admin/ReportList.tsx:24
+msgid "Reviewed"
+msgstr "Reviewed"
 
 #: src/components/room/MemberList.tsx:118
 msgid "Revoke permission"
 msgstr "Revoke permission"
 
+#: src/components/admin/ReportList.tsx:127
+msgid "Room ID"
+msgstr "Room ID"
+
 #: src/components/room/CreateRoomDialog.tsx:80
 msgid "Room Name"
 msgstr "Room Name"
+
+#: src/hooks/useShortUrl.ts:26
+msgid "Room not found"
+msgstr "Room not found"
+
+#: src/components/admin/BanList.tsx:144
+#: src/components/admin/BanList.tsx:209
+msgid "Room only"
+msgstr "Room only"
 
 #: src/components/room/RoomSettings.tsx:67
 msgid "Room Settings"
@@ -325,13 +713,74 @@ msgstr "Selected members can control"
 msgid "Set"
 msgstr "Set"
 
+#: src/components/room/PasswordSettingsDialog.tsx:195
+msgid "Set password"
+msgstr "Set password"
+
 #: src/components/room/CreateRoomDialog.tsx:105
 msgid "Set password (leave empty for public)"
 msgstr "Set password (leave empty for public)"
 
+#: src/components/room/PasswordSettingsDialog.tsx:195
+msgid "Setting..."
+msgstr "Setting..."
+
+#: src/pages/RoomPage.tsx:648
+#: src/pages/RoomPage.tsx:916
+msgid "Settings"
+msgstr "Settings"
+
+#: src/components/room/ShareButton.tsx:65
+msgid "Share"
+msgstr "Share"
+
+#: src/components/room/ShareButton.tsx:124
+msgid "Share on LINE"
+msgstr "Share on LINE"
+
+#: src/components/room/ShareButton.tsx:116
+msgid "Share on X"
+msgstr "Share on X"
+
+#: src/components/room/ShareButton.tsx:77
+msgid "Share room"
+msgstr "Share room"
+
+#: src/components/room/ShareButton.tsx:82
+msgid "Share URL"
+msgstr "Share URL"
+
+#: src/pages/RoomPage.tsx:1025
+msgid "Show chat"
+msgstr "Show chat"
+
+#: src/components/chat/ReportDialog.tsx:22
+msgid "Spam or abuse"
+msgstr "Spam or abuse"
+
 #: src/components/room/RoomSettings.tsx:36
 msgid "Specific members"
 msgstr "Specific members"
+
+#: src/components/room/JoinOverlay.tsx:73
+msgid "Start Watching"
+msgstr "Start Watching"
+
+#: src/components/room/JoinOverlay.tsx:64
+msgid "Start watching together with everyone"
+msgstr "Start watching together with everyone"
+
+#: src/components/chat/ReportDialog.tsx:164
+msgid "Submitting..."
+msgstr "Submitting..."
+
+#: src/components/admin/ReportList.tsx:123
+msgid "Target"
+msgstr "Target"
+
+#: src/components/chat/ReportDialog.tsx:86
+msgid "Thank you for your cooperation"
+msgstr "Thank you for your cooperation"
 
 #: src/components/user/UserSettings.tsx:106
 msgid "This ID cannot be changed"
@@ -341,6 +790,27 @@ msgstr "This ID cannot be changed"
 msgid "This name is visible to other users (max 20 characters)"
 msgstr "This name is visible to other users (max 20 characters)"
 
+#: src/components/admin/ReportList.tsx:187
+msgid "This report has already been processed"
+msgstr "This report has already been processed"
+
+#: src/components/admin/BanList.tsx:116
+msgid "Type"
+msgstr "Type"
+
+#: src/hooks/useImageUpload.ts:28
+msgid "Unsupported file format. Only {formats} are supported."
+msgstr "Unsupported file format. Only {formats} are supported."
+
+#: src/components/admin/BanList.tsx:219
+msgid "until"
+msgstr "until"
+
+#: src/hooks/useImageUpload.ts:93
+msgid "Upload failed"
+msgstr "Upload failed"
+
+#: src/components/admin/BanList.tsx:86
 #: src/components/user/UserSettings.tsx:101
 msgid "User ID"
 msgstr "User ID"
@@ -353,9 +823,17 @@ msgstr "User settings"
 msgid "User Settings"
 msgstr "User Settings"
 
+#: src/pages/AdminPage.tsx:75
+msgid "Username"
+msgstr "Username"
+
 #: src/components/room/PasswordDialog.tsx:112
 msgid "Verifying..."
 msgstr "Verifying..."
+
+#: src/components/room/JoinOverlay.tsx:44
+msgid "Video"
+msgstr "Video"
 
 #: src/components/player/VideoSearch.tsx:103
 msgid "Video not found"

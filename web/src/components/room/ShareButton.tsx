@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Share2, Link, Check, Copy, MessageCircle } from 'lucide-react';
+import { t } from '@lingui/macro';
 
 interface ShareButtonProps {
   roomId: string;
@@ -26,7 +27,7 @@ export default function ShareButton({ roomId, shortId, roomName }: ShareButtonPr
   };
 
   const handleShare = async (platform?: 'twitter' | 'line') => {
-    const text = `${roomName} - WatchRoomで一緒に動画を見よう！`;
+    const text = t`${roomName} - Watch videos together on WatchRoom!`;
     const encodedText = encodeURIComponent(text);
     const encodedUrl = encodeURIComponent(shareUrl);
 
@@ -61,7 +62,7 @@ export default function ShareButton({ roomId, shortId, roomName }: ShareButtonPr
       <button
         onClick={() => setIsOpen(!isOpen)}
         className="p-2 hover:bg-accent rounded-md"
-        title="シェア"
+        title={t`Share`}
       >
         <Share2 className="h-5 w-5" />
       </button>
@@ -73,12 +74,12 @@ export default function ShareButton({ roomId, shortId, roomName }: ShareButtonPr
             onClick={() => setIsOpen(false)}
           />
           <div className="absolute right-0 top-full mt-2 w-72 bg-card border border-border rounded-lg shadow-lg z-50 p-4">
-            <h3 className="font-medium mb-3">部屋をシェア</h3>
+            <h3 className="font-medium mb-3">{t`Share room`}</h3>
 
             {/* URL Copy */}
             <div className="mb-4">
               <label className="block text-xs text-muted-foreground mb-1">
-                シェアURL
+                {t`Share URL`}
               </label>
               <div className="flex gap-2">
                 <div className="flex-1 flex items-center px-3 py-2 bg-muted rounded-md overflow-hidden">
@@ -98,7 +99,7 @@ export default function ShareButton({ roomId, shortId, roomName }: ShareButtonPr
               </div>
               {copied && (
                 <p className="text-xs text-success mt-1">
-                  コピーしました！
+                  {t`Copied!`}
                 </p>
               )}
             </div>
@@ -112,7 +113,7 @@ export default function ShareButton({ roomId, shortId, roomName }: ShareButtonPr
                 <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor">
                   <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
                 </svg>
-                <span className="text-sm">Xでシェア</span>
+                <span className="text-sm">{t`Share on X`}</span>
               </button>
 
               <button
@@ -120,7 +121,7 @@ export default function ShareButton({ roomId, shortId, roomName }: ShareButtonPr
                 className="w-full flex items-center gap-3 px-4 py-2 bg-[#00B900] text-white rounded-md hover:opacity-90"
               >
                 <MessageCircle className="h-4 w-4" />
-                <span className="text-sm">LINEでシェア</span>
+                <span className="text-sm">{t`Share on LINE`}</span>
               </button>
 
               {'share' in navigator && (
@@ -129,7 +130,7 @@ export default function ShareButton({ roomId, shortId, roomName }: ShareButtonPr
                   className="w-full flex items-center gap-3 px-4 py-2 bg-muted rounded-md hover:bg-accent"
                 >
                   <Share2 className="h-4 w-4" />
-                  <span className="text-sm">その他</span>
+                  <span className="text-sm">{t`Other`}</span>
                 </button>
               )}
             </div>

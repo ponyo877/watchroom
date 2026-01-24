@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { AlertTriangle, Check } from 'lucide-react';
+import { t } from '@lingui/macro';
 import type { ChatMessageItem } from '@/types/room';
 import {
   Dialog,
@@ -17,12 +18,12 @@ interface ReportDialogProps {
   onSubmit: (reason: string) => Promise<boolean>;
 }
 
-const REPORT_REASONS = [
-  { value: 'spam', label: 'スパム・迷惑行為' },
-  { value: 'harassment', label: '嫌がらせ・誹謗中傷' },
-  { value: 'inappropriate', label: '不適切なコンテンツ' },
-  { value: 'hate', label: 'ヘイトスピーチ' },
-  { value: 'other', label: 'その他' },
+const getReportReasons = () => [
+  { value: 'spam', label: t`Spam or abuse` },
+  { value: 'harassment', label: t`Harassment or defamation` },
+  { value: 'inappropriate', label: t`Inappropriate content` },
+  { value: 'hate', label: t`Hate speech` },
+  { value: 'other', label: t`Other` },
 ];
 
 export default function ReportDialog({
@@ -59,10 +60,10 @@ export default function ReportDialog({
           setAdditionalInfo('');
         }, 2000);
       } else {
-        setError('通報に失敗しました');
+        setError(t`Failed to report`);
       }
     } catch {
-      setError('エラーが発生しました');
+      setError(t`An error occurred`);
     } finally {
       setIsLoading(false);
     }
@@ -72,7 +73,7 @@ export default function ReportDialog({
     <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose()}>
       <DialogContent>
         <DialogHeader icon={<AlertTriangle className="h-5 w-5 text-destructive" />}>
-          <DialogTitle>メッセージを通報</DialogTitle>
+          <DialogTitle>{t`Report Message`}</DialogTitle>
         </DialogHeader>
 
         {success ? (
@@ -80,9 +81,9 @@ export default function ReportDialog({
             <div className="w-16 h-16 mx-auto mb-4 bg-success/20 rounded-full flex items-center justify-center">
               <Check className="w-8 h-8 text-success" />
             </div>
-            <p className="text-lg font-medium">通報を受け付けました</p>
+            <p className="text-lg font-medium">{t`Report received`}</p>
             <p className="text-sm text-muted-foreground mt-1">
-              ご協力ありがとうございます
+              {t`Thank you for your cooperation`}
             </p>
           </div>
         ) : (
@@ -92,7 +93,7 @@ export default function ReportDialog({
               {message && (
                 <div className="p-3 bg-muted/50 rounded-xl">
                   <p className="text-xs text-muted-foreground mb-1">
-                    通報対象メッセージ
+                    {t`Message being reported`}
                   </p>
                   <p className="text-sm">
                     <span className="font-medium">{message.senderName}:</span>{' '}
@@ -104,10 +105,10 @@ export default function ReportDialog({
               {/* Report reason */}
               <div>
                 <label className="block text-sm font-medium mb-2">
-                  通報理由 <span className="text-destructive">*</span>
+                  {t`Report reason`} <span className="text-destructive">*</span>
                 </label>
                 <div className="space-y-2">
-                  {REPORT_REASONS.map((reason) => (
+                  {getReportReasons().map((reason) => (
                     <label
                       key={reason.value}
                       className={`flex items-center p-3 rounded-xl border cursor-pointer transition-all duration-200 ${
@@ -133,12 +134,12 @@ export default function ReportDialog({
               {/* Additional info */}
               <div>
                 <label className="block text-sm font-medium mb-1">
-                  詳細（任意）
+                  {t`Details (optional)`}
                 </label>
                 <textarea
                   value={additionalInfo}
                   onChange={(e) => setAdditionalInfo(e.target.value)}
-                  placeholder="追加の情報があれば入力してください"
+                  placeholder={t`Enter additional information if available`}
                   className="w-full px-4 py-2.5 border border-input rounded-xl bg-background/50 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary/50 hover:border-primary/30 transition-all duration-200 text-sm resize-none"
                   rows={3}
                 />
@@ -153,14 +154,14 @@ export default function ReportDialog({
                 onClick={onClose}
                 className="flex-1 px-4 py-2.5 border border-border rounded-xl hover:bg-accent/50 transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]"
               >
-                キャンセル
+                {t`Cancel`}
               </button>
               <button
                 type="submit"
                 disabled={isLoading || !selectedReason}
                 className="flex-1 px-4 py-2.5 bg-destructive text-white rounded-xl shadow-lg shadow-destructive/25 hover:shadow-xl hover:shadow-destructive/30 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:shadow-none disabled:scale-100 transition-all duration-200"
               >
-                {isLoading ? '送信中...' : '通報する'}
+                {isLoading ? t`Submitting...` : t`Report`}
               </button>
             </DialogFooter>
           </form>

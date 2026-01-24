@@ -11,6 +11,7 @@ export function LanguageWrapper({ lang, children }: LanguageWrapperProps) {
   const [isLoaded, setIsLoaded] = useState(false);
 
   useEffect(() => {
+    setIsLoaded(false);  // Reset when language changes
     loadCatalog(lang).then(() => {
       setIsLoaded(true);
     });
@@ -20,5 +21,10 @@ export function LanguageWrapper({ lang, children }: LanguageWrapperProps) {
     return null;
   }
 
-  return <I18nProvider i18n={i18n}>{children}</I18nProvider>;
+  // key={lang} forces I18nProvider to re-mount when language changes
+  return (
+    <I18nProvider i18n={i18n} key={lang}>
+      {children}
+    </I18nProvider>
+  );
 }

@@ -8,6 +8,7 @@ import {
   RemoteDataStream,
   RoomPublication,
 } from '@skyway-sdk/room';
+import { t } from '@lingui/macro';
 import { useUserStore } from '@/stores/userStore';
 import { useRoomStore } from '@/stores/roomStore';
 import type { RoomMetadata, MemberMetadata } from '@/types/skyway';
@@ -314,7 +315,7 @@ export function useSkyWay({ roomName, token, onMessage }: UseSkyWayOptions) {
           roomStoreActions.addChatMessage({
             id: `system-join-${metadata.id}-${Date.now()}`,
             type: 'join',
-            text: `${metadata.name}が入室しました`,
+            text: t`${metadata.name} joined the room`,
             senderId: 'system',
             senderName: 'System',
             senderIconUrl: '',
@@ -332,7 +333,7 @@ export function useSkyWay({ roomName, token, onMessage }: UseSkyWayOptions) {
           roomStoreActions.addChatMessage({
             id: `system-leave-${leavingMemberMetadata.id}-${Date.now()}`,
             type: 'leave',
-            text: `${leavingMemberMetadata.name}が退室しました`,
+            text: t`${leavingMemberMetadata.name} left the room`,
             senderId: 'system',
             senderName: 'System',
             senderIconUrl: '',

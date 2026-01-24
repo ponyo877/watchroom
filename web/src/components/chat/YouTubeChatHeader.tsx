@@ -1,4 +1,5 @@
 import { Users, X } from 'lucide-react';
+import { t } from '@lingui/macro';
 
 interface YouTubeChatHeaderProps {
   memberCount: number;
@@ -19,7 +20,7 @@ export default function YouTubeChatHeader({
   return (
     <div className="yt-chat-header">
       <div className="flex items-center gap-3">
-        <span className="font-semibold text-sm">チャット</span>
+        <span className="font-semibold text-sm">{t`Chat`}</span>
         <span className="flex items-center gap-1 text-xs text-muted-foreground">
           <Users className="h-3 w-3" />
           {memberCount}
@@ -31,7 +32,7 @@ export default function YouTubeChatHeader({
           <button
             onClick={onClose}
             className="p-2 hover:bg-accent rounded-md active:bg-accent transition-colors"
-            title="閉じる"
+            title={t`Close`}
           >
             <X className="h-4 w-4" />
           </button>

@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { t } from '@lingui/macro';
 
 interface ShortUrlInfo {
   roomId: string;
@@ -22,9 +23,9 @@ export function useShortUrl(shortId: string | undefined) {
       const response = await fetch(`/api/r/${shortId}`);
       if (!response.ok) {
         if (response.status === 404) {
-          setError('部屋が見つかりません');
+          setError(t`Room not found`);
         } else {
-          setError('エラーが発生しました');
+          setError(t`An error occurred`);
         }
         return;
       }
@@ -35,7 +36,7 @@ export function useShortUrl(shortId: string | undefined) {
         hasPassword: data.has_password,
       });
     } catch (err) {
-      setError('エラーが発生しました');
+      setError(t`An error occurred`);
     } finally {
       setIsLoading(false);
     }

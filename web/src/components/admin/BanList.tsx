@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Ban, UserX, Globe, Home, Trash2, Plus } from 'lucide-react';
+import { t } from '@lingui/macro';
 import { formatRelativeTime } from '@/lib/utils';
 import type { BannedUser } from '@/hooks/useAdmin';
 
@@ -19,7 +20,7 @@ export default function BanList({ bans, onUnban, onBanUser }: BanListProps) {
     userId: '',
     reason: '',
     isGlobal: true,
-    duration: '永久',
+    duration: 'permanent',
   });
   const [actionLoading, setActionLoading] = useState<string | null>(null);
 
@@ -38,13 +39,13 @@ export default function BanList({ bans, onUnban, onBanUser }: BanListProps) {
     setActionLoading('new');
     try {
       let expiresAt: string | undefined;
-      if (newBan.duration !== '永久') {
+      if (newBan.duration !== 'permanent') {
         const now = new Date();
-        if (newBan.duration === '1日') {
+        if (newBan.duration === '1day') {
           now.setDate(now.getDate() + 1);
-        } else if (newBan.duration === '1週間') {
+        } else if (newBan.duration === '1week') {
           now.setDate(now.getDate() + 7);
-        } else if (newBan.duration === '1ヶ月') {
+        } else if (newBan.duration === '1month') {
           now.setMonth(now.getMonth() + 1);
         }
         expiresAt = now.toISOString();
@@ -56,7 +57,7 @@ export default function BanList({ bans, onUnban, onBanUser }: BanListProps) {
       });
 
       if (success) {
-        setNewBan({ userId: '', reason: '', isGlobal: true, duration: '永久' });
+        setNewBan({ userId: '', reason: '', isGlobal: true, duration: 'permanent' });
         setShowAddForm(false);
       }
     } finally {
@@ -67,13 +68,13 @@ export default function BanList({ bans, onUnban, onBanUser }: BanListProps) {
   return (
     <div>
       <div className="p-4 border-b border-border flex justify-between items-center">
-        <h3 className="font-medium">BAN一覧 ({bans.length})</h3>
+        <h3 className="font-medium">{t`Ban List`} ({bans.length})</h3>
         <button
           onClick={() => setShowAddForm(!showAddForm)}
           className="flex items-center gap-1 px-3 py-1.5 text-sm bg-destructive text-white rounded-md hover:opacity-90"
         >
           <Plus className="h-4 w-4" />
-          ユーザーをBAN
+          {t`Ban user`}
         </button>
       </div>
 
@@ -82,7 +83,7 @@ export default function BanList({ bans, onUnban, onBanUser }: BanListProps) {
           <div className="space-y-3">
             <div>
               <label className="block text-sm font-medium mb-1">
-                ユーザーID <span className="text-destructive">*</span>
+                {t`User ID`} <span className="text-destructive">*</span>
               </label>
               <input
                 type="text"
@@ -90,21 +91,21 @@ export default function BanList({ bans, onUnban, onBanUser }: BanListProps) {
                 onChange={(e) =>
                   setNewBan((prev) => ({ ...prev, userId: e.target.value }))
                 }
-                placeholder="ユーザーIDを入力"
+                placeholder={t`Enter user ID`}
                 className="w-full px-3 py-2 border border-input rounded-md bg-background text-sm"
               />
             </div>
 
             <div>
               <label className="block text-sm font-medium mb-1">
-                理由 <span className="text-destructive">*</span>
+                {t`Reason`} <span className="text-destructive">*</span>
               </label>
               <textarea
                 value={newBan.reason}
                 onChange={(e) =>
                   setNewBan((prev) => ({ ...prev, reason: e.target.value }))
                 }
-                placeholder="BAN理由を入力"
+                placeholder={t`Enter ban reason`}
                 className="w-full px-3 py-2 border border-input rounded-md bg-background text-sm resize-none"
                 rows={2}
               />
@@ -112,7 +113,7 @@ export default function BanList({ bans, onUnban, onBanUser }: BanListProps) {
 
             <div className="flex gap-4">
               <div>
-                <label className="block text-sm font-medium mb-1">種類</label>
+                <label className="block text-sm font-medium mb-1">{t`Type`}</label>
                 <div className="flex gap-2">
                   <button
                     type="button"
@@ -126,7 +127,7 @@ export default function BanList({ bans, onUnban, onBanUser }: BanListProps) {
                     }`}
                   >
                     <Globe className="h-4 w-4" />
-                    グローバル
+                    {t`Global`}
                   </button>
                   <button
                     type="button"
@@ -140,13 +141,13 @@ export default function BanList({ bans, onUnban, onBanUser }: BanListProps) {
                     }`}
                   >
                     <Home className="h-4 w-4" />
-                    ルーム限定
+                    {t`Room only`}
                   </button>
                 </div>
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-1">期間</label>
+                <label className="block text-sm font-medium mb-1">{t`Duration`}</label>
                 <select
                   value={newBan.duration}
                   onChange={(e) =>
@@ -154,10 +155,10 @@ export default function BanList({ bans, onUnban, onBanUser }: BanListProps) {
                   }
                   className="px-3 py-2 border border-input rounded-md bg-background text-sm"
                 >
-                  <option value="1日">1日</option>
-                  <option value="1週間">1週間</option>
-                  <option value="1ヶ月">1ヶ月</option>
-                  <option value="永久">永久</option>
+                  <option value="1day">{t`1 day`}</option>
+                  <option value="1week">{t`1 week`}</option>
+                  <option value="1month">{t`1 month`}</option>
+                  <option value="permanent">{t`Permanent`}</option>
                 </select>
               </div>
             </div>
@@ -168,13 +169,13 @@ export default function BanList({ bans, onUnban, onBanUser }: BanListProps) {
                 disabled={!newBan.userId || !newBan.reason || actionLoading === 'new'}
                 className="px-4 py-2 bg-destructive text-white rounded-md hover:opacity-90 disabled:opacity-50"
               >
-                {actionLoading === 'new' ? '処理中...' : 'BANする'}
+                {actionLoading === 'new' ? t`Processing...` : t`Ban`}
               </button>
               <button
                 onClick={() => setShowAddForm(false)}
                 className="px-4 py-2 border border-border rounded-md hover:bg-accent"
               >
-                キャンセル
+                {t`Cancel`}
               </button>
             </div>
           </div>
@@ -184,7 +185,7 @@ export default function BanList({ bans, onUnban, onBanUser }: BanListProps) {
       {bans.length === 0 ? (
         <div className="p-8 text-center">
           <UserX className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-          <p className="text-muted-foreground">BANされたユーザーはいません</p>
+          <p className="text-muted-foreground">{t`No banned users`}</p>
         </div>
       ) : (
         <div className="divide-y divide-border">
@@ -200,22 +201,22 @@ export default function BanList({ bans, onUnban, onBanUser }: BanListProps) {
                     {ban.isGlobal ? (
                       <span className="flex items-center gap-1 px-2 py-0.5 text-xs bg-red-100 text-red-800 rounded-full">
                         <Globe className="h-3 w-3" />
-                        グローバル
+                        {t`Global`}
                       </span>
                     ) : (
                       <span className="flex items-center gap-1 px-2 py-0.5 text-xs bg-orange-100 text-orange-800 rounded-full">
                         <Home className="h-3 w-3" />
-                        ルーム限定
+                        {t`Room only`}
                       </span>
                     )}
                   </div>
                   <p className="text-sm text-muted-foreground mb-1">
-                    理由: {ban.reason}
+                    {t`Reason`}: {ban.reason}
                   </p>
                   <p className="text-xs text-muted-foreground">
-                    {formatRelativeTime(new Date(ban.bannedAt))}にBAN
+                    {t`Banned`} {formatRelativeTime(new Date(ban.bannedAt))}
                     {ban.expiresAt && (
-                      <> | {new Date(ban.expiresAt).toLocaleDateString()}まで</>
+                      <> | {t`until`} {new Date(ban.expiresAt).toLocaleDateString()}</>
                     )}
                   </p>
                 </div>
@@ -225,7 +226,7 @@ export default function BanList({ bans, onUnban, onBanUser }: BanListProps) {
                 onClick={() => handleUnban(ban.id)}
                 disabled={actionLoading === ban.id}
                 className="p-2 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-md disabled:opacity-50"
-                title="BANを解除"
+                title={t`Remove ban`}
               >
                 <Trash2 className="h-4 w-4" />
               </button>

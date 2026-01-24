@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react';
+import { t } from '@lingui/macro';
 
 interface YouTubePlayerProps {
   videoId?: string;
@@ -39,7 +40,7 @@ export default function YouTubePlayer({
       >
         {!videoId && (
           <p className="text-white/50 text-center">
-            動画が選択されていません
+            {t`No video selected`}
           </p>
         )}
       </div>

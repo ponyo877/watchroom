@@ -18,6 +18,7 @@
  */
 
 import { Play, Volume2 } from 'lucide-react';
+import { t } from '@lingui/macro';
 
 interface JoinOverlayProps {
   /** 動画タイトル */
@@ -40,7 +41,7 @@ export default function JoinOverlay({
         <div className="mb-6 relative">
           <img
             src={videoThumbnail}
-            alt={videoTitle || '動画'}
+            alt={videoTitle || t`Video`}
             className="w-64 md:w-80 rounded-lg shadow-2xl opacity-80"
           />
           <div className="absolute inset-0 flex items-center justify-center">
@@ -60,7 +61,7 @@ export default function JoinOverlay({
 
       {/* 説明文 */}
       <p className="text-white/70 text-sm md:text-base text-center mb-6 max-w-sm">
-        みんなと一緒に視聴を開始します
+        {t`Start watching together with everyone`}
       </p>
 
       {/* 視聴開始ボタン */}
@@ -69,12 +70,12 @@ export default function JoinOverlay({
         className="flex items-center gap-3 px-8 py-4 bg-primary text-primary-foreground rounded-xl text-lg font-semibold shadow-lg shadow-primary/30 hover:shadow-xl hover:shadow-primary/40 hover:scale-105 active:scale-95 transition-all duration-200"
       >
         <Volume2 className="h-6 w-6" />
-        <span>視聴開始</span>
+        <span>{t`Start Watching`}</span>
       </button>
 
       {/* 補足説明 */}
       <p className="text-white/50 text-xs mt-4 text-center">
-        クリックすると音声付きで再生が始まります
+        {t`Click to start playback with audio`}
       </p>
     </div>
   );

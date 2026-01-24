@@ -1,4 +1,5 @@
 import { History, Play, Trash2 } from 'lucide-react';
+import { t } from '@lingui/macro';
 import { formatRelativeTime } from '@/lib/utils';
 import type { VideoHistoryItem } from '@/types/skyway';
 import {
@@ -33,7 +34,7 @@ export default function PlayHistory({
         <div className="flex items-center justify-between">
           <DialogHeader icon={<History className="h-5 w-5 text-muted-foreground" />}>
             <DialogTitle className="flex items-center gap-2">
-              再生履歴
+              {t`Play History`}
               <span className="text-sm font-normal text-muted-foreground">
                 ({history.length})
               </span>
@@ -43,7 +44,7 @@ export default function PlayHistory({
             <button
               onClick={onClearHistory}
               className="p-2 text-destructive hover:bg-destructive/10 rounded-lg transition-colors mr-8"
-              title="履歴をクリア"
+              title={t`Clear history`}
             >
               <Trash2 className="h-4 w-4" />
             </button>
@@ -54,7 +55,7 @@ export default function PlayHistory({
           {history.length === 0 ? (
             <div className="py-12 text-center">
               <History className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-              <p className="text-muted-foreground">再生履歴がありません</p>
+              <p className="text-muted-foreground">{t`No play history`}</p>
             </div>
           ) : (
             <div className="space-y-2">
@@ -92,7 +93,7 @@ export default function PlayHistory({
                   <button
                     onClick={() => onRemoveVideo(video.videoId)}
                     className="p-2 opacity-0 group-hover:opacity-100 hover:bg-destructive/10 rounded-lg transition-all duration-200"
-                    title="履歴から削除"
+                    title={t`Remove from history`}
                   >
                     <Trash2 className="h-4 w-4 text-muted-foreground hover:text-destructive transition-colors" />
                   </button>

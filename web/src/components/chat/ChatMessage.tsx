@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Flag, MoreVertical } from 'lucide-react';
+import { t } from '@lingui/macro';
 import { formatRelativeTime } from '@/lib/utils';
 import { useUserStore } from '@/stores/userStore';
 import type { ChatMessageItem } from '@/types/room';
@@ -91,7 +92,7 @@ export default function ChatMessage({ message, onReport }: ChatMessageProps) {
                       className="w-full flex items-center gap-2 px-3 py-2 text-sm text-destructive active:bg-accent md:hover:bg-accent"
                     >
                       <Flag className="h-4 w-4" />
-                      通報する
+                      {t`Report`}
                     </button>
                   </div>
                 </>

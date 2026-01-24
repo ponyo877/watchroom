@@ -1,5 +1,6 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { useEffect, useState, useCallback, useRef } from 'react';
+import { t } from '@lingui/macro';
 import {
   Settings,
   Users,
@@ -571,7 +572,7 @@ export default function RoomPage() {
   if (isResolvingShortUrl || isRoomLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
-        <Loading size="lg" text={isResolvingShortUrl ? "部屋を読み込み中..." : "接続中..."} />
+        <Loading size="lg" text={isResolvingShortUrl ? t`Loading room...` : t`Connecting...`} />
       </div>
     );
   }
@@ -586,7 +587,7 @@ export default function RoomPage() {
             onClick={() => navigate('/')}
             className="px-4 py-2 bg-primary text-primary-foreground rounded-md"
           >
-            ホームに戻る
+            {t`Back to Home`}
           </button>
         </div>
       </div>
@@ -618,7 +619,7 @@ export default function RoomPage() {
                 <button
                   onClick={handleLeaveRoom}
                   className="p-2 hover:bg-accent rounded-md flex-shrink-0"
-                  title="部屋を出る"
+                  title={t`Leave room`}
                 >
                   <LogOut className="h-5 w-5" />
                 </button>
@@ -637,14 +638,14 @@ export default function RoomPage() {
                 <button
                   onClick={() => setShowMobileMembers(true)}
                   className="p-2 hover:bg-accent rounded-md"
-                  title="メンバー"
+                  title={t`Members`}
                 >
                   <Users className="h-5 w-5" />
                 </button>
                 <button
                   onClick={() => setShowSettings(true)}
                   className="p-2 hover:bg-accent rounded-md"
-                  title="設定"
+                  title={t`Settings`}
                 >
                   <Settings className="h-5 w-5" />
                 </button>
@@ -700,7 +701,7 @@ export default function RoomPage() {
             {/* No video selected message */}
             {!roomStore.currentVideo && (
               <div className="w-full h-full flex flex-col items-center justify-center">
-                <p className="text-white/50 mb-4">動画が選択されていません</p>
+                <p className="text-white/50 mb-4">{t`No video selected`}</p>
                 <button
                   onClick={() => setShowVideoSearch(true)}
                   className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-md shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/30 hover:scale-105 active:scale-95 transition-all duration-200"
@@ -841,10 +842,10 @@ export default function RoomPage() {
               <button
                 onClick={toggleLandscapeChat}
                 className="flex items-center gap-2 px-3 py-2 rounded-lg bg-white/10 active:bg-white/20 transition-colors touch-feedback"
-                title="チャット"
+                title={t`Chat`}
               >
                 <MessageCircle className="h-5 w-5 text-white" />
-                <span className="text-sm text-white">チャット</span>
+                <span className="text-sm text-white">{t`Chat`}</span>
               </button>
               <button
                 onClick={() => {
@@ -852,10 +853,10 @@ export default function RoomPage() {
                   setShowLandscapeControls(true);
                 }}
                 className="flex items-center gap-2 px-3 py-2 rounded-lg bg-white/10 active:bg-white/20 transition-colors touch-feedback"
-                title="メンバー"
+                title={t`Members`}
               >
                 <Users className="h-5 w-5 text-white" />
-                <span className="text-sm text-white">メンバー</span>
+                <span className="text-sm text-white">{t`Members`}</span>
               </button>
               <button
                 onClick={() => setShowPlayHistory(true)}
@@ -878,7 +879,7 @@ export default function RoomPage() {
                 <button
                   onClick={handleLeaveRoom}
                   className="p-2 hover:bg-accent rounded-md flex-shrink-0"
-                  title="部屋を出る"
+                  title={t`Leave room`}
                 >
                   <LogOut className="h-5 w-5" />
                 </button>
@@ -898,21 +899,21 @@ export default function RoomPage() {
                 <button
                   onClick={() => setShowPlayHistory(true)}
                   className="p-2 hover:bg-accent rounded-md"
-                  title="再生履歴"
+                  title={t`Play history`}
                 >
                   <History className="h-5 w-5" />
                 </button>
                 <button
                   onClick={() => setShowMemberList(!showMemberList)}
                   className="p-2 hover:bg-accent rounded-md"
-                  title="メンバー"
+                  title={t`Members`}
                 >
                   <Users className="h-5 w-5" />
                 </button>
                 <button
                   onClick={() => setShowSettings(true)}
                   className="p-2 hover:bg-accent rounded-md"
-                  title="設定"
+                  title={t`Settings`}
                 >
                   <Settings className="h-5 w-5" />
                 </button>
@@ -934,7 +935,7 @@ export default function RoomPage() {
                 />
                 {!roomStore.currentVideo && (
                   <div className="w-full h-full flex flex-col items-center justify-center">
-                    <p className="text-white/50 mb-4">動画が選択されていません</p>
+                    <p className="text-white/50 mb-4">{t`No video selected`}</p>
                     <button
                       onClick={() => setShowVideoSearch(true)}
                       className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-md shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/30 hover:scale-105 active:scale-95 transition-all duration-200"
@@ -1021,7 +1022,7 @@ export default function RoomPage() {
             <button
               onClick={() => setIsSidebarHidden(!isSidebarHidden)}
               className="absolute right-0 top-1/2 -translate-y-1/2 z-20 p-2 bg-card border border-border rounded-l-lg shadow-lg hover:bg-accent transition-colors"
-              title={isSidebarHidden ? 'チャットを表示' : 'チャットを非表示'}
+              title={isSidebarHidden ? t`Show chat` : t`Hide chat`}
               aria-expanded={!isSidebarHidden}
             >
               {isSidebarHidden ? (
@@ -1085,7 +1086,7 @@ export default function RoomPage() {
       <BottomSheet
         open={showMobileMembers}
         onClose={() => setShowMobileMembers(false)}
-        title="メンバー"
+        title={t`Members`}
       >
         <MemberList
           members={roomStore.members}
@@ -1120,7 +1121,7 @@ export default function RoomPage() {
           setShowLandscapeMembers(false);
           resetLandscapeControlsTimer();
         }}
-        title="メンバー"
+        title={t`Members`}
       >
         <MemberList
           members={roomStore.members}

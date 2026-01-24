@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import { Users, Lock, Play } from 'lucide-react';
+import { t } from '@lingui/macro';
 import type { Room } from '@/types/room';
 
 interface RoomCardProps {
@@ -30,7 +31,7 @@ export default function RoomCard({ room }: RoomCardProps) {
         ) : (
           <div className="w-full h-full flex items-center justify-center backdrop-blur-sm">
             <span className="text-muted-foreground text-sm">
-              動画が選択されていません
+              {t`No video selected`}
             </span>
           </div>
         )}
