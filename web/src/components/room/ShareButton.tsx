@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Share2, Link, Check, Copy, MessageCircle } from 'lucide-react';
 import { t } from '@lingui/macro';
+import { useLanguage } from '@/i18n/useLanguage';
 
 interface ShareButtonProps {
   roomId: string;
@@ -11,10 +12,11 @@ interface ShareButtonProps {
 export default function ShareButton({ roomId, shortId, roomName }: ShareButtonProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [copied, setCopied] = useState(false);
+  const { languagePrefix } = useLanguage();
 
   const shareUrl = shortId
-    ? `${window.location.origin}/r/${shortId}`
-    : `${window.location.origin}/room/${roomId}`;
+    ? `${window.location.origin}${languagePrefix}/r/${shortId}`
+    : `${window.location.origin}${languagePrefix}/room/${roomId}`;
 
   const handleCopy = async () => {
     try {

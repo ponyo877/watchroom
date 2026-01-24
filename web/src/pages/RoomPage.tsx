@@ -1,6 +1,7 @@
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { t } from '@lingui/macro';
+import { useLanguage } from '@/i18n/useLanguage';
 import {
   Settings,
   Users,
@@ -52,7 +53,7 @@ import { useMessageFieldsStore } from '@/stores/messageFieldsStore';
 
 export default function RoomPage() {
   const { roomId, shortId } = useParams();
-  const navigate = useNavigate();
+  const { navigateHome } = useLanguage();
 
   // YouTube風レイアウトフック
   const {
@@ -464,8 +465,8 @@ export default function RoomPage() {
 
   const handleLeaveRoom = useCallback(() => {
     roomStore.reset();
-    navigate('/');
-  }, [roomStore, navigate]);
+    navigateHome();
+  }, [roomStore, navigateHome]);
 
   const { kickUser, banUser } = useModeration({
     roomId: actualRoomId || '',
@@ -584,7 +585,7 @@ export default function RoomPage() {
         <div className="text-center">
           <p className="text-xl text-foreground mb-4">{shortUrlError || roomError}</p>
           <button
-            onClick={() => navigate('/')}
+            onClick={() => navigateHome()}
             className="px-4 py-2 bg-primary text-primary-foreground rounded-md"
           >
             {t`Back to Home`}
@@ -601,7 +602,7 @@ export default function RoomPage() {
         <PasswordDialog
           open={showPasswordDialog}
           onSubmit={handleVerifyPassword}
-          onCancel={() => navigate('/')}
+          onCancel={() => navigateHome()}
         />
       </div>
     );

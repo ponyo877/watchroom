@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { useRoomStore } from '@/stores/roomStore';
 import { useUserStore } from '@/stores/userStore';
+import { useLanguage } from '@/i18n/useLanguage';
 import { useSkyWay } from './useSkyWay';
 import { useChat } from './useChat';
 import { useReaction } from './useReaction';
@@ -28,7 +28,7 @@ export function useRoom({
   onStateResponse,
   onHeartbeat,
 }: UseRoomOptions) {
-  const navigate = useNavigate();
+  const { navigateHome } = useLanguage();
   const [token, setToken] = useState<string>('');
   const [isLoading, setIsLoading] = useState(true);
   const [tokenError, setTokenError] = useState<string | null>(null);
@@ -284,8 +284,8 @@ export function useRoom({
 
   const leaveRoom = useCallback(() => {
     roomStoreActions.reset();
-    navigate('/');
-  }, [roomStoreActions, navigate]);
+    navigateHome();
+  }, [roomStoreActions, navigateHome]);
 
   useEffect(() => {
     if (userId && roomId) {

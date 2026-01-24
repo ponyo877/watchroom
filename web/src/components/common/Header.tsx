@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { Monitor, User, Search, X } from 'lucide-react';
 import { t } from '@lingui/macro';
 import { useUserStore } from '@/stores/userStore';
+import { useLanguage } from '@/i18n/useLanguage';
 import ThemeToggle from './ThemeToggle';
 import UserSettings from '@/components/user/UserSettings';
 import { Input } from '@/components/ui/Input';
@@ -17,6 +18,7 @@ interface HeaderProps {
 export default function Header({ onCreateRoom, searchQuery, onSearchChange }: HeaderProps) {
   const userName = useUserStore((state) => state.name);
   const userIconUrl = useUserStore((state) => state.iconUrl);
+  const { getHomePath } = useLanguage();
   const [showUserSettings, setShowUserSettings] = useState(false);
   const [showMobileSearch, setShowMobileSearch] = useState(false);
 
@@ -25,7 +27,7 @@ export default function Header({ onCreateRoom, searchQuery, onSearchChange }: He
       <div className="container mx-auto px-3 md:px-4">
         <div className="flex h-14 md:h-16 items-center justify-between gap-2 md:gap-4">
           <div className="flex items-center gap-2 md:gap-4 flex-1 min-w-0">
-            <Link to="/" className="md:hover:opacity-80 transition-opacity duration-200 flex-shrink-0 touch-feedback">
+            <Link to={getHomePath()} className="md:hover:opacity-80 transition-opacity duration-200 flex-shrink-0 touch-feedback">
               <img src="/logo.svg" alt="WatchRoom" className="h-8 md:h-13 logo-light" />
               <img src="/logo-dark.svg" alt="WatchRoom" className="h-8 md:h-13 logo-dark" />
             </Link>

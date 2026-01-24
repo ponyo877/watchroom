@@ -1,13 +1,13 @@
 import { useState, useCallback } from 'react';
 import { Shield, AlertTriangle, Ban, RefreshCw, LogOut } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
 import { t } from '@lingui/macro';
 import { useAdmin } from '@/hooks/useAdmin';
+import { useLanguage } from '@/i18n/useLanguage';
 import ReportList from '@/components/admin/ReportList';
 import BanList from '@/components/admin/BanList';
 
 export default function AdminPage() {
-  const navigate = useNavigate();
+  const { navigateHome } = useLanguage();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -106,7 +106,7 @@ export default function AdminPage() {
           </form>
 
           <button
-            onClick={() => navigate('/')}
+            onClick={() => navigateHome()}
             className="w-full mt-4 px-4 py-2 border border-border rounded-md hover:bg-accent"
           >
             {t`Back to home`}

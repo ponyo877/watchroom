@@ -2,15 +2,23 @@ import { Link } from 'react-router-dom';
 import { Users, Lock, Play } from 'lucide-react';
 import { t } from '@lingui/macro';
 import type { Room } from '@/types/room';
+import { useLanguage } from '@/i18n/useLanguage';
 
 interface RoomCardProps {
   room: Room;
 }
 
 export default function RoomCard({ room }: RoomCardProps) {
+  const { getRoomPath, getLocalizedPath } = useLanguage();
+
+  // Use shortId if available, otherwise fall back to roomId
+  const roomPath = room.shortId
+    ? getRoomPath(room.shortId)
+    : getLocalizedPath(`/room/${room.roomId}`);
+
   return (
     <Link
-      to={`/r/${room.shortId}`}
+      to={roomPath}
       className="block group transition-all duration-300 ease-out active:scale-[0.98] md:hover:scale-[1.02] md:hover:-translate-y-1 touch-feedback"
     >
       <div className="aspect-video bg-gradient-to-br from-muted/80 to-muted/40 rounded-xl mb-3 overflow-hidden relative shadow-lg md:hover:shadow-xl md:hover:shadow-primary/10 transition-shadow duration-300">
