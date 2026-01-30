@@ -22,7 +22,7 @@ export default function TermsPage() {
       <main className="flex-1 container mx-auto px-4 py-8 max-w-3xl">
         <div className="prose prose-sm dark:prose-invert max-w-none">
           <p className="text-muted-foreground mb-6">
-            <Trans>Last updated: January 2025</Trans>
+            <Trans>Last updated: January 2026</Trans>
           </p>
 
           <section className="mb-8">

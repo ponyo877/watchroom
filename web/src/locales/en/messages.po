@@ -517,8 +517,8 @@ msgstr "Kick"
 
 #: src/pages/PrivacyPage.tsx:25
 #: src/pages/TermsPage.tsx:25
-msgid "Last updated: January 2025"
-msgstr "Last updated: January 2025"
+msgid "Last updated: January 2026"
+msgstr "Last updated: January 2026"
 
 #: src/pages/RoomPage.tsx:566
 #: src/pages/RoomPage.tsx:799
