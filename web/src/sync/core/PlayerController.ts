@@ -154,12 +154,9 @@ export class PlayerController extends EventEmitter<PlayerEventType, PlayerEventD
         videoId,
         playerVars: {
           autoplay: 0,
-          controls: 0,
+          controls: 1,
           enablejsapi: 1,
-          modestbranding: 1,
           playsinline: 1,
-          rel: 0,
-          disablekb: 1,
         },
         events: {
           onReady: this.handleReady.bind(this),

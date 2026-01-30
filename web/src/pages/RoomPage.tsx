@@ -12,7 +12,6 @@ import {
   PanelRightClose,
   PanelRightOpen,
   Play,
-  Pause,
 } from 'lucide-react';
 import { useYouTubeLayout } from '@/hooks/useYouTubeLayout';
 import { useIsMobile } from '@/hooks/useLandscape';
@@ -36,7 +35,6 @@ import RoomSettings from '@/components/room/RoomSettings';
 import PasswordDialog from '@/components/room/PasswordDialog';
 import PasswordSettingsDialog from '@/components/room/PasswordSettingsDialog';
 import ShareButton from '@/components/room/ShareButton';
-import JoinOverlay from '@/components/room/JoinOverlay';
 import BottomSheet from '@/components/common/BottomSheet';
 import LandscapeSidePanel from '@/components/common/LandscapeSidePanel';
 import Loading from '@/components/common/Loading';
@@ -88,9 +86,6 @@ export default function RoomPage() {
   const [showMobileMembers, setShowMobileMembers] = useState(false);
   const [isSidebarHidden, setIsSidebarHidden] = useState(false);
 
-  // モバイル用: タップ時の再生/停止アイコン表示
-  const [showTapFeedback, setShowTapFeedback] = useState(false);
-  const [tapFeedbackIcon, setTapFeedbackIcon] = useState<'play' | 'pause'>('play');
   // 横向きフルスクリーン時のコントロール表示
   const [showLandscapeControls, setShowLandscapeControls] = useState(false);
   const landscapeControlsTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -505,58 +500,6 @@ export default function RoomPage() {
     }
   }, [showLandscapeChat, showLandscapeMembers]);
 
-  // 動画エリアタップで再生/停止（モバイル用）
-  const handleVideoTap = useCallback(() => {
-    if (!roomStore.hasControlPermission || !roomStore.currentVideo) return;
-
-    // 横向きフルスクリーン時
-    if (isLandscapeFullscreen) {
-      // チャットが表示されていない場合はチャットを表示
-      if (!showLandscapeChat) {
-        toggleLandscapeChat();
-        setShowLandscapeControls(true);
-        resetLandscapeControlsTimer();
-      } else {
-        // チャット表示中はコントロール表示をトグル
-        setShowLandscapeControls((prev) => !prev);
-        resetLandscapeControlsTimer();
-      }
-      return;
-    }
-
-    // 縦向き時は再生/停止をトグル
-    const newIsPlaying = !isPlaying;
-    if (newIsPlaying) {
-      play();
-    } else {
-      pause();
-    }
-
-    // フィードバックアイコンを表示
-    setTapFeedbackIcon(newIsPlaying ? 'play' : 'pause');
-    setShowTapFeedback(true);
-    setTimeout(() => setShowTapFeedback(false), 500);
-
-    // 状態を更新
-    const newState = { isPlaying: newIsPlaying, currentTime, lastUpdated: Date.now() };
-    roomStore.setPlaybackState(newState);
-    if (isConnected) {
-      updateRoomMetadata({ playbackState: { ...roomStore.playbackState, ...newState } });
-    }
-  }, [
-    roomStore,
-    isPlaying,
-    play,
-    pause,
-    currentTime,
-    isConnected,
-    updateRoomMetadata,
-    isLandscapeFullscreen,
-    showLandscapeChat,
-    toggleLandscapeChat,
-    resetLandscapeControlsTimer,
-  ]);
-
   // 横向きフルスクリーン解除時にコントロールタイマーをクリア＆メンバーパネルを閉じる
   useEffect(() => {
     if (!isLandscapeFullscreen) {
@@ -670,35 +613,6 @@ export default function RoomPage() {
                 style={{ display: roomStore.currentVideo ? 'block' : 'none' }}
               />
 
-            {/* Transparent overlay - タップで再生/停止 */}
-            {roomStore.currentVideo && (
-              <div
-                className="absolute inset-0 z-10 cursor-pointer"
-                data-testid="iframe-click-blocker"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  if (isMobile) {
-                    handleVideoTap();
-                  }
-                }}
-                onMouseDown={(e) => e.stopPropagation()}
-                style={{ pointerEvents: 'auto' }}
-              />
-            )}
-
-            {/* タップフィードバック（再生/停止アイコン） */}
-            {showTapFeedback && (
-              <div className="absolute inset-0 z-15 flex items-center justify-center pointer-events-none animate-fade-in">
-                <div className="w-20 h-20 rounded-full bg-black/50 backdrop-blur-sm flex items-center justify-center">
-                  {tapFeedbackIcon === 'play' ? (
-                    <Play className="h-10 w-10 text-white ml-1" fill="currentColor" />
-                  ) : (
-                    <Pause className="h-10 w-10 text-white" fill="currentColor" />
-                  )}
-                </div>
-              </div>
-            )}
-
             {/* No video selected message */}
             {!roomStore.currentVideo && (
               <div className="w-full h-full flex flex-col items-center justify-center">
@@ -714,15 +628,9 @@ export default function RoomPage() {
               </div>
             )}
 
-            {/* YouTube Attribution - visible above blocker */}
-            {roomStore.currentVideo && (
-              <YouTubeAttribution className="absolute bottom-2 right-2 z-15" />
-            )}
+            </div>{/* End of yt-video-container */}
 
-            {/* Reaction overlay - z-index higher than blocker */}
-            <ReactionOverlay reactions={roomStore.reactions} className="z-20" />
-
-            {/* Join Overlay - 視聴開始ボタン（Late Joiner向け） */}
+            {/* Join Banner - 視聴開始ボタン（Late Joiner向け）- プレーヤー外に配置 */}
             {/* 表示条件:
                 - 動画が選択されている
                 - プレイヤーが準備完了
@@ -735,22 +643,30 @@ export default function RoomPage() {
               roomStore.playbackState.isPlaying &&
               roomStore.playbackState.lastUpdated > 0 &&
               !roomStore.isCreator && (
-              <JoinOverlay
-                videoTitle={roomStore.currentVideo.title}
-                videoThumbnail={roomStore.currentVideo.thumbnail}
-                onJoin={() => {
-                  // 同期的にユーザー操作フラグを設定（重要：これがないと自動再生がブロックされる）
-                  setUserInteraction();
-                  // 視聴開始済みフラグを設定
-                  setHasJoined(true);
-                  // 最新の再生位置に同期して再生開始
-                  // 【重要】State Response受信からユーザークリックまでの経過時間を補正して、
-                  // 他のユーザーと同じ位置から再生を開始する
-                  performDeferredSync();
-                }}
-              />
+              <div className="bg-primary/90 backdrop-blur-sm px-4 py-3 flex items-center justify-between">
+                <div className="flex items-center gap-3 min-w-0">
+                  <Play className="h-5 w-5 text-primary-foreground flex-shrink-0" />
+                  <span className="text-sm text-primary-foreground truncate">{roomStore.currentVideo.title}</span>
+                </div>
+                <button
+                  onClick={() => {
+                    setUserInteraction();
+                    setHasJoined(true);
+                    performDeferredSync();
+                  }}
+                  className="px-4 py-1.5 bg-white text-primary rounded-md font-medium text-sm flex-shrink-0"
+                >
+                  {t`Start Watching`}
+                </button>
+              </div>
             )}
-            </div>{/* End of yt-video-container */}
+
+            {/* YouTube Attribution と Reaction Overlay - プレーヤー外に配置 */}
+            <div className="flex items-center justify-between px-2 py-1 bg-card/50">
+              {roomStore.currentVideo && <YouTubeAttribution />}
+              <div className="flex-1" />
+              <ReactionOverlay reactions={roomStore.reactions} inline />
+            </div>
 
             {/* Player controls */}
             <div className={`yt-player-controls ${isLandscapeFullscreen && !showLandscapeControls ? 'hidden' : ''}`}>
@@ -947,91 +863,118 @@ export default function RoomPage() {
                     </button>
                   </div>
                 )}
-                {roomStore.currentVideo && (
-                  <YouTubeAttribution className="absolute bottom-2 right-2 z-15" />
-                )}
-                <ReactionOverlay reactions={roomStore.reactions} className="z-20" />
+              </div>
+
+              {/* Join Banner - 視聴開始ボタン（Late Joiner向け）- プレーヤー外に配置 */}
+              {roomStore.currentVideo && isPlayerReady && !hasJoined &&
+                roomStore.playbackState.isPlaying &&
+                roomStore.playbackState.lastUpdated > 0 &&
+                !roomStore.isCreator && (
+                <div className="bg-primary/90 backdrop-blur-sm px-4 py-3 flex items-center justify-between border-t border-border">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <Play className="h-5 w-5 text-primary-foreground flex-shrink-0" />
+                    <span className="text-sm text-primary-foreground truncate">{roomStore.currentVideo.title}</span>
+                  </div>
+                  <button
+                    onClick={() => {
+                      setUserInteraction();
+                      setHasJoined(true);
+                      performDeferredSync();
+                    }}
+                    className="px-4 py-1.5 bg-white text-primary rounded-md font-medium text-sm flex-shrink-0"
+                  >
+                    {t`Start Watching`}
+                  </button>
+                </div>
+              )}
+
+              {/* YouTube Attribution と Reaction Overlay - プレーヤー外に配置 */}
+              <div className="flex items-center justify-between px-2 py-1 bg-card/50 border-t border-border">
+                {roomStore.currentVideo && <YouTubeAttribution />}
+                <div className="flex-1" />
+                <ReactionOverlay reactions={roomStore.reactions} inline />
               </div>
 
               {/* Player controls */}
-              <div className="h-16 border-t border-border bg-card relative z-20">
-                <PlayerControls
-                  isPlaying={isPlaying}
-                  currentTime={currentTime}
-                  duration={duration}
-                  playbackRate={roomStore.playbackState.playbackRate}
-                  hasControlPermission={roomStore.hasControlPermission}
-                  volume={volume}
-                  isMuted={isMuted}
-                  onPlay={() => {
-                    play();
-                    const newState = { isPlaying: true, currentTime, lastUpdated: Date.now() };
-                    roomStore.setPlaybackState(newState);
-                    if (isConnected) {
-                      updateRoomMetadata({ playbackState: { ...roomStore.playbackState, ...newState } });
-                    }
-                  }}
-                  onPause={() => {
-                    pause();
-                    const newState = { isPlaying: false, currentTime, lastUpdated: Date.now() };
-                    roomStore.setPlaybackState(newState);
-                    if (isConnected) {
-                      updateRoomMetadata({ playbackState: { ...roomStore.playbackState, ...newState } });
-                    }
-                  }}
-                  onSeek={(time) => {
-                    seek(time);
-                    setCurrentTime(time);
-                    const newState = { currentTime: time, lastUpdated: Date.now() };
-                    roomStore.setPlaybackState(newState);
-                    if (isConnected) {
-                      updateRoomMetadata({ playbackState: { ...roomStore.playbackState, ...newState } });
-                    }
-                  }}
-                  onPlaybackRateChange={(rate) => {
-                    setPlaybackRate(rate);
-                    const newState = { playbackRate: rate, lastUpdated: Date.now() };
-                    roomStore.setPlaybackState(newState);
-                    if (isConnected) {
-                      updateRoomMetadata({ playbackState: { ...roomStore.playbackState, ...newState } });
-                    }
-                  }}
-                  onVolumeChange={(newVolume) => {
-                    setVolume(newVolume);
-                    setIsMuted(false);
-                    if (player) {
-                      player.setVolume(newVolume);
-                      player.unMute();
-                    }
-                  }}
-                  onMuteToggle={() => {
-                    const newMuted = !isMuted;
-                    setIsMuted(newMuted);
-                    if (player) {
-                      if (newMuted) {
-                        player.mute();
-                      } else {
+              <div className="h-16 border-t border-border bg-card relative z-20 flex items-center">
+                <div className="flex-1 h-full">
+                  <PlayerControls
+                    isPlaying={isPlaying}
+                    currentTime={currentTime}
+                    duration={duration}
+                    playbackRate={roomStore.playbackState.playbackRate}
+                    hasControlPermission={roomStore.hasControlPermission}
+                    volume={volume}
+                    isMuted={isMuted}
+                    onPlay={() => {
+                      play();
+                      const newState = { isPlaying: true, currentTime, lastUpdated: Date.now() };
+                      roomStore.setPlaybackState(newState);
+                      if (isConnected) {
+                        updateRoomMetadata({ playbackState: { ...roomStore.playbackState, ...newState } });
+                      }
+                    }}
+                    onPause={() => {
+                      pause();
+                      const newState = { isPlaying: false, currentTime, lastUpdated: Date.now() };
+                      roomStore.setPlaybackState(newState);
+                      if (isConnected) {
+                        updateRoomMetadata({ playbackState: { ...roomStore.playbackState, ...newState } });
+                      }
+                    }}
+                    onSeek={(time) => {
+                      seek(time);
+                      setCurrentTime(time);
+                      const newState = { currentTime: time, lastUpdated: Date.now() };
+                      roomStore.setPlaybackState(newState);
+                      if (isConnected) {
+                        updateRoomMetadata({ playbackState: { ...roomStore.playbackState, ...newState } });
+                      }
+                    }}
+                    onPlaybackRateChange={(rate) => {
+                      setPlaybackRate(rate);
+                      const newState = { playbackRate: rate, lastUpdated: Date.now() };
+                      roomStore.setPlaybackState(newState);
+                      if (isConnected) {
+                        updateRoomMetadata({ playbackState: { ...roomStore.playbackState, ...newState } });
+                      }
+                    }}
+                    onVolumeChange={(newVolume) => {
+                      setVolume(newVolume);
+                      setIsMuted(false);
+                      if (player) {
+                        player.setVolume(newVolume);
                         player.unMute();
                       }
-                    }
-                  }}
-                />
+                    }}
+                    onMuteToggle={() => {
+                      const newMuted = !isMuted;
+                      setIsMuted(newMuted);
+                      if (player) {
+                        if (newMuted) {
+                          player.mute();
+                        } else {
+                          player.unMute();
+                        }
+                      }
+                    }}
+                  />
+                </div>
+                {/* Sidebar toggle button */}
+                <button
+                  onClick={() => setIsSidebarHidden(!isSidebarHidden)}
+                  className="h-full px-3 border-l border-border hover:bg-accent transition-colors flex items-center"
+                  title={isSidebarHidden ? t`Show chat` : t`Hide chat`}
+                  aria-expanded={!isSidebarHidden}
+                >
+                  {isSidebarHidden ? (
+                    <PanelRightOpen className="h-5 w-5" />
+                  ) : (
+                    <PanelRightClose className="h-5 w-5" />
+                  )}
+                </button>
               </div>
             </div>
-
-            {/* Sidebar toggle button */}
-            <button
-              onClick={() => setIsSidebarHidden(!isSidebarHidden)}
-              className="absolute right-0 top-1/2 -translate-y-1/2 z-20 p-2 bg-card border border-border rounded-l-lg shadow-lg hover:bg-accent transition-colors"
-              title={isSidebarHidden ? t`Show chat` : t`Hide chat`}
-              aria-expanded={!isSidebarHidden}
-            >
-              {isSidebarHidden ? (
-                <PanelRightOpen className="h-5 w-5" />
-              ) : (
-                <PanelRightClose className="h-5 w-5" />
-              )}
-            </button>
           </main>
 
           {/* Desktop Sidebar */}

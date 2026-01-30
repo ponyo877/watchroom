@@ -5,6 +5,7 @@ import type { ReactionItem } from '@/types/room';
 interface ReactionOverlayProps {
   reactions: ReactionItem[];
   className?: string;
+  inline?: boolean;
 }
 
 interface FloatingReaction extends ReactionItem {
@@ -12,7 +13,7 @@ interface FloatingReaction extends ReactionItem {
   y: number;
 }
 
-export default function ReactionOverlay({ reactions, className }: ReactionOverlayProps) {
+export default function ReactionOverlay({ reactions, className, inline = false }: ReactionOverlayProps) {
   const [floatingReactions, setFloatingReactions] = useState<FloatingReaction[]>([]);
   // Track seen reaction IDs to avoid adding duplicates (prevents infinite loop)
   const seenReactionIdsRef = useRef<Set<string>>(new Set());
@@ -48,6 +49,22 @@ export default function ReactionOverlay({ reactions, className }: ReactionOverla
 
     return () => clearInterval(timer);
   }, []);
+
+  // Inline mode: display reactions in a horizontal row
+  if (inline) {
+    return (
+      <div className={cn("flex items-center gap-1 h-6 overflow-hidden", className)}>
+        {floatingReactions.slice(-5).map((reaction) => (
+          <span
+            key={reaction.id}
+            className="text-lg animate-bounce-in"
+          >
+            {reaction.emoji}
+          </span>
+        ))}
+      </div>
+    );
+  }
 
   return (
     <div className={cn("absolute inset-0 pointer-events-none overflow-hidden", className)}>

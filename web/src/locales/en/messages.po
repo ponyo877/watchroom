@@ -63,7 +63,7 @@ msgstr "{hours, plural, one {# hour ago} other {# hours ago}}"
 msgid "{minutes, plural, one {# minute ago} other {# minutes ago}}"
 msgstr "{minutes, plural, one {# minute ago} other {# minutes ago}}"
 
-#: src/components/room/ShareButton.tsx:30
+#: src/components/room/ShareButton.tsx:32
 msgid "{roomName} - Watch videos together on WatchRoom!"
 msgstr "{roomName} - Watch videos together on WatchRoom!"
 
@@ -79,6 +79,90 @@ msgstr "1 month"
 msgid "1 week"
 msgstr "1 week"
 
+#: src/pages/TermsPage.tsx:29
+msgid "1. Acceptance of Terms"
+msgstr "1. Acceptance of Terms"
+
+#: src/pages/PrivacyPage.tsx:29
+msgid "1. Introduction"
+msgstr "1. Introduction"
+
+#: src/pages/TermsPage.tsx:153
+msgid "10. Termination"
+msgstr "10. Termination"
+
+#: src/pages/TermsPage.tsx:162
+msgid "11. Contact"
+msgstr "11. Contact"
+
+#: src/pages/PrivacyPage.tsx:39
+msgid "2. YouTube API Services"
+msgstr "2. YouTube API Services"
+
+#: src/pages/TermsPage.tsx:39
+msgid "2. YouTube Terms of Service"
+msgstr "2. YouTube Terms of Service"
+
+#: src/pages/TermsPage.tsx:67
+msgid "3. Description of Service"
+msgstr "3. Description of Service"
+
+#: src/pages/PrivacyPage.tsx:73
+msgid "3. Information We Collect"
+msgstr "3. Information We Collect"
+
+#: src/pages/PrivacyPage.tsx:97
+msgid "4. How We Use Your Information"
+msgstr "4. How We Use Your Information"
+
+#: src/pages/TermsPage.tsx:83
+msgid "4. User Responsibilities"
+msgstr "4. User Responsibilities"
+
+#: src/pages/TermsPage.tsx:98
+msgid "5. Content"
+msgstr "5. Content"
+
+#: src/pages/PrivacyPage.tsx:108
+msgid "5. Information Sharing"
+msgstr "5. Information Sharing"
+
+#: src/pages/PrivacyPage.tsx:128
+msgid "6. Local Storage"
+msgstr "6. Local Storage"
+
+#: src/pages/TermsPage.tsx:113
+msgid "6. Privacy"
+msgstr "6. Privacy"
+
+#: src/pages/PrivacyPage.tsx:149
+msgid "7. Data Security"
+msgstr "7. Data Security"
+
+#: src/pages/TermsPage.tsx:123
+msgid "7. Disclaimer of Warranties"
+msgstr "7. Disclaimer of Warranties"
+
+#: src/pages/PrivacyPage.tsx:159
+msgid "8. Changes to This Policy"
+msgstr "8. Changes to This Policy"
+
+#: src/pages/TermsPage.tsx:133
+msgid "8. Limitation of Liability"
+msgstr "8. Limitation of Liability"
+
+#: src/pages/PrivacyPage.tsx:169
+msgid "9. Contact Us"
+msgstr "9. Contact Us"
+
+#: src/pages/TermsPage.tsx:142
+msgid "9. Modifications to Terms"
+msgstr "9. Modifications to Terms"
+
+#: src/pages/PrivacyPage.tsx:79
+msgid "A randomly generated identifier assigned to your browser. This ID is used to identify you within rooms and is not linked to any personal information."
+msgstr "A randomly generated identifier assigned to your browser. This ID is used to identify you within rooms and is not linked to any personal information."
+
 #: src/components/admin/ReportList.tsx:25
 msgid "Actioned"
 msgstr "Actioned"
@@ -90,6 +174,10 @@ msgstr "Admin Dashboard"
 #: src/pages/AdminPage.tsx:65
 msgid "Admin Login"
 msgstr "Admin Login"
+
+#: src/pages/TermsPage.tsx:100
+msgid "All video content is provided by YouTube and is subject to YouTube's Terms of Service and Community Guidelines. We do not host, store, or control video content."
+msgstr "All video content is provided by YouTube and is subject to YouTube's Terms of Service and Community Guidelines. We do not host, store, or control video content."
 
 #: src/components/chat/ReportDialog.tsx:66
 #: src/components/room/PasswordDialog.tsx:50
@@ -114,7 +202,9 @@ msgid "Back to home"
 msgstr "Back to home"
 
 #: src/pages/NotFoundPage.tsx:20
-#: src/pages/RoomPage.tsx:590
+#: src/pages/PrivacyPage.tsx:15
+#: src/pages/RoomPage.tsx:534
+#: src/pages/TermsPage.tsx:15
 msgid "Back to Home"
 msgstr "Back to Home"
 
@@ -146,6 +236,18 @@ msgstr "Ban User"
 msgid "Banned"
 msgstr "Banned"
 
+#: src/pages/TermsPage.tsx:31
+msgid "By accessing or using WatchRoom (\"the Service\"), you agree to be bound by these Terms of Service. If you do not agree to these terms, please do not use the Service."
+msgstr "By accessing or using WatchRoom (\"the Service\"), you agree to be bound by these Terms of Service. If you do not agree to these terms, please do not use the Service."
+
+#: src/components/common/Footer.tsx:41
+msgid "By using this service, you agree to our Terms of Service and the YouTube Terms of Service."
+msgstr "By using this service, you agree to our Terms of Service and the YouTube Terms of Service."
+
+#: src/pages/TermsPage.tsx:50
+msgid "By using this Service, you agree to the YouTube Terms of Service available at:"
+msgstr "By using this Service, you agree to the YouTube Terms of Service available at:"
+
 #: src/components/admin/BanList.tsx:178
 #: src/components/chat/ReportDialog.tsx:157
 #: src/components/room/CreateRoomDialog.tsx:123
@@ -161,8 +263,8 @@ msgid "Change"
 msgstr "Change"
 
 #: src/components/chat/YouTubeChatHeader.tsx:23
-#: src/pages/RoomPage.tsx:845
-#: src/pages/RoomPage.tsx:848
+#: src/pages/RoomPage.tsx:762
+#: src/pages/RoomPage.tsx:765
 msgid "Chat"
 msgstr "Chat"
 
@@ -180,11 +282,15 @@ msgstr "Click to start playback with audio"
 msgid "Close"
 msgstr "Close"
 
+#: src/pages/TermsPage.tsx:93
+msgid "Comply with all applicable laws and regulations"
+msgstr "Comply with all applicable laws and regulations"
+
 #: src/components/room/PasswordSettingsDialog.tsx:178
 msgid "Confirm password"
 msgstr "Confirm password"
 
-#: src/pages/RoomPage.tsx:575
+#: src/pages/RoomPage.tsx:519
 msgid "Connecting..."
 msgstr "Connecting..."
 
@@ -192,7 +298,7 @@ msgstr "Connecting..."
 msgid "Control Permissions"
 msgstr "Control Permissions"
 
-#: src/components/room/ShareButton.tsx:102
+#: src/components/room/ShareButton.tsx:104
 msgid "Copied!"
 msgstr "Copied!"
 
@@ -247,6 +353,7 @@ msgid "Dismissed"
 msgstr "Dismissed"
 
 #: src/components/user/UserSettings.tsx:74
+#: src/pages/PrivacyPage.tsx:82
 msgid "Display Name"
 msgstr "Display Name"
 
@@ -257,6 +364,10 @@ msgstr "Duration"
 #: src/components/room/CreateRoomDialog.tsx:87
 msgid "e.g. Music Night"
 msgstr "e.g. Music Night"
+
+#: src/pages/TermsPage.tsx:77
+msgid "Emoji reactions during video playback"
+msgstr "Emoji reactions during video playback"
 
 #: src/components/player/VideoSearch.tsx:187
 msgid "Enter a search keyword"
@@ -345,7 +456,8 @@ msgstr "File size is too large. Please select a file under {maxSizeMB}MB."
 msgid "Global"
 msgstr "Global"
 
-#: src/components/common/Footer.tsx:16
+#: src/components/common/Footer.tsx:20
+#: src/pages/PrivacyPage.tsx:65
 msgid "Google Privacy Policy"
 msgstr "Google Privacy Policy"
 
@@ -365,9 +477,21 @@ msgstr "Has control permission"
 msgid "Hate speech"
 msgstr "Hate speech"
 
-#: src/pages/RoomPage.tsx:1025
+#: src/pages/RoomPage.tsx:968
 msgid "Hide chat"
 msgstr "Hide chat"
+
+#: src/pages/TermsPage.tsx:164
+msgid "If you have any questions about these Terms of Service, please contact us at:"
+msgstr "If you have any questions about these Terms of Service, please contact us at:"
+
+#: src/pages/PrivacyPage.tsx:171
+msgid "If you have any questions about this Privacy Policy, please contact us at:"
+msgstr "If you have any questions about this Privacy Policy, please contact us at:"
+
+#: src/pages/TermsPage.tsx:47
+msgid "Important:"
+msgstr "Important:"
 
 #: src/components/chat/ReportDialog.tsx:24
 msgid "Inappropriate content"
@@ -391,12 +515,17 @@ msgstr "Just now"
 msgid "Kick"
 msgstr "Kick"
 
-#: src/pages/RoomPage.tsx:622
-#: src/pages/RoomPage.tsx:882
+#: src/pages/PrivacyPage.tsx:25
+#: src/pages/TermsPage.tsx:25
+msgid "Last updated: January 2025"
+msgstr "Last updated: January 2025"
+
+#: src/pages/RoomPage.tsx:566
+#: src/pages/RoomPage.tsx:799
 msgid "Leave room"
 msgstr "Leave room"
 
-#: src/pages/RoomPage.tsx:575
+#: src/pages/RoomPage.tsx:519
 msgid "Loading room..."
 msgstr "Loading room..."
 
@@ -424,12 +553,12 @@ msgstr "Mark as reviewed"
 msgid "Member Permissions"
 msgstr "Member Permissions"
 
-#: src/pages/RoomPage.tsx:641
-#: src/pages/RoomPage.tsx:856
-#: src/pages/RoomPage.tsx:859
-#: src/pages/RoomPage.tsx:909
-#: src/pages/RoomPage.tsx:1089
-#: src/pages/RoomPage.tsx:1124
+#: src/pages/RoomPage.tsx:585
+#: src/pages/RoomPage.tsx:773
+#: src/pages/RoomPage.tsx:776
+#: src/pages/RoomPage.tsx:826
+#: src/pages/RoomPage.tsx:1032
+#: src/pages/RoomPage.tsx:1067
 msgid "Members"
 msgstr "Members"
 
@@ -474,11 +603,23 @@ msgid "No rooms yet. Create the first one!"
 msgstr "No rooms yet. Create the first one!"
 
 #: src/components/player/YouTubePlayer.tsx:43
-#: src/components/room/RoomCard.tsx:34
-#: src/pages/RoomPage.tsx:704
-#: src/pages/RoomPage.tsx:938
+#: src/components/room/RoomCard.tsx:42
+#: src/pages/RoomPage.tsx:619
+#: src/pages/RoomPage.tsx:855
 msgid "No video selected"
 msgstr "No video selected"
+
+#: src/pages/TermsPage.tsx:89
+msgid "Not engage in any activity that disrupts or interferes with the Service"
+msgstr "Not engage in any activity that disrupts or interferes with the Service"
+
+#: src/pages/TermsPage.tsx:91
+msgid "Not share inappropriate, offensive, or illegal content in chat rooms"
+msgstr "Not share inappropriate, offensive, or illegal content in chat rooms"
+
+#: src/pages/TermsPage.tsx:90
+msgid "Not use the Service to harass, abuse, or harm others"
+msgstr "Not use the Service to harass, abuse, or harm others"
 
 #: src/components/room/RoomSettings.tsx:33
 msgid "Only the room creator can control"
@@ -489,9 +630,21 @@ msgid "Open chat"
 msgstr "Open chat"
 
 #: src/components/chat/ReportDialog.tsx:26
-#: src/components/room/ShareButton.tsx:133
+#: src/components/room/ShareButton.tsx:135
 msgid "Other"
 msgstr "Other"
+
+#: src/pages/PrivacyPage.tsx:130
+msgid "Our Service uses browser localStorage to store your preferences and user data locally on your device. This includes:"
+msgstr "Our Service uses browser localStorage to store your preferences and user data locally on your device. This includes:"
+
+#: src/pages/PrivacyPage.tsx:41
+msgid "Our Service uses YouTube API Services to provide video playback functionality. By using our Service, you are also agreeing to be bound by the YouTube Terms of Service and Google Privacy Policy."
+msgstr "Our Service uses YouTube API Services to provide video playback functionality. By using our Service, you are also agreeing to be bound by the YouTube Terms of Service and Google Privacy Policy."
+
+#: src/pages/TermsPage.tsx:41
+msgid "Our Service uses YouTube API Services. By using our Service, you agree to be bound by the YouTube Terms of Service."
+msgstr "Our Service uses YouTube API Services. By using our Service, you agree to be bound by the YouTube Terms of Service."
 
 #: src/pages/NotFoundPage.tsx:14
 msgid "Page not found"
@@ -543,7 +696,7 @@ msgstr "Pending"
 msgid "Permanent"
 msgstr "Permanent"
 
-#: src/pages/RoomPage.tsx:902
+#: src/pages/RoomPage.tsx:819
 msgid "Play history"
 msgstr "Play history"
 
@@ -567,6 +720,11 @@ msgstr "Please enter current password"
 msgid "Please enter password"
 msgstr "Please enter password"
 
+#: src/components/common/Footer.tsx:31
+#: src/pages/PrivacyPage.tsx:19
+msgid "Privacy Policy"
+msgstr "Privacy Policy"
+
 #: src/components/admin/BanList.tsx:172
 msgid "Processing..."
 msgstr "Processing..."
@@ -575,11 +733,23 @@ msgstr "Processing..."
 msgid "Profile Icon"
 msgstr "Profile Icon"
 
+#: src/pages/PrivacyPage.tsx:85
+msgid "Profile Image"
+msgstr "Profile Image"
+
+#: src/pages/TermsPage.tsx:76
+msgid "Real-time chat within watch rooms"
+msgstr "Real-time chat within watch rooms"
+
 #: src/components/admin/BanList.tsx:101
 #: src/components/admin/BanList.tsx:214
 #: src/components/admin/ReportList.tsx:96
 msgid "Reason"
 msgstr "Reason"
+
+#: src/pages/PrivacyPage.tsx:91
+msgid "Recent video search queries are cached locally to improve your experience."
+msgstr "Recent video search queries are cached locally to improve your experience."
 
 #: src/components/room/RoomList.tsx:158
 #: src/pages/AdminPage.tsx:135
@@ -647,6 +817,10 @@ msgstr "Reporter"
 msgid "Reports"
 msgstr "Reports"
 
+#: src/pages/TermsPage.tsx:92
+msgid "Respect the intellectual property rights of content creators"
+msgstr "Respect the intellectual property rights of content creators"
+
 #: src/components/room/RoomList.tsx:182
 msgid "Retry"
 msgstr "Retry"
@@ -658,6 +832,10 @@ msgstr "Reviewed"
 #: src/components/room/MemberList.tsx:118
 msgid "Revoke permission"
 msgstr "Revoke permission"
+
+#: src/pages/TermsPage.tsx:78
+msgid "Room creation and management"
+msgstr "Room creation and management"
 
 #: src/components/admin/ReportList.tsx:127
 msgid "Room ID"
@@ -688,7 +866,7 @@ msgstr "Save"
 msgid "Saved"
 msgstr "Saved"
 
-#: src/components/common/Header.tsx:55
+#: src/components/common/Header.tsx:57
 msgid "Search"
 msgstr "Search"
 
@@ -696,8 +874,8 @@ msgstr "Search"
 msgid "Search by keyword or paste YouTube URL"
 msgstr "Search by keyword or paste YouTube URL"
 
-#: src/components/common/Header.tsx:39
-#: src/components/common/Header.tsx:109
+#: src/components/common/Header.tsx:41
+#: src/components/common/Header.tsx:111
 msgid "Search rooms..."
 msgstr "Search rooms..."
 
@@ -725,32 +903,32 @@ msgstr "Set password (leave empty for public)"
 msgid "Setting..."
 msgstr "Setting..."
 
-#: src/pages/RoomPage.tsx:648
-#: src/pages/RoomPage.tsx:916
+#: src/pages/RoomPage.tsx:592
+#: src/pages/RoomPage.tsx:833
 msgid "Settings"
 msgstr "Settings"
 
-#: src/components/room/ShareButton.tsx:65
+#: src/components/room/ShareButton.tsx:67
 msgid "Share"
 msgstr "Share"
 
-#: src/components/room/ShareButton.tsx:124
+#: src/components/room/ShareButton.tsx:126
 msgid "Share on LINE"
 msgstr "Share on LINE"
 
-#: src/components/room/ShareButton.tsx:116
+#: src/components/room/ShareButton.tsx:118
 msgid "Share on X"
 msgstr "Share on X"
 
-#: src/components/room/ShareButton.tsx:77
+#: src/components/room/ShareButton.tsx:79
 msgid "Share room"
 msgstr "Share room"
 
-#: src/components/room/ShareButton.tsx:82
+#: src/components/room/ShareButton.tsx:84
 msgid "Share URL"
 msgstr "Share URL"
 
-#: src/pages/RoomPage.tsx:1025
+#: src/pages/RoomPage.tsx:968
 msgid "Show chat"
 msgstr "Show chat"
 
@@ -763,6 +941,8 @@ msgid "Specific members"
 msgstr "Specific members"
 
 #: src/components/room/JoinOverlay.tsx:73
+#: src/pages/RoomPage.tsx:659
+#: src/pages/RoomPage.tsx:886
 msgid "Start Watching"
 msgstr "Start Watching"
 
@@ -774,13 +954,38 @@ msgstr "Start watching together with everyone"
 msgid "Submitting..."
 msgstr "Submitting..."
 
+#: src/pages/TermsPage.tsx:75
+msgid "Synchronized video playback across multiple users"
+msgstr "Synchronized video playback across multiple users"
+
 #: src/components/admin/ReportList.tsx:123
 msgid "Target"
 msgstr "Target"
 
+#: src/components/common/Footer.tsx:27
+#: src/pages/TermsPage.tsx:19
+msgid "Terms of Service"
+msgstr "Terms of Service"
+
 #: src/components/chat/ReportDialog.tsx:86
 msgid "Thank you for your cooperation"
 msgstr "Thank you for your cooperation"
+
+#: src/pages/PrivacyPage.tsx:85
+msgid "The avatar image you select. This is stored locally on your device."
+msgstr "The avatar image you select. This is stored locally on your device."
+
+#: src/pages/PrivacyPage.tsx:82
+msgid "The name you choose to display to other users in the room. This is optional and can be changed at any time."
+msgstr "The name you choose to display to other users in the room. This is optional and can be changed at any time."
+
+#: src/pages/TermsPage.tsx:125
+msgid "The Service is provided \"as is\" and \"as available\" without any warranties of any kind, either express or implied. We do not guarantee that the Service will be uninterrupted, secure, or error-free."
+msgstr "The Service is provided \"as is\" and \"as available\" without any warranties of any kind, either express or implied. We do not guarantee that the Service will be uninterrupted, secure, or error-free."
+
+#: src/pages/PrivacyPage.tsx:88
+msgid "Theme Preference"
+msgstr "Theme Preference"
 
 #: src/components/user/UserSettings.tsx:106
 msgid "This ID cannot be changed"
@@ -793,6 +998,30 @@ msgstr "This name is visible to other users (max 20 characters)"
 #: src/components/admin/ReportList.tsx:187
 msgid "This report has already been processed"
 msgstr "This report has already been processed"
+
+#: src/pages/PrivacyPage.tsx:101
+msgid "To display your chosen name and avatar to other room members"
+msgstr "To display your chosen name and avatar to other room members"
+
+#: src/pages/PrivacyPage.tsx:100
+msgid "To identify you within watch rooms"
+msgstr "To identify you within watch rooms"
+
+#: src/pages/PrivacyPage.tsx:99
+msgid "To provide and maintain the Service"
+msgstr "To provide and maintain the Service"
+
+#: src/pages/PrivacyPage.tsx:102
+msgid "To remember your preferences across sessions"
+msgstr "To remember your preferences across sessions"
+
+#: src/pages/PrivacyPage.tsx:103
+msgid "To synchronize video playback with other users in the same room"
+msgstr "To synchronize video playback with other users in the same room"
+
+#: src/pages/TermsPage.tsx:135
+msgid "To the fullest extent permitted by law, we shall not be liable for any indirect, incidental, special, consequential, or punitive damages arising out of or relating to your use of the Service."
+msgstr "To the fullest extent permitted by law, we shall not be liable for any indirect, incidental, special, consequential, or punitive damages arising out of or relating to your use of the Service."
 
 #: src/components/admin/BanList.tsx:116
 msgid "Type"
@@ -810,12 +1039,17 @@ msgstr "until"
 msgid "Upload failed"
 msgstr "Upload failed"
 
+#: src/pages/TermsPage.tsx:88
+msgid "Use the Service only for lawful purposes"
+msgstr "Use the Service only for lawful purposes"
+
 #: src/components/admin/BanList.tsx:86
 #: src/components/user/UserSettings.tsx:101
+#: src/pages/PrivacyPage.tsx:79
 msgid "User ID"
 msgstr "User ID"
 
-#: src/components/common/Header.tsx:68
+#: src/components/common/Header.tsx:70
 msgid "User settings"
 msgstr "User settings"
 
@@ -839,6 +1073,99 @@ msgstr "Video"
 msgid "Video not found"
 msgstr "Video not found"
 
-#: src/components/common/Footer.tsx:12
+#: src/pages/PrivacyPage.tsx:139
+msgid "Video search cache"
+msgstr "Video search cache"
+
+#: src/pages/PrivacyPage.tsx:91
+msgid "Video Search Cache"
+msgstr "Video Search Cache"
+
+#: src/pages/PrivacyPage.tsx:31
+msgid "WatchRoom (\"we\", \"our\", or \"the Service\") is a video watching service that allows users to watch YouTube videos together in real-time. This Privacy Policy explains how we collect, use, and protect your information when you use our Service."
+msgstr "WatchRoom (\"we\", \"our\", or \"the Service\") is a video watching service that allows users to watch YouTube videos together in real-time. This Privacy Policy explains how we collect, use, and protect your information when you use our Service."
+
+#: src/pages/TermsPage.tsx:69
+msgid "WatchRoom is a service that allows users to watch YouTube videos together in real-time. Features include:"
+msgstr "WatchRoom is a service that allows users to watch YouTube videos together in real-time. Features include:"
+
+#: src/pages/PrivacyPage.tsx:75
+msgid "We collect the following information to provide and improve our Service:"
+msgstr "We collect the following information to provide and improve our Service:"
+
+#: src/pages/PrivacyPage.tsx:121
+msgid "We do not sell, trade, or otherwise transfer your information to third parties outside of what is necessary to provide the Service."
+msgstr "We do not sell, trade, or otherwise transfer your information to third parties outside of what is necessary to provide the Service."
+
+#: src/pages/PrivacyPage.tsx:151
+msgid "We implement appropriate security measures to protect your information. However, no method of transmission over the Internet is 100% secure."
+msgstr "We implement appropriate security measures to protect your information. However, no method of transmission over the Internet is 100% secure."
+
+#: src/pages/PrivacyPage.tsx:161
+msgid "We may update this Privacy Policy from time to time. We will notify you of any changes by posting the new Privacy Policy on this page and updating the \"Last updated\" date."
+msgstr "We may update this Privacy Policy from time to time. We will notify you of any changes by posting the new Privacy Policy on this page and updating the \"Last updated\" date."
+
+#: src/pages/TermsPage.tsx:144
+msgid "We reserve the right to modify these Terms of Service at any time. Changes will be effective immediately upon posting. Your continued use of the Service after any changes constitutes acceptance of the new terms."
+msgstr "We reserve the right to modify these Terms of Service at any time. Changes will be effective immediately upon posting. Your continued use of the Service after any changes constitutes acceptance of the new terms."
+
+#: src/pages/TermsPage.tsx:155
+msgid "We reserve the right to terminate or suspend access to the Service at any time, without prior notice, for conduct that we believe violates these Terms or is harmful to other users, us, or third parties."
+msgstr "We reserve the right to terminate or suspend access to the Service at any time, without prior notice, for conduct that we believe violates these Terms or is harmful to other users, us, or third parties."
+
+#: src/pages/TermsPage.tsx:85
+msgid "When using the Service, you agree to:"
+msgstr "When using the Service, you agree to:"
+
+#: src/pages/PrivacyPage.tsx:110
+msgid "When you join a watch room, the following information is shared with other members in the same room:"
+msgstr "When you join a watch room, the following information is shared with other members in the same room:"
+
+#: src/pages/TermsPage.tsx:106
+msgid "You are responsible for any content you share in chat rooms, including messages and reactions."
+msgstr "You are responsible for any content you share in chat rooms, including messages and reactions."
+
+#: src/pages/PrivacyPage.tsx:142
+msgid "You can clear this data at any time by clearing your browser's local storage or using your browser's privacy settings."
+msgstr "You can clear this data at any time by clearing your browser's local storage or using your browser's privacy settings."
+
+#: src/pages/PrivacyPage.tsx:117
+msgid "Your chat messages within the room"
+msgstr "Your chat messages within the room"
+
+#: src/pages/PrivacyPage.tsx:115
+msgid "Your display name"
+msgstr "Your display name"
+
+#: src/pages/PrivacyPage.tsx:137
+msgid "Your display name and profile image"
+msgstr "Your display name and profile image"
+
+#: src/pages/PrivacyPage.tsx:88
+msgid "Your preferred color scheme (light/dark mode)."
+msgstr "Your preferred color scheme (light/dark mode)."
+
+#: src/pages/PrivacyPage.tsx:116
+msgid "Your profile image"
+msgstr "Your profile image"
+
+#: src/pages/PrivacyPage.tsx:118
+msgid "Your reactions to videos"
+msgstr "Your reactions to videos"
+
+#: src/pages/PrivacyPage.tsx:138
+msgid "Your theme preference"
+msgstr "Your theme preference"
+
+#: src/pages/TermsPage.tsx:115
+msgid "Your use of the Service is also governed by our Privacy Policy. Please review our Privacy Policy to understand how we collect and use your information."
+msgstr "Your use of the Service is also governed by our Privacy Policy. Please review our Privacy Policy to understand how we collect and use your information."
+
+#: src/pages/PrivacyPage.tsx:136
+msgid "Your user ID"
+msgstr "Your user ID"
+
+#: src/components/common/Footer.tsx:16
+#: src/pages/PrivacyPage.tsx:54
 msgid "YouTube Terms of Service"
 msgstr "YouTube Terms of Service"

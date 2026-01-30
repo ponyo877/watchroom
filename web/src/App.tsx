@@ -7,6 +7,8 @@ import { LanguageWrapper } from '@/i18n/LanguageWrapper';
 import HomePage from '@/pages/HomePage';
 import RoomPage from '@/pages/RoomPage';
 import AdminPage from '@/pages/AdminPage';
+import TermsPage from '@/pages/TermsPage';
+import PrivacyPage from '@/pages/PrivacyPage';
 import NotFoundPage from '@/pages/NotFoundPage';
 
 function ThemeProvider({ children }: { children: React.ReactNode }) {
@@ -49,12 +51,16 @@ function App() {
           <Route path="/room/:roomId" element={<LanguageWrapper lang="ja"><RoomPage /></LanguageWrapper>} />
           <Route path="/r/:shortId" element={<LanguageWrapper lang="ja"><RoomPage /></LanguageWrapper>} />
           <Route path="/admin" element={<LanguageWrapper lang="ja"><AdminPage /></LanguageWrapper>} />
+          <Route path="/terms" element={<LanguageWrapper lang="ja"><TermsPage /></LanguageWrapper>} />
+          <Route path="/privacy" element={<LanguageWrapper lang="ja"><PrivacyPage /></LanguageWrapper>} />
 
           {/* English */}
           <Route path="/en" element={<LanguageWrapper lang="en"><HomePage /></LanguageWrapper>} />
           <Route path="/en/room/:roomId" element={<LanguageWrapper lang="en"><RoomPage /></LanguageWrapper>} />
           <Route path="/en/r/:shortId" element={<LanguageWrapper lang="en"><RoomPage /></LanguageWrapper>} />
           <Route path="/en/admin" element={<LanguageWrapper lang="en"><AdminPage /></LanguageWrapper>} />
+          <Route path="/en/terms" element={<LanguageWrapper lang="en"><TermsPage /></LanguageWrapper>} />
+          <Route path="/en/privacy" element={<LanguageWrapper lang="en"><PrivacyPage /></LanguageWrapper>} />
 
           <Route path="*" element={<LanguageWrapper lang="ja"><NotFoundPage /></LanguageWrapper>} />
         </Routes>
